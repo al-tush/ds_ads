@@ -1,4 +1,4 @@
-package dev.sect.ads.ds_ads
+package pro.altush.ads.ds_ads
 
 import androidx.annotation.NonNull
 

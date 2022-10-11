@@ -1,4 +1,4 @@
-group 'dev.sect.ads.ds_ads'
+group 'pro.altush.ads.ds_ads'
 version '1.0-SNAPSHOT'
 
 buildscript {

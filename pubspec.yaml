@@ -27,7 +27,7 @@ flutter:
   plugin:
     platforms:
       android:
-        package: dev.sect.ads.ds_ads
+        package: pro.altush.ads.ds_ads
         pluginClass: DsAdsPlugin
 #      ios:
 #        pluginClass: DsAdsPlugin

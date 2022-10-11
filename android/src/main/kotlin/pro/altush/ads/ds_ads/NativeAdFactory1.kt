@@ -1,4 +1,4 @@
-package dev.sect.ads.ds_ads
+package pro.altush.ads.ds_ads
 
 import android.view.LayoutInflater
 import android.view.View
