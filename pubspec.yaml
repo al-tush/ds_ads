@@ -1,0 +1,33 @@
+name: ds_ads
+description: Ads components for sect.dev (https://sect.dev/)
+version: 0.0.1
+
+environment:
+  sdk: ">=2.17.6 <3.0.0"
+  flutter: ">=2.5.0"
+
+dependencies:
+  flutter:
+    sdk: flutter
+
+  fimber: ^0.6.6
+
+  bloc: ^8.1.0
+  flutter_bloc: ^8.1.1
+  freezed_annotation: ^2.1.0
+
+  google_mobile_ads: ^2.0.0
+
+dev_dependencies:
+  flutter_test:
+    sdk: flutter
+  flutter_lints: ^2.0.0
+
+flutter:
+  plugin:
+    platforms:
+      android:
+        package: dev.sect.ads.ds_ads
+        pluginClass: DsAdsPlugin
+#      ios:
+#        pluginClass: DsAdsPlugin
