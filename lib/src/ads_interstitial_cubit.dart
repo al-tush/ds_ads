@@ -14,7 +14,7 @@ class AdsInterstitialCubit extends Cubit<AdsInterstitialState> {
 
   AdsInterstitialCubit({
     required this.adUnitId,
-    this.loadRetryMaxCount = 5,
+    this.loadRetryMaxCount = 3,
     this.loadRetryDelay = const Duration(seconds: 1),
   })
       : super(AdsInterstitialState(
