@@ -35,6 +35,7 @@ class AdsManager {
   final OnReportEvent? onReportEvent;
   final String? interstitialUnitId;
   final String? nativeUnitId;
+  final Duration defaultFetchAdWait;
 
   AdsManager({
     required this.onPaidEvent,
@@ -42,6 +43,7 @@ class AdsManager {
     this.onReportEvent,
     this.interstitialUnitId,
     this.nativeUnitId,
+    this.defaultFetchAdWait = const Duration(seconds: 20),
   }) :
     _adsInterstitialCubit = interstitialUnitId != null
         ? AdsInterstitialCubit(adUnitId: interstitialUnitId)

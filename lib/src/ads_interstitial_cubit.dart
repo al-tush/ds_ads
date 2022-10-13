@@ -37,7 +37,7 @@ class AdsInterstitialCubit extends Cubit<AdsInterstitialState> {
   }
 
   void fetchAd({
-    Duration minWait = const Duration(seconds: 20),
+    Duration? minWait,
     Function()? then,
   }) {
     if (AdsManager.instance.appState.isPremium || _isDisposed) {
@@ -49,7 +49,7 @@ class AdsInterstitialCubit extends Cubit<AdsInterstitialState> {
       then?.call();
       return;
     }
-    if (DateTime.now().difference(state.loadedTime) < minWait) {
+    if (DateTime.now().difference(state.loadedTime) < (minWait ?? AdsManager.instance.defaultFetchAdWait)) {
       then?.call();
       return;
     }
