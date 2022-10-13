@@ -46,6 +46,7 @@ class AdsManager {
     _adsInterstitialCubit = interstitialUnitId != null
         ? AdsInterstitialCubit(adUnitId: interstitialUnitId)
         : null {
+    assert(_instance == null, 'dismiss previous Ads instance before init new');
     MobileAds.instance.initialize();
     _instance = this;
   }
