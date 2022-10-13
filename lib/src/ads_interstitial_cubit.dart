@@ -8,14 +8,14 @@ import 'ads_interstitial_state.dart';
 class AdsInterstitialCubit extends Cubit<AdsInterstitialState> {
   final String adUnitId;
   final int loadRetryMaxCount;
-  final Duration loadRetryDuration;
+  final Duration loadRetryDelay;
 
   var _isDisposed = false;
 
   AdsInterstitialCubit({
     required this.adUnitId,
     this.loadRetryMaxCount = 5,
-    this.loadRetryDuration = const Duration(seconds: 1),
+    this.loadRetryDelay = const Duration(seconds: 1),
   })
       : super(AdsInterstitialState(
           ad: null,
@@ -86,7 +86,7 @@ class AdsInterstitialCubit extends Cubit<AdsInterstitialState> {
             loadRetryCount: state.loadRetryCount + 1,
           ));
           if (state.loadRetryCount < loadRetryMaxCount) {
-            await Future.delayed(loadRetryDuration);
+            await Future.delayed(loadRetryDelay);
             if (state.adState == AdState.none) {
               _report('ads_interstitial: retry loading');
               fetchAd(minWait: minWait, then: then);
@@ -146,7 +146,6 @@ class AdsInterstitialCubit extends Cubit<AdsInterstitialState> {
     }
 
     if ([AdState.none, AdState.loading].contains(state.adState)) {
-      Fimber.i('TEST5 ${dismissAdAfter.inSeconds} $dismissAdAfter');
       if (dismissAdAfter.inSeconds <= 0) {
         _report('ads_interstitial: showing canceled: not ready immediately (dismiss ad after ${dismissAdAfter.inSeconds}s)');
         fetchAd();
