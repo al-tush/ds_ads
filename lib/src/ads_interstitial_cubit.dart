@@ -1,3 +1,5 @@
+import 'dart:async';
+
 import 'package:ds_ads/src/ads_manager.dart';
 import 'package:fimber/fimber.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
@@ -124,8 +126,6 @@ class AdsInterstitialCubit extends Cubit<AdsInterstitialState> {
     Function()? onAdShow,
     Function()? then,
   }) async {
-    final startTime = DateTime.now();
-
     if (AdsManager.instance.appState.isPremium || _isDisposed) {
       then?.call();
       return;
@@ -151,15 +151,22 @@ class AdsInterstitialCubit extends Cubit<AdsInterstitialState> {
         fetchAd();
         then?.call();
       } else {
+        var processed = false;
+        Timer(dismissAdAfter, () {
+          if (processed) return;
+          processed = true;
+          _report('ads_interstitial: showing canceled: not ready after ${dismissAdAfter.inSeconds}s');
+          then?.call();
+        });
         fetchAd(
-          then: () {
+          then: () async {
+            while (state.adState == AdState.loading) {
+              await Future.delayed(const Duration(milliseconds: 100));
+            }
+            if (processed) return;
+            processed = true;
             if (_isDisposed) {
               _report('ads_interstitial: showing canceled: manager disposed');
-              then?.call();
-              return;
-            }
-            if (DateTime.now().difference(startTime) > dismissAdAfter) {
-              _report('ads_interstitial: showing canceled: not ready after ${dismissAdAfter.inSeconds}s');
               then?.call();
               return;
             }
