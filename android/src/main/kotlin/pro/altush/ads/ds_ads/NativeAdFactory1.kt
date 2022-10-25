@@ -10,10 +10,13 @@ import com.google.android.gms.ads.nativead.NativeAd
 import com.google.android.gms.ads.nativead.NativeAdView
 import io.flutter.plugins.googlemobileads.GoogleMobileAdsPlugin.NativeAdFactory
 
-internal class NativeAdFactory1(val layoutInflater: LayoutInflater) : NativeAdFactory {
-    override fun createNativeAd(nativeAd: NativeAd, customOptions: Map<String, Any>?): NativeAdView  {
+internal class NativeAdFactory1(
+        private val layoutInflater: LayoutInflater,
+        private val layout: Int,
+) : NativeAdFactory {
 
-        val adView = layoutInflater.inflate(R.layout.native_ad_1, null) as NativeAdView
+    override fun createNativeAd(nativeAd: NativeAd, customOptions: Map<String, Any>?): NativeAdView  {
+        val adView = layoutInflater.inflate(layout, null) as NativeAdView
 
         // Set the media view.
         adView.setMediaView(adView.findViewById(R.id.ad_media) as MediaView)

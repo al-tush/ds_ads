@@ -7,6 +7,14 @@ import 'package:google_mobile_ads/google_mobile_ads.dart';
 
 import 'ads_interstitial_state.dart';
 
+class AdInterstitialLoadedEvent extends AdEvent {
+  final Ad ad;
+
+  const AdInterstitialLoadedEvent._({
+    required this.ad,
+  });
+}
+
 class AdsInterstitialCubit extends Cubit<AdsInterstitialState> {
   final String adUnitId;
   final int loadRetryMaxCount;
@@ -20,12 +28,12 @@ class AdsInterstitialCubit extends Cubit<AdsInterstitialState> {
     this.loadRetryDelay = const Duration(seconds: 1),
   })
       : super(AdsInterstitialState(
-          ad: null,
-          adState: AdState.none,
-          loadedTime: DateTime(0),
-          lastShowedTime: DateTime(0),
-          loadRetryCount: 0,
-        ));
+    ad: null,
+    adState: AdState.none,
+    loadedTime: DateTime(0),
+    lastShowedTime: DateTime(0),
+    loadRetryCount: 0,
+  ));
 
   void dispose() {
     _isDisposed = true;
@@ -64,10 +72,10 @@ class AdsInterstitialCubit extends Cubit<AdsInterstitialState> {
         onAdLoaded: (ad) async {
           try {
             _report('ads_interstitial: loaded', customAdId: ad.adUnitId);
-            AdsManager.instance.adsLoaded();
+            AdsManager.instance.emitEvent(AdInterstitialLoadedEvent._(ad: ad));
             ad.onPaidEvent = (ad, valueMicros, precision, currencyCode) {
-               AdsManager.instance.onPaidEvent(ad, valueMicros, precision, currencyCode, 'interstitialAd');
-             };
+              AdsManager.instance.onPaidEvent(ad, valueMicros, precision, currencyCode, 'interstitialAd');
+            };
 
             await state.ad?.dispose();
             emit(state.copyWith(
@@ -76,31 +84,36 @@ class AdsInterstitialCubit extends Cubit<AdsInterstitialState> {
               loadedTime: DateTime.now(),
               loadRetryCount: 0,
             ));
-          } finally {
-            then?.call();
+          } catch (e, stack) {
+            Fimber.e('$e', stacktrace: stack);
           }
+          then?.call();
         },
         onAdFailedToLoad: (err) async {
-          await state.ad?.dispose();
-          emit(state.copyWith(
-            ad: null,
-            adState: AdState.none,
-            loadRetryCount: state.loadRetryCount + 1,
-          ));
-          if (state.loadRetryCount < loadRetryMaxCount) {
-            await Future.delayed(loadRetryDelay);
-            if (state.adState == AdState.none) {
-              _report('ads_interstitial: retry loading');
-              fetchAd(minWait: minWait, then: then);
-            }
-          } else {
-            _report('ads_interstitial: failed to load');
-            Fimber.w('$err', stacktrace: StackTrace.current);
+          try {
+            await state.ad?.dispose();
             emit(state.copyWith(
               ad: null,
-              loadedTime: DateTime.now(),
+              adState: AdState.none,
+              loadRetryCount: state.loadRetryCount + 1,
             ));
-            then?.call();
+            if (state.loadRetryCount < loadRetryMaxCount) {
+              await Future.delayed(loadRetryDelay);
+              if (state.adState == AdState.none) {
+                _report('ads_interstitial: retry loading');
+                fetchAd(minWait: minWait, then: then);
+              }
+            } else {
+              _report('ads_interstitial: failed to load');
+              Fimber.w('$err', stacktrace: StackTrace.current);
+              emit(state.copyWith(
+                ad: null,
+                loadedTime: DateTime.now(),
+              ));
+              then?.call();
+            }
+          } catch (e, stack) {
+            Fimber.e('$e', stacktrace: stack);
           }
         },
       ),
@@ -175,7 +188,7 @@ class AdsInterstitialCubit extends Cubit<AdsInterstitialState> {
               then?.call();
               return;
             }
-            showAd(onAdShow: onAdShow, then: then);
+            await showAd(onAdShow: onAdShow, then: then);
           },
         );
       }
@@ -193,40 +206,56 @@ class AdsInterstitialCubit extends Cubit<AdsInterstitialState> {
     }
 
     ad.fullScreenContentCallback = FullScreenContentCallback(
-      onAdShowedFullScreenContent: (InterstitialAd ad) {
-        _report('ads_interstitial: showed full screen content');
-        emit(state.copyWith(
-          adState: AdState.showing,
-        ));
-        onAdShow?.call();
-        then?.call();
-      },
-      onAdDismissedFullScreenContent: (InterstitialAd ad) {
-        _report('ads_interstitial: full screen content dismissed');
-        ad.dispose();
-        emit(state.copyWith(
-          ad: null,
-          adState: AdState.none,
-          lastShowedTime: DateTime.now(),
-        ));
-        fetchAd(minWait: const Duration());
-        // если перенести then?.call() сюда, возникает краткий показ предыдущего экрана при закрытии интерстишла
-      },
-      onAdFailedToShowFullScreenContent: (ad, error) {
-        _report('ads_interstitial: showing canceled by error');
-        Fimber.e('$error', stacktrace: StackTrace.current);
-        ad.dispose();
-        emit(state.copyWith(
-          ad: null,
-          adState: AdState.none,
-          lastShowedTime: DateTime.now(),
-        ));
-        then?.call();
-        fetchAd(minWait: const Duration());
-      },
-      onAdClicked: (ad) {
-        _report('ads_interstitial: ad clicked');
-      }
+        onAdShowedFullScreenContent: (InterstitialAd ad) {
+          try {
+            _report('ads_interstitial: showed full screen content');
+            emit(state.copyWith(
+              adState: AdState.showing,
+            ));
+            onAdShow?.call();
+          } catch (e, stack) {
+            Fimber.e('$e', stacktrace: stack);
+          }
+          then?.call();
+        },
+        onAdDismissedFullScreenContent: (InterstitialAd ad) {
+          try {
+            _report('ads_interstitial: full screen content dismissed');
+            ad.dispose();
+            emit(state.copyWith(
+              ad: null,
+              adState: AdState.none,
+              lastShowedTime: DateTime.now(),
+            ));
+            fetchAd(minWait: const Duration());
+            // если перенести then?.call() сюда, возникает краткий показ предыдущего экрана при закрытии интерстишла
+          } catch (e, stack) {
+            Fimber.e('$e', stacktrace: stack);
+          }
+        },
+        onAdFailedToShowFullScreenContent: (ad, error) {
+          try {
+            _report('ads_interstitial: showing canceled by error');
+            Fimber.e('$error', stacktrace: StackTrace.current);
+            ad.dispose();
+            emit(state.copyWith(
+              ad: null,
+              adState: AdState.none,
+              lastShowedTime: DateTime.now(),
+            ));
+          } catch (e, stack) {
+            Fimber.e('$e', stacktrace: stack);
+          }
+          then?.call();
+          fetchAd(minWait: const Duration());
+        },
+        onAdClicked: (ad) {
+          try {
+            _report('ads_interstitial: ad clicked');
+          } catch (e, stack) {
+            Fimber.e('$e', stacktrace: stack);
+          }
+        }
     );
     emit(state.copyWith(
       adState: AdState.preShowing,

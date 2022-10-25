@@ -90,7 +90,7 @@
           android:textColor="#FFFFFFFF"
           android:textSize="14sp"
           android:textStyle="bold"
-          android:background="@drawable/button_background" />
+          android:background="@drawable/button_background1_light" />
     </LinearLayout>
   </LinearLayout>
 </com.google.android.gms.ads.nativead.NativeAdView>

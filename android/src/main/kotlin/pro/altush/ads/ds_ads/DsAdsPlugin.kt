@@ -20,17 +20,39 @@ class DsAdsPlugin: FlutterPlugin, ActivityAware {
   override fun onAttachedToEngine(@NonNull flutterPluginBinding: FlutterPlugin.FlutterPluginBinding) {
     flutterEngine = flutterPluginBinding.flutterEngine
     if (!flutterEngine!!.plugins.has(GoogleMobileAdsPlugin::class.java)) {
-      Timber.i("Recommended to reorder pluging: GoogleMobileAdsPlugin should register before DsAdsPlugin")
+      Timber.i("Recommended to reorder plugging: GoogleMobileAdsPlugin should be registered before DsAdsPlugin")
       flutterEngine!!.plugins.add(GoogleMobileAdsPlugin())
     }
   }
 
   override fun onAttachedToActivity(binding: ActivityPluginBinding) {
-    GoogleMobileAdsPlugin.registerNativeAdFactory(flutterEngine!!, "adFactory1", NativeAdFactory1(binding.activity.layoutInflater))
+    GoogleMobileAdsPlugin.registerNativeAdFactory(
+            flutterEngine!!,
+            "adFactory1Light",
+            NativeAdFactory1(binding.activity.layoutInflater, R.layout.native_ad_1_light),
+    )
+    GoogleMobileAdsPlugin.registerNativeAdFactory(
+            flutterEngine!!,
+            "adFactory1Dark",
+            NativeAdFactory1(binding.activity.layoutInflater, R.layout.native_ad_1_dark),
+    )
+    GoogleMobileAdsPlugin.registerNativeAdFactory(
+            flutterEngine!!,
+            "adFactory2Light",
+            NativeAdFactory1(binding.activity.layoutInflater, R.layout.native_ad_2_light),
+    )
+    GoogleMobileAdsPlugin.registerNativeAdFactory(
+            flutterEngine!!,
+            "adFactory2Dark",
+            NativeAdFactory1(binding.activity.layoutInflater, R.layout.native_ad_2_dark),
+    )
   }
 
   override fun onDetachedFromActivity() {
-    GoogleMobileAdsPlugin.unregisterNativeAdFactory(flutterEngine!!, "adFactory1")
+    GoogleMobileAdsPlugin.unregisterNativeAdFactory(flutterEngine!!, "adFactory1Light")
+    GoogleMobileAdsPlugin.unregisterNativeAdFactory(flutterEngine!!, "adFactory1Dark")
+    GoogleMobileAdsPlugin.unregisterNativeAdFactory(flutterEngine!!, "adFactory2Light")
+    GoogleMobileAdsPlugin.unregisterNativeAdFactory(flutterEngine!!, "adFactory2Dark")
   }
 
   override fun onReattachedToActivityForConfigChanges(binding: ActivityPluginBinding) {
