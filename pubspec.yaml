@@ -1,6 +1,6 @@
 name: ds_ads
 description: Ads components for sect.dev (https://sect.dev/)
-version: 0.0.3
+version: 0.1.0
 repository: https://github.com/altush1983/ds_ads
 
 environment:
@@ -30,5 +30,3 @@ flutter:
       android:
         package: pro.altush.ads.ds_ads
         pluginClass: DsAdsPlugin
-#      ios:
-#        pluginClass: DsAdsPlugin

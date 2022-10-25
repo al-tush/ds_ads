@@ -1,3 +1,12 @@
+## 0.1.0
+
+* dark theme support
+* new style NativeAdBannerStyle.style2 added
+* native ad preload
+
+BREAKING CHANGES 
+* add DS prefix to all classes
+
 ## 0.0.3
 
 * fixed interstitial ads showing bugs

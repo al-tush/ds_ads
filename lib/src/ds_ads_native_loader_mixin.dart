@@ -110,7 +110,7 @@ mixin DSAdsNativeLoaderMixin<T extends StatefulWidget> on State<T> {
 
   static Future<void> fetchAd() async {
     final adUnitId = DSAdsManager.instance.nativeUnitId;
-    assert(adUnitId != null, 'Pass nativeUnitId to AdsManager(...) on app start');
+    assert(adUnitId != null, 'Pass nativeUnitId to DSAdsManager(...) on app start');
     if (_loadedAds[null] != null) {
       Fimber.i('ads_native: banner already loaded');
       return;
