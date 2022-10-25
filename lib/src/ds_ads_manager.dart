@@ -1,8 +1,8 @@
 import 'dart:async';
 import 'dart:ui';
 
-import 'package:ds_ads/src/ads_interstitial_cubit.dart';
-import 'package:ds_ads/src/ads_native_loader_mixin.dart';
+import 'package:ds_ads/src/ds_ads_interstitial_cubit.dart';
+import 'package:ds_ads/src/ds_ads_native_loader_mixin.dart';
 import 'package:freezed_annotation/freezed_annotation.dart';
 import 'package:google_mobile_ads/google_mobile_ads.dart';
 
@@ -15,7 +15,7 @@ enum NativeAdBannerStyle {
   style2, // no margins
 }
 
-abstract class AppAdState {
+abstract class DSAppAdsState {
   /// App is in premium mode (no any ads shows)
   bool get isPremium;
   /// App is in foreground (interstitial ads cannot be shown)
@@ -25,34 +25,34 @@ abstract class AppAdState {
 }
 
 @immutable
-abstract class AdEvent {
-  const AdEvent();
+abstract class DSAdsEvent {
+  const DSAdsEvent();
 }
 
-class AdsManager {
-  static AdsManager? _instance;
-  static AdsManager get instance {
+class DSAdsManager {
+  static DSAdsManager? _instance;
+  static DSAdsManager get instance {
     assert(_instance != null, 'Call AdsManager(...) to initialize ads');
     return _instance!;
   }
 
-  static AdsInterstitialCubit get interstitial {
+  static DSAdsInterstitialCubit get interstitial {
     assert(_instance?._adsInterstitialCubit != null, 'Pass interstitialUnitId to AdsManager(...) on app start');
     return instance._adsInterstitialCubit!;
   }
 
-  final AdsInterstitialCubit? _adsInterstitialCubit;
+  final DSAdsInterstitialCubit? _adsInterstitialCubit;
 
   var _isAdAvailable = false;
   /// Was the ad successfully loaded at least once in this session
   bool get isAdAvailable => _isAdAvailable;
 
-  final _eventController = StreamController<AdEvent>.broadcast();
+  final _eventController = StreamController<DSAdsEvent>.broadcast();
 
-  Stream<AdEvent> get eventStream => _eventController.stream;
+  Stream<DSAdsEvent> get eventStream => _eventController.stream;
 
   final OnPaidEvent onPaidEvent;
-  final AppAdState appState;
+  final DSAppAdsState appState;
   final OnReportEvent? onReportEvent;
   final String? interstitialUnitId;
   final String? nativeUnitId;
@@ -60,7 +60,7 @@ class AdsManager {
   final bool defaultShowNativeAdProgress;
   final NativeAdBannerStyle nativeAdBannerStyle;
 
-  AdsManager({
+  DSAdsManager({
     required this.onPaidEvent,
     required this.appState,
     required this.nativeAdBannerStyle,
@@ -71,7 +71,7 @@ class AdsManager {
     this.defaultShowNativeAdProgress = false,
   }) :
     _adsInterstitialCubit = interstitialUnitId != null
-        ? AdsInterstitialCubit(adUnitId: interstitialUnitId)
+        ? DSAdsInterstitialCubit(adUnitId: interstitialUnitId)
         : null {
     assert(_instance == null, 'dismiss previous Ads instance before init new');
     MobileAds.instance.initialize();
@@ -79,12 +79,12 @@ class AdsManager {
 
     unawaited(() async {
       await for (final event in eventStream) {
-        if (event is AdInterstitialLoadedEvent || event is AdNativeLoadedEvent) {
+        if (event is DSAdsInterstitialLoadedEvent || event is DSAdNativeLoadedEvent) {
           _isAdAvailable = true;
         }
-        if (event is AdInterstitialLoadedEvent) {
+        if (event is DSAdsInterstitialLoadedEvent) {
           Timer.run(() async {
-            await AdsNativeLoaderMixin.tryLoadBanner();
+            await DSAdsNativeLoaderMixin.fetchAd();
           });
         }
       }
@@ -93,11 +93,11 @@ class AdsManager {
 
   void dismiss() {
     _instance = null;
-    AdsNativeLoaderMixin.disposeClass();
+    DSAdsNativeLoaderMixin.disposeClass();
   }
 
   @internal
-  void emitEvent(AdEvent event) {
+  void emitEvent(DSAdsEvent event) {
     _eventController.sink.add(event);
   }
 }

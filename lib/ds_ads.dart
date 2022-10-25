@@ -7,6 +7,6 @@
 //   }
 // }
 
-export 'src/ads_manager.dart';
-export 'src/ads_native_loader_mixin.dart';
-export 'src/ads_interstitial_cubit.dart';
+export 'src/ds_ads_manager.dart';
+export 'src/ds_ads_native_loader_mixin.dart';
+export 'src/ds_ads_interstitial_cubit.dart';

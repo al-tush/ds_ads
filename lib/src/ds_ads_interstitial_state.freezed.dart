@@ -3,7 +3,7 @@
 // ignore_for_file: type=lint
 // ignore_for_file: unused_element, deprecated_member_use, deprecated_member_use_from_same_package, use_function_type_syntax_for_parameters, unnecessary_const, avoid_init_to_null, invalid_override_different_default_values_named, prefer_expression_function_bodies, annotate_overrides, invalid_annotation_target
 
-part of 'ads_interstitial_state.dart';
+part of 'ds_ads_interstitial_state.dart';
 
 // **************************************************************************
 // FreezedGenerator
@@ -23,14 +23,14 @@ mixin _$AdsInterstitialState {
   int get loadRetryCount => throw _privateConstructorUsedError;
 
   @JsonKey(ignore: true)
-  $AdsInterstitialStateCopyWith<AdsInterstitialState> get copyWith =>
+  $AdsInterstitialStateCopyWith<DSAdsInterstitialState> get copyWith =>
       throw _privateConstructorUsedError;
 }
 
 /// @nodoc
 abstract class $AdsInterstitialStateCopyWith<$Res> {
-  factory $AdsInterstitialStateCopyWith(AdsInterstitialState value,
-          $Res Function(AdsInterstitialState) then) =
+  factory $AdsInterstitialStateCopyWith(DSAdsInterstitialState value,
+          $Res Function(DSAdsInterstitialState) then) =
       _$AdsInterstitialStateCopyWithImpl<$Res>;
   $Res call(
       {InterstitialAd? ad,
@@ -45,9 +45,9 @@ class _$AdsInterstitialStateCopyWithImpl<$Res>
     implements $AdsInterstitialStateCopyWith<$Res> {
   _$AdsInterstitialStateCopyWithImpl(this._value, this._then);
 
-  final AdsInterstitialState _value;
+  final DSAdsInterstitialState _value;
   // ignore: unused_field
-  final $Res Function(AdsInterstitialState) _then;
+  final $Res Function(DSAdsInterstitialState) _then;
 
   @override
   $Res call({
@@ -200,7 +200,7 @@ class _$_AdsInterstitialStateData implements _AdsInterstitialStateData {
           _$_AdsInterstitialStateData>(this, _$identity);
 }
 
-abstract class _AdsInterstitialStateData implements AdsInterstitialState {
+abstract class _AdsInterstitialStateData implements DSAdsInterstitialState {
   factory _AdsInterstitialStateData(
       {required final InterstitialAd? ad,
       required final AdState adState,

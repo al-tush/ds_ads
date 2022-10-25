@@ -1,7 +1,7 @@
 import 'dart:async';
 
 import 'package:ds_ads/ds_ads.dart';
-import 'package:ds_ads/src/ads_manager.dart';
+import 'package:ds_ads/src/ds_ads_manager.dart';
 import 'package:fimber/fimber.dart';
 import 'package:flutter/material.dart';
 import 'package:freezed_annotation/freezed_annotation.dart';
@@ -9,29 +9,29 @@ import 'package:google_mobile_ads/google_mobile_ads.dart';
 
 typedef NativeAdBuilder = Widget Function(BuildContext context, bool isLoaded, Widget child);
 
-class AdNativeLoadedEvent extends AdEvent {
+class DSAdNativeLoadedEvent extends DSAdsEvent {
   final Ad ad;
 
-  const AdNativeLoadedEvent._({
+  const DSAdNativeLoadedEvent._({
     required this.ad,
   });
 }
 
-class AdNativeLoadFailed extends AdEvent {
-  const AdNativeLoadFailed._();
+class DSAdNativeLoadFailed extends DSAdsEvent {
+  const DSAdNativeLoadFailed._();
 }
 
-mixin AdsNativeLoaderMixin<T extends StatefulWidget> on State<T> {
+mixin DSAdsNativeLoaderMixin<T extends StatefulWidget> on State<T> {
   final _adKey = GlobalKey();
   bool get isLoaded => _loadedAds[this] != null;
 
   String? get nativeAdLocation;
 
-  static final _loadedAds = <AdsNativeLoaderMixin?, NativeAd>{};
+  static final _loadedAds = <DSAdsNativeLoaderMixin?, NativeAd>{};
 
   static double get nativeAdHeight {
     // the same as in res/layout/native_ad_X_light.xml and res/layout/native_ad_X_dark.xml
-    switch (AdsManager.instance.nativeAdBannerStyle) {
+    switch (DSAdsManager.instance.nativeAdBannerStyle) {
       case NativeAdBannerStyle.style1:
         return 260;
       case NativeAdBannerStyle.style2:
@@ -43,9 +43,9 @@ mixin AdsNativeLoaderMixin<T extends StatefulWidget> on State<T> {
   void initState() {
     super.initState();
     unawaited(() async {
-      await for (final event in AdsManager.instance.eventStream) {
+      await for (final event in DSAdsManager.instance.eventStream) {
         if (!mounted) return;
-        if (event is AdNativeLoadedEvent) {
+        if (event is DSAdNativeLoadedEvent) {
           final res = _assignAdToMe();
           if (res) {
             setState(() {});
@@ -53,7 +53,7 @@ mixin AdsNativeLoaderMixin<T extends StatefulWidget> on State<T> {
         }
       }
     } ());
-    unawaited(tryLoadBanner());
+    unawaited(fetchAd());
     _assignAdToMe();
   }
 
@@ -62,7 +62,7 @@ mixin AdsNativeLoaderMixin<T extends StatefulWidget> on State<T> {
     _report(this, 'ads_native: dispose (isLoaded: $isLoaded)');
     _loadedAds[this]?.dispose();
     _loadedAds.remove(this);
-    unawaited(tryLoadBanner());
+    unawaited(fetchAd());
     super.dispose();
   }
 
@@ -74,12 +74,12 @@ mixin AdsNativeLoaderMixin<T extends StatefulWidget> on State<T> {
     });
   }
 
-  static void _report(AdsNativeLoaderMixin? obj, String eventName, {String? customAdId}) {
+  static void _report(DSAdsNativeLoaderMixin? obj, String eventName, {String? customAdId}) {
     final location = obj?.nativeAdLocation;
-    AdsManager.instance.onReportEvent?.call(eventName, {
+    DSAdsManager.instance.onReportEvent?.call(eventName, {
       if (location != null)
         'location': location,
-      'adUnitId': customAdId ?? AdsManager.instance.nativeUnitId!,
+      'adUnitId': customAdId ?? DSAdsManager.instance.nativeUnitId!,
     });
   }
 
@@ -90,7 +90,7 @@ mixin AdsNativeLoaderMixin<T extends StatefulWidget> on State<T> {
 
   static String _getFactoryId() {
     final String group;
-    switch (AdsManager.instance.nativeAdBannerStyle) {
+    switch (DSAdsManager.instance.nativeAdBannerStyle) {
       case NativeAdBannerStyle.style1:
         group = 'adFactory1';
         break;
@@ -98,7 +98,7 @@ mixin AdsNativeLoaderMixin<T extends StatefulWidget> on State<T> {
         group = 'adFactory2';
         break;
     }
-    switch (AdsManager.instance.appState.brightness) {
+    switch (DSAdsManager.instance.appState.brightness) {
       case Brightness.light:
         return '${group}Light';
       case Brightness.dark:
@@ -108,9 +108,8 @@ mixin AdsNativeLoaderMixin<T extends StatefulWidget> on State<T> {
 
   static var _isBannerLoading = false;
 
-  @internal
-  static Future<void> tryLoadBanner() async {
-    final adUnitId = AdsManager.instance.nativeUnitId;
+  static Future<void> fetchAd() async {
+    final adUnitId = DSAdsManager.instance.nativeUnitId;
     assert(adUnitId != null, 'Pass nativeUnitId to AdsManager(...) on app start');
     if (_loadedAds[null] != null) {
       Fimber.i('ads_native: banner already loaded');
@@ -131,7 +130,7 @@ mixin AdsNativeLoaderMixin<T extends StatefulWidget> on State<T> {
               _isBannerLoading = false;
               _loadedAds[null] = ad as NativeAd;
               _reportByAd(ad, 'ads_native: loaded');
-              AdsManager.instance.emitEvent(AdNativeLoadedEvent._(ad: ad));
+              DSAdsManager.instance.emitEvent(DSAdNativeLoadedEvent._(ad: ad));
             } catch (e, stack) {
               Fimber.e('$e', stacktrace: stack);
             }
@@ -140,7 +139,7 @@ mixin AdsNativeLoaderMixin<T extends StatefulWidget> on State<T> {
             try {
               _isBannerLoading = false;
               _report(null, 'ads_native: failed to load', customAdId: ad.adUnitId);
-              AdsManager.instance.emitEvent(const AdNativeLoadFailed._());
+              DSAdsManager.instance.emitEvent(const DSAdNativeLoadFailed._());
               ad.dispose();
             } catch (e, stack) {
               Fimber.e('$e', stacktrace: stack);
@@ -148,7 +147,7 @@ mixin AdsNativeLoaderMixin<T extends StatefulWidget> on State<T> {
           },
           onPaidEvent: (ad, valueMicros, precision, currencyCode) {
             try {
-              AdsManager.instance.onPaidEvent(ad, valueMicros, precision, currencyCode, 'nativeAd');
+              DSAdsManager.instance.onPaidEvent(ad, valueMicros, precision, currencyCode, 'nativeAd');
             } catch (e, stack) {
               Fimber.e('$e', stacktrace: stack);
             }
@@ -185,13 +184,13 @@ mixin AdsNativeLoaderMixin<T extends StatefulWidget> on State<T> {
     final NativeAdBuilder? builder,
     final bool? showProgress,
   }) {
-    if (!AdsManager.instance.isAdAvailable) return const SizedBox();
-    if (AdsManager.instance.appState.isPremium) return const SizedBox();
+    if (!DSAdsManager.instance.isAdAvailable) return const SizedBox();
+    if (DSAdsManager.instance.appState.isPremium) return const SizedBox();
     final child = SizedBox(
       height: nativeAdHeight,
       child: isLoaded
           ? AdWidget(key: _adKey, ad: _loadedAds[this]!)
-          : (showProgress ?? AdsManager.instance.defaultShowNativeAdProgress) ? const Center(child: CircularProgressIndicator()) : const SizedBox(),
+          : (showProgress ?? DSAdsManager.instance.defaultShowNativeAdProgress) ? const Center(child: CircularProgressIndicator()) : const SizedBox(),
     );
     if (builder != null) {
       return builder(context, isLoaded, child);

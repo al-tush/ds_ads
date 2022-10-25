@@ -1,7 +1,7 @@
 import 'package:freezed_annotation/freezed_annotation.dart';
 import 'package:google_mobile_ads/google_mobile_ads.dart';
 
-part 'ads_interstitial_state.freezed.dart';
+part 'ds_ads_interstitial_state.freezed.dart';
 
 enum AdState {
   none,
@@ -12,8 +12,8 @@ enum AdState {
 }
 
 @freezed
-class AdsInterstitialState with _$AdsInterstitialState {
-  factory AdsInterstitialState({
+class DSAdsInterstitialState with _$AdsInterstitialState {
+  factory DSAdsInterstitialState({
     required InterstitialAd? ad,
     required AdState adState,
     required DateTime loadedTime,

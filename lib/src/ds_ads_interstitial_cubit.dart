@@ -1,33 +1,33 @@
 import 'dart:async';
 
-import 'package:ds_ads/src/ads_manager.dart';
+import 'package:ds_ads/src/ds_ads_manager.dart';
 import 'package:fimber/fimber.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:google_mobile_ads/google_mobile_ads.dart';
 
-import 'ads_interstitial_state.dart';
+import 'ds_ads_interstitial_state.dart';
 
-class AdInterstitialLoadedEvent extends AdEvent {
+class DSAdsInterstitialLoadedEvent extends DSAdsEvent {
   final Ad ad;
 
-  const AdInterstitialLoadedEvent._({
+  const DSAdsInterstitialLoadedEvent._({
     required this.ad,
   });
 }
 
-class AdsInterstitialCubit extends Cubit<AdsInterstitialState> {
+class DSAdsInterstitialCubit extends Cubit<DSAdsInterstitialState> {
   final String adUnitId;
   final int loadRetryMaxCount;
   final Duration loadRetryDelay;
 
   var _isDisposed = false;
 
-  AdsInterstitialCubit({
+  DSAdsInterstitialCubit({
     required this.adUnitId,
     this.loadRetryMaxCount = 3,
     this.loadRetryDelay = const Duration(seconds: 1),
   })
-      : super(AdsInterstitialState(
+      : super(DSAdsInterstitialState(
     ad: null,
     adState: AdState.none,
     loadedTime: DateTime(0),
@@ -41,7 +41,7 @@ class AdsInterstitialCubit extends Cubit<AdsInterstitialState> {
   }
 
   void _report(String eventName, {String? customAdId}) {
-    AdsManager.instance.onReportEvent?.call(eventName, {
+    DSAdsManager.instance.onReportEvent?.call(eventName, {
       'adUnitId': customAdId ?? adUnitId,
     });
   }
@@ -50,7 +50,7 @@ class AdsInterstitialCubit extends Cubit<AdsInterstitialState> {
     Duration? minWait,
     Function()? then,
   }) {
-    if (AdsManager.instance.appState.isPremium || _isDisposed) {
+    if (DSAdsManager.instance.appState.isPremium || _isDisposed) {
       then?.call();
       return;
     }
@@ -59,7 +59,7 @@ class AdsInterstitialCubit extends Cubit<AdsInterstitialState> {
       then?.call();
       return;
     }
-    if (DateTime.now().difference(state.loadedTime) < (minWait ?? AdsManager.instance.defaultFetchAdWait)) {
+    if (DateTime.now().difference(state.loadedTime) < (minWait ?? DSAdsManager.instance.defaultFetchAdWait)) {
       then?.call();
       return;
     }
@@ -72,9 +72,9 @@ class AdsInterstitialCubit extends Cubit<AdsInterstitialState> {
         onAdLoaded: (ad) async {
           try {
             _report('ads_interstitial: loaded', customAdId: ad.adUnitId);
-            AdsManager.instance.emitEvent(AdInterstitialLoadedEvent._(ad: ad));
+            DSAdsManager.instance.emitEvent(DSAdsInterstitialLoadedEvent._(ad: ad));
             ad.onPaidEvent = (ad, valueMicros, precision, currencyCode) {
-              AdsManager.instance.onPaidEvent(ad, valueMicros, precision, currencyCode, 'interstitialAd');
+              DSAdsManager.instance.onPaidEvent(ad, valueMicros, precision, currencyCode, 'interstitialAd');
             };
 
             await state.ad?.dispose();
@@ -139,12 +139,12 @@ class AdsInterstitialCubit extends Cubit<AdsInterstitialState> {
     Function()? onAdShow,
     Function()? then,
   }) async {
-    if (AdsManager.instance.appState.isPremium || _isDisposed) {
+    if (DSAdsManager.instance.appState.isPremium || _isDisposed) {
       then?.call();
       return;
     }
 
-    if (!AdsManager.instance.appState.isInForeground) {
+    if (!DSAdsManager.instance.appState.isInForeground) {
       then?.call();
       fetchAd();
       // https://support.google.com/admob/answer/6201362#zippy=%2Cdisallowed-example-user-launches-app
