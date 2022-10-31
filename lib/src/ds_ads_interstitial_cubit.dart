@@ -46,6 +46,7 @@ class DSAdsInterstitialCubit extends Cubit<DSAdsInterstitialState> {
     });
   }
 
+  /// Fetch interstital ad
   void fetchAd({
     Duration? minWait,
     Function()? then,
@@ -99,7 +100,7 @@ class DSAdsInterstitialCubit extends Cubit<DSAdsInterstitialState> {
             ));
             if (state.loadRetryCount < loadRetryMaxCount) {
               await Future.delayed(loadRetryDelay);
-              if (state.adState == AdState.none) {
+              if (state.adState == AdState.none && !_isDisposed) {
                 _report('ads_interstitial: retry loading');
                 fetchAd(minWait: minWait, then: then);
               }
@@ -133,9 +134,11 @@ class DSAdsInterstitialCubit extends Cubit<DSAdsInterstitialState> {
     ));
   }
 
+  /// Show interstitial ad. Can wait fetching if [dismissAdAfter] more than zero.
+  /// [allowFetchNext] allows start fetching after show interstitial ad.
   Future<void> showAd({
-    // dismissAdAfter - время, по прошествии которого показывать рекламу уже ни в коем случае не нужно
     final Duration dismissAdAfter = const Duration(),
+    final allowFetchNext = true,
     Function()? onAdShow,
     Function()? then,
   }) async {
@@ -161,7 +164,9 @@ class DSAdsInterstitialCubit extends Cubit<DSAdsInterstitialState> {
     if ([AdState.none, AdState.loading].contains(state.adState)) {
       if (dismissAdAfter.inSeconds <= 0) {
         _report('ads_interstitial: showing canceled: not ready immediately (dismiss ad after ${dismissAdAfter.inSeconds}s)');
-        fetchAd();
+        if (allowFetchNext) {
+          fetchAd();
+        }
         then?.call();
       } else {
         var processed = false;
@@ -201,7 +206,9 @@ class DSAdsInterstitialCubit extends Cubit<DSAdsInterstitialState> {
       _report('ads_interstitial: showing canceled by error');
       then?.call();
       cancelCurrentAd();
-      fetchAd();
+      if (allowFetchNext) {
+        fetchAd();
+      }
       return;
     }
 
@@ -227,7 +234,9 @@ class DSAdsInterstitialCubit extends Cubit<DSAdsInterstitialState> {
               adState: AdState.none,
               lastShowedTime: DateTime.now(),
             ));
-            fetchAd(minWait: const Duration());
+            if (allowFetchNext) {
+              fetchAd(minWait: const Duration());
+            }
             // если перенести then?.call() сюда, возникает краткий показ предыдущего экрана при закрытии интерстишла
           } catch (e, stack) {
             Fimber.e('$e', stacktrace: stack);
@@ -247,7 +256,9 @@ class DSAdsInterstitialCubit extends Cubit<DSAdsInterstitialState> {
             Fimber.e('$e', stacktrace: stack);
           }
           then?.call();
-          fetchAd(minWait: const Duration());
+          if (allowFetchNext) {
+            fetchAd(minWait: const Duration());
+          }
         },
         onAdClicked: (ad) {
           try {
