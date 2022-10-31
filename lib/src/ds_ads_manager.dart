@@ -91,9 +91,9 @@ class DSAdsManager {
     }());
   }
 
-  void dismiss() {
+  Future<void> dismiss() async {
     _instance = null;
-    DSAdsNativeLoaderMixin.disposeClass();
+    await DSAdsNativeLoaderMixin.disposeClass();
   }
 
   @internal

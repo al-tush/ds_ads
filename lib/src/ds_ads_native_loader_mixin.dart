@@ -67,11 +67,10 @@ mixin DSAdsNativeLoaderMixin<T extends StatefulWidget> on State<T> {
   }
 
   @internal
-  static void disposeClass() {
-    _loadedAds.forEach((key, value) {
-      value.dispose();
-      _loadedAds.remove(key);
-    });
+  static Future<void> disposeClass() async {
+    while (_loadedAds.isNotEmpty) {
+      await _loadedAds.remove(_loadedAds.keys.first).dispose();
+    }
   }
 
   static void _report(DSAdsNativeLoaderMixin? obj, String eventName, {String? customAdId}) {
