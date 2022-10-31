@@ -126,7 +126,8 @@ class DSAdsInterstitialCubit extends Cubit<DSAdsInterstitialState> {
   }
 
   void cancelCurrentAd() {
-    _report('ads_interstitial: cancel current ad');
+    _report('ads_interstitial: cancel current ad (adState: ${state.adState})');
+    if (state.adState == AdState.showing) return;
     state.ad?.dispose();
     emit(state.copyWith(
       ad: null,
@@ -216,6 +217,9 @@ class DSAdsInterstitialCubit extends Cubit<DSAdsInterstitialState> {
         onAdShowedFullScreenContent: (InterstitialAd ad) {
           try {
             _report('ads_interstitial: showed full screen content');
+            if (_isDisposed) {
+              Fimber.e('ads_interstitial: showing disposed ad', stacktrace: StackTrace.current);
+            }
             emit(state.copyWith(
               adState: AdState.showing,
             ));
@@ -268,16 +272,17 @@ class DSAdsInterstitialCubit extends Cubit<DSAdsInterstitialState> {
           }
         }
     );
-    emit(state.copyWith(
-      adState: AdState.preShowing,
-      lastShowedTime: DateTime.now(),
-    ));
 
     if (_isDisposed) {
       _report('ads_interstitial: showing canceled: manager disposed');
       then?.call();
       return;
     }
+
+    emit(state.copyWith(
+      adState: AdState.preShowing,
+      lastShowedTime: DateTime.now(),
+    ));
 
     _report('ads_interstitial: start showing');
     await ad.show();
