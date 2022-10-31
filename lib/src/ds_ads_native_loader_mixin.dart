@@ -69,7 +69,7 @@ mixin DSAdsNativeLoaderMixin<T extends StatefulWidget> on State<T> {
   @internal
   static Future<void> disposeClass() async {
     while (_loadedAds.isNotEmpty) {
-      await _loadedAds.remove(_loadedAds.keys.first).dispose();
+      await _loadedAds.remove(_loadedAds.keys.first)?.dispose();
     }
   }
 
