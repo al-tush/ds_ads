@@ -1,3 +1,8 @@
+## 0.1.1
+
+* extended support of separated interstitial ad (eg. splash): add parameter allowFetchNext to showAd
+* fixed disposeClass exception
+
 ## 0.1.0
 
 * dark theme support
