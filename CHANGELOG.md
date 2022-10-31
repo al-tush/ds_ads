@@ -1,3 +1,8 @@
+## 0.1.2
+
+* fixed destroying the displayed interstitial ad
+* build fixed
+
 ## 0.1.1
 
 * extended support of separated interstitial ad (eg. splash): add parameter allowFetchNext to showAd
