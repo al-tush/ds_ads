@@ -298,6 +298,7 @@ class DSAdsInterstitialCubit extends Cubit<DSAdsInterstitialState> {
       adState: DSAdState.preShowing,
       lastShowedTime: DateTime.now(),
     ));
+    DSAdsManager.instance.emitEvent(DSAdsInterstitialPreShowingEvent._(ad: ad));
 
     _report('ads_interstitial: start showing', location: location);
     await ad.show();

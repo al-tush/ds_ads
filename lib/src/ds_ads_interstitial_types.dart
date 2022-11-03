@@ -20,6 +20,14 @@ class DSAdsInterstitialLoadFailedEvent extends DSAdsInterstitialEvent {
   });
 }
 
+class DSAdsInterstitialPreShowingEvent extends DSAdsInterstitialEvent {
+  final Ad ad;
+
+  const DSAdsInterstitialPreShowingEvent._({
+    required this.ad,
+  });
+}
+
 class DSAdsInterstitialShowedEvent extends DSAdsInterstitialEvent {
   final Ad ad;
 
