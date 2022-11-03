@@ -26,6 +26,14 @@ abstract class DSAppAdsState {
   Brightness get brightness;
 }
 
+enum DSAdState {
+  none,
+  loading,
+  loaded,
+  preShowing,
+  showing,
+}
+
 @immutable
 abstract class DSAdsEvent {
   const DSAdsEvent();
