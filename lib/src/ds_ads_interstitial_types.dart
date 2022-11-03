@@ -1,6 +1,10 @@
 part of 'ds_ads_interstitial_cubit.dart';
 
-class DSAdsInterstitialLoadedEvent extends DSAdsEvent {
+abstract class DSAdsInterstitialEvent extends DSAdsEvent {
+  const DSAdsInterstitialEvent();
+}
+
+class DSAdsInterstitialLoadedEvent extends DSAdsInterstitialEvent {
   final Ad ad;
 
   const DSAdsInterstitialLoadedEvent._({
@@ -8,7 +12,7 @@ class DSAdsInterstitialLoadedEvent extends DSAdsEvent {
   });
 }
 
-class DSAdsInterstitialLoadFailedEvent extends DSAdsEvent {
+class DSAdsInterstitialLoadFailedEvent extends DSAdsInterstitialEvent {
   final LoadAdError err;
 
   const DSAdsInterstitialLoadFailedEvent._({
@@ -16,7 +20,7 @@ class DSAdsInterstitialLoadFailedEvent extends DSAdsEvent {
   });
 }
 
-class DSAdsInterstitialShowedEvent extends DSAdsEvent {
+class DSAdsInterstitialShowedEvent extends DSAdsInterstitialEvent {
   final Ad ad;
 
   const DSAdsInterstitialShowedEvent._({
@@ -27,11 +31,11 @@ class DSAdsInterstitialShowedEvent extends DSAdsEvent {
 
 /// Error when displaying advertisements
 /// This event allows the next advertisement to be loaded immediately after the event occurs
-class DSAdsInterstitialShowErrorEvent extends DSAdsEvent {
+class DSAdsInterstitialShowErrorEvent extends DSAdsInterstitialEvent {
   const DSAdsInterstitialShowErrorEvent._();
 }
 
-class DSAdsInterstitialShowDismissedEvent extends DSAdsEvent {
+class DSAdsInterstitialShowDismissedEvent extends DSAdsInterstitialEvent {
   final Ad ad;
 
   const DSAdsInterstitialShowDismissedEvent._({
