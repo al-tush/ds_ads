@@ -2,6 +2,7 @@ import 'dart:async';
 
 import 'package:ds_ads/src/ds_ads_interstitial_cubit.dart';
 import 'package:ds_ads/src/ds_ads_native_loader_mixin.dart';
+import 'package:firebase_remote_config/firebase_remote_config.dart';
 import 'package:freezed_annotation/freezed_annotation.dart';
 import 'package:google_mobile_ads/google_mobile_ads.dart';
 
@@ -37,6 +38,7 @@ class DSAdsManager {
   final Duration defaultFetchAdDelay;
   final bool defaultShowNativeAdProgress;
   final DSNativeAdBannerStyle nativeAdBannerStyle;
+  final FirebaseRemoteConfig? remoteConfig;
 
   DSAdsManager({
     required this.onPaidEvent,
@@ -47,6 +49,7 @@ class DSAdsManager {
     this.nativeUnitId,
     this.defaultFetchAdDelay = const Duration(),
     this.defaultShowNativeAdProgress = false,
+    this.remoteConfig,
   }) :
     _adsInterstitialCubit = interstitialUnitId != null
         ? DSAdsInterstitialCubit(adUnitId: interstitialUnitId)

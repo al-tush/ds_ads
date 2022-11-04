@@ -45,6 +45,18 @@ class DSAdsInterstitialCubit extends Cubit<DSAdsInterstitialState> {
     });
   }
 
+  static bool _isDisabled(String location) {
+    if (DSAdsManager.instance.remoteConfig?.getBool('ds_ads_interstitial_disabled') == true) {
+      Fimber.i('ads_interstitial: disabled');
+      return true;
+    }
+    if (DSAdsManager.instance.remoteConfig?.getBool('ds_ads_interstitial_item_disabled_$location') == true) {
+      Fimber.i('ads_interstitial: disabled location $location');
+      return true;
+    }
+    return false;
+  }
+
   /// Fetch interstitial ad
   void fetchAd({
     required final String location,
@@ -52,6 +64,11 @@ class DSAdsInterstitialCubit extends Cubit<DSAdsInterstitialState> {
     final Function()? then,
   }) {
     if (DSAdsManager.instance.appState.isPremium || _isDisposed) {
+      then?.call();
+      return;
+    }
+
+    if (_isDisabled(location)) {
       then?.call();
       return;
     }
@@ -149,6 +166,11 @@ class DSAdsInterstitialCubit extends Cubit<DSAdsInterstitialState> {
     final Function()? then,
   }) async {
     if (DSAdsManager.instance.appState.isPremium || _isDisposed) {
+      then?.call();
+      return;
+    }
+
+    if (_isDisabled(location)) {
       then?.call();
       return;
     }

@@ -99,9 +99,23 @@ mixin DSAdsNativeLoaderMixin<T extends StatefulWidget> on State<T> {
 
   static var _isBannerLoading = false;
 
+  static bool _isDisabled(String location) {
+    if (DSAdsManager.instance.remoteConfig?.getBool('ds_ads_native_disabled') == true) {
+      Fimber.i('ads_native: disabled');
+      return true;
+    }
+    if (DSAdsManager.instance.remoteConfig?.getBool('ds_ads_native_item_disabled_$location') == true) {
+      Fimber.i('ads_native: disabled location $location');
+      return true;
+    }
+    return false;
+  }
+
   static Future<void> fetchAd({
     required final String location,
   }) async {
+    if (_isDisabled(location)) return;
+
     final adUnitId = DSAdsManager.instance.nativeUnitId;
     assert(adUnitId != null, 'Pass nativeUnitId to DSAdsManager(...) on app start');
     if (hasPreloadedAd) {
@@ -193,6 +207,8 @@ mixin DSAdsNativeLoaderMixin<T extends StatefulWidget> on State<T> {
   }) {
     if (!DSAdsManager.instance.isAdAvailable) return const SizedBox();
     if (DSAdsManager.instance.appState.isPremium) return const SizedBox();
+    if (_isDisabled(nativeAdLocation)) return const SizedBox();
+
     final child = SizedBox(
       height: nativeAdHeight,
       child: isLoaded
