@@ -159,9 +159,11 @@ class DSAdsInterstitialCubit extends Cubit<DSAdsInterstitialState> {
   /// Show interstitial ad. Can wait fetching if [dismissAdAfter] more than zero.
   /// [allowFetchNext] allows start fetching after show interstitial ad.
   /// [location] sets location attribute to report (any string allowed)
+  /// [beforeAdShow] allows to cancel ad by return false
   Future<void> showAd({
     required final String location,
     final Duration dismissAdAfter = const Duration(),
+    final Future<bool> Function()? beforeAdShow,
     final Function()? onAdShow,
     final Function()? then,
   }) async {
@@ -313,6 +315,12 @@ class DSAdsInterstitialCubit extends Cubit<DSAdsInterstitialState> {
       _report('ads_interstitial: showing canceled: manager disposed', location: location);
       then?.call();
       DSAdsManager.instance.emitEvent(const DSAdsInterstitialShowErrorEvent._());
+      return;
+    }
+
+    final res = await beforeAdShow?.call() ?? true;
+    if (!res) {
+      _report('ads_interstitial: showing canceled by caller', location: location);
       return;
     }
 
