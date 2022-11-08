@@ -119,11 +119,11 @@ mixin DSAdsNativeLoaderMixin<T extends StatefulWidget> on State<T> {
     final adUnitId = DSAdsManager.instance.nativeUnitId;
     assert(adUnitId != null, 'Pass nativeUnitId to DSAdsManager(...) on app start');
     if (hasPreloadedAd) {
-      Fimber.i('ads_native: banner already loaded', stacktrace: StackTrace.current);
+      Fimber.i('ads_native: banner already loaded (location: $location)');
       return;
     }
     if (_isBannerLoading) {
-      Fimber.i('ads_native: banner is already loading', stacktrace: StackTrace.current);
+      Fimber.i('ads_native: banner is already loading (location: $location)');
       return;
     }
     _report('ads_native: start loading', location: location);
