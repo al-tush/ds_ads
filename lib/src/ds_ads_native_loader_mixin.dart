@@ -1,13 +1,10 @@
 import 'dart:async';
 
 import 'package:ds_ads/ds_ads.dart';
-import 'package:ds_ads/src/ds_ads_manager.dart';
 import 'package:fimber/fimber.dart';
 import 'package:flutter/material.dart';
 import 'package:freezed_annotation/freezed_annotation.dart';
 import 'package:google_mobile_ads/google_mobile_ads.dart';
-
-import 'ds_ads_types.dart';
 
 part 'ds_ads_native_loader_types.dart';
 
@@ -100,12 +97,8 @@ mixin DSAdsNativeLoaderMixin<T extends StatefulWidget> on State<T> {
   static var _isBannerLoading = false;
 
   static bool _isDisabled(String location) {
-    if (DSAdsManager.instance.remoteConfig?.getBool('ds_ads_native_disabled') == true) {
-      Fimber.i('ads_native: disabled');
-      return true;
-    }
-    if (DSAdsManager.instance.remoteConfig?.getBool('ds_ads_native_item_disabled_$location') == true) {
-      Fimber.i('ads_native: disabled location $location');
+    if (DSAdsManager.instance.disableCallback?.call(DSAdSource.native, location) == true) {
+      Fimber.i('ads_native: disabled (location: $location)');
       return true;
     }
     return false;

@@ -1,11 +1,11 @@
-import 'dart:ui';
-
 import 'package:flutter/foundation.dart';
 import 'package:google_mobile_ads/google_mobile_ads.dart';
 
 typedef OnReportEvent = void Function(String eventName, Map<String, Object> attributes);
 typedef OnPaidEvent = void Function(Ad ad, double valueMicros, PrecisionType precision,
     String currencyCode, DSAdSource source);
+
+typedef DSAdDisableCallback = bool Function(DSAdSource source, String location);
 
 enum DSAdSource {
   interstitial,

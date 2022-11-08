@@ -46,12 +46,8 @@ class DSAdsInterstitialCubit extends Cubit<DSAdsInterstitialState> {
   }
 
   static bool _isDisabled(String location) {
-    if (DSAdsManager.instance.remoteConfig?.getBool('ds_ads_interstitial_disabled') == true) {
-      Fimber.i('ads_interstitial: disabled');
-      return true;
-    }
-    if (DSAdsManager.instance.remoteConfig?.getBool('ds_ads_interstitial_item_disabled_$location') == true) {
-      Fimber.i('ads_interstitial: disabled location $location');
+    if (DSAdsManager.instance.disableCallback?.call(DSAdSource.interstitial, location) == true) {
+      Fimber.i('ads_interstitial: disabled (location: $location)');
       return true;
     }
     return false;
