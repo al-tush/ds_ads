@@ -321,6 +321,7 @@ class DSAdsInterstitialCubit extends Cubit<DSAdsInterstitialState> {
     final res = await beforeAdShow?.call() ?? true;
     if (!res) {
       _report('ads_interstitial: showing canceled by caller', location: location);
+      then?.call();
       return;
     }
 
