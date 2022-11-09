@@ -37,7 +37,7 @@ class DSAdsManager {
   final Duration defaultFetchAdDelay;
   final bool defaultShowNativeAdProgress;
   final DSNativeAdBannerStyle nativeAdBannerStyle;
-  final DSAdDisableCallback? disableCallback;
+  final DSIsAdAllowedCallback? isAdAllowedCallback;
 
   DSAdsManager({
     required this.onPaidEvent,
@@ -48,7 +48,7 @@ class DSAdsManager {
     this.nativeUnitId,
     this.defaultFetchAdDelay = const Duration(),
     this.defaultShowNativeAdProgress = false,
-    this.disableCallback,
+    this.isAdAllowedCallback,
   }) :
     _adsInterstitialCubit = interstitialUnitId != null
         ? DSAdsInterstitialCubit(adUnitId: interstitialUnitId)

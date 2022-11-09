@@ -5,7 +5,7 @@ typedef OnReportEvent = void Function(String eventName, Map<String, Object> attr
 typedef OnPaidEvent = void Function(Ad ad, double valueMicros, PrecisionType precision,
     String currencyCode, DSAdSource source);
 
-typedef DSAdDisableCallback = bool Function(DSAdSource source, String location);
+typedef DSIsAdAllowedCallback = bool Function(DSAdSource source, String location);
 
 enum DSAdSource {
   interstitial,

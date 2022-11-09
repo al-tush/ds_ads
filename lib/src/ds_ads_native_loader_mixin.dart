@@ -97,7 +97,7 @@ mixin DSAdsNativeLoaderMixin<T extends StatefulWidget> on State<T> {
   static var _isBannerLoading = false;
 
   static bool _isDisabled(String location) {
-    if (DSAdsManager.instance.disableCallback?.call(DSAdSource.native, location) == true) {
+    if (DSAdsManager.instance.isAdAllowedCallback?.call(DSAdSource.native, location) == false) {
       Fimber.i('ads_native: disabled (location: $location)');
       return true;
     }
