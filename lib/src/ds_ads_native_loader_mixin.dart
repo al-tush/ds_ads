@@ -12,7 +12,7 @@ mixin DSAdsNativeLoaderMixin<T extends StatefulWidget> on State<T> {
   final _adKey = GlobalKey();
   bool get isLoaded => _loadedAds[this] != null;
 
-  String get nativeAdLocation;
+  DSAdLocation get nativeAdLocation;
 
   static final _loadedAds = <DSAdsNativeLoaderMixin?, NativeAd>{};
   static bool get hasPreloadedAd => _loadedAds[null] != null;
@@ -41,6 +41,7 @@ mixin DSAdsNativeLoaderMixin<T extends StatefulWidget> on State<T> {
         }
       }
     } ());
+    _isDisabled(nativeAdLocation);
     unawaited(fetchAd(location: nativeAdLocation));
     _assignAdToMe();
   }
@@ -50,7 +51,7 @@ mixin DSAdsNativeLoaderMixin<T extends StatefulWidget> on State<T> {
     final ad = _loadedAds.remove(this);
     _report('ads_native: dispose (isLoaded: ${ad != null})', location: nativeAdLocation);
     ad?.dispose();
-    unawaited(fetchAd(location: 'internal_dispose'));
+    unawaited(fetchAd(location: const DSAdLocation('internal_dispose')));
     super.dispose();
   }
 
@@ -62,18 +63,18 @@ mixin DSAdsNativeLoaderMixin<T extends StatefulWidget> on State<T> {
   }
 
   static void _report(String eventName, {
-    required final String location,
+    required final DSAdLocation location,
   }) {
     final adUnitId = DSAdsManager.instance.nativeUnitId;
     DSAdsManager.instance.onReportEvent?.call(eventName, {
-      'location': location,
+      'location': location.val,
       'adUnitId': adUnitId ?? 'unknown',
     });
   }
 
-  static String _getLocationByAd(Ad ad) {
+  static DSAdLocation _getLocationByAd(Ad ad) {
     final obj = _loadedAds.entries.firstWhere((e) => e.value == ad).key;
-    return obj?.nativeAdLocation ?? 'adUnassigned';
+    return obj?.nativeAdLocation ?? const DSAdLocation('internal_unassigned');
   }
 
   static String _getFactoryId() {
@@ -94,9 +95,17 @@ mixin DSAdsNativeLoaderMixin<T extends StatefulWidget> on State<T> {
     }
   }
 
-  static var _isBannerLoading = false;
+  static final _locationErrReports = <DSAdLocation>{};
 
-  static bool _isDisabled(String location) {
+  static bool _isDisabled(DSAdLocation location) {
+    if (!location.isInternal && DSAdsManager.instance.locations?.contains(location) == false) {
+      final msg = 'ads_native: location $location not in locations';
+      assert(false, msg);
+      if (!_locationErrReports.contains(location)) {
+        _locationErrReports.add(location);
+        Fimber.e(msg, stacktrace: StackTrace.current);
+      }
+    }
     if (DSAdsManager.instance.isAdAllowedCallback?.call(DSAdSource.native, location) == false) {
       Fimber.i('ads_native: disabled (location: $location)');
       return true;
@@ -104,8 +113,10 @@ mixin DSAdsNativeLoaderMixin<T extends StatefulWidget> on State<T> {
     return false;
   }
 
+  static var _isBannerLoading = false;
+
   static Future<void> fetchAd({
-    required final String location,
+    required final DSAdLocation location,
   }) async {
     if (_isDisabled(location)) return;
 

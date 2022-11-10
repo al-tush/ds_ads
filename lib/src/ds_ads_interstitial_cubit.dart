@@ -32,20 +32,30 @@ class DSAdsInterstitialCubit extends Cubit<DSAdsInterstitialState> {
 
   void dispose() {
     _isDisposed = true;
-    cancelCurrentAd(location: 'internal_dispose');
+    cancelCurrentAd(location: const DSAdLocation('internal_dispose'));
   }
 
   void _report(String eventName, {
-    required String location,
+    required DSAdLocation location,
     String? customAdId,
   }) {
     DSAdsManager.instance.onReportEvent?.call(eventName, {
       'adUnitId': customAdId ?? adUnitId,
-      'location': location,
+      'location': location.val,
     });
   }
 
-  static bool _isDisabled(String location) {
+  static final _locationErrReports = <DSAdLocation>{};
+
+  static bool _isDisabled(DSAdLocation location) {
+    if (!location.isInternal && DSAdsManager.instance.locations?.contains(location) == false) {
+      final msg = 'ads_interstitial: location $location not in locations';
+      assert(false, msg);
+      if (!_locationErrReports.contains(location)) {
+        _locationErrReports.add(location);
+        Fimber.e(msg, stacktrace: StackTrace.current);
+      }
+    }
     if (DSAdsManager.instance.isAdAllowedCallback?.call(DSAdSource.interstitial, location) == false) {
       Fimber.i('ads_interstitial: disabled (location: $location)');
       return true;
@@ -55,7 +65,7 @@ class DSAdsInterstitialCubit extends Cubit<DSAdsInterstitialState> {
 
   /// Fetch interstitial ad
   void fetchAd({
-    required final String location,
+    required final DSAdLocation location,
     final Duration? fetchDelay,
     final Function()? then,
   }) {
@@ -141,7 +151,7 @@ class DSAdsInterstitialCubit extends Cubit<DSAdsInterstitialState> {
   }
 
   void cancelCurrentAd({
-    required final String location,
+    required final DSAdLocation location,
   }) {
     _report('ads_interstitial: cancel current ad (adState: ${state.adState})', location: location);
     if (state.adState == DSAdState.showing) return;
@@ -157,7 +167,7 @@ class DSAdsInterstitialCubit extends Cubit<DSAdsInterstitialState> {
   /// [location] sets location attribute to report (any string allowed)
   /// [beforeAdShow] allows to cancel ad by return false
   Future<void> showAd({
-    required final String location,
+    required final DSAdLocation location,
     final Duration dismissAdAfter = const Duration(),
     final Future<bool> Function()? beforeAdShow,
     final Function()? onAdShow,

@@ -5,11 +5,25 @@ typedef OnReportEvent = void Function(String eventName, Map<String, Object> attr
 typedef OnPaidEvent = void Function(Ad ad, double valueMicros, PrecisionType precision,
     String currencyCode, DSAdSource source);
 
-typedef DSIsAdAllowedCallback = bool Function(DSAdSource source, String location);
+typedef DSIsAdAllowedCallback = bool Function(DSAdSource source, DSAdLocation location);
 
 enum DSAdSource {
   interstitial,
   native
+}
+
+@immutable
+class DSAdLocation {
+  final String val;
+  const DSAdLocation(this.val);
+
+  bool get isInternal => val.startsWith('internal_');
+
+  @override
+  int get hashCode => val.hashCode;
+
+  @override
+  bool operator ==(other) => other is DSAdLocation && val == other.val;
 }
 
 enum DSNativeAdBannerStyle {
