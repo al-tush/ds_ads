@@ -24,6 +24,9 @@ class DSAdLocation {
 
   @override
   bool operator ==(other) => other is DSAdLocation && val == other.val;
+
+  @override
+  String toString() => val;
 }
 
 enum DSNativeAdBannerStyle {
