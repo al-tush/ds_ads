@@ -173,6 +173,8 @@ class DSAdsInterstitialCubit extends Cubit<DSAdsInterstitialState> {
     final Function()? onAdShow,
     final Function()? then,
   }) async {
+    assert(!location.isInternal);
+
     if (DSAdsManager.instance.appState.isPremium || _isDisposed) {
       then?.call();
       return;

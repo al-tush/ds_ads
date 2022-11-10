@@ -209,6 +209,7 @@ mixin DSAdsNativeLoaderMixin<T extends StatefulWidget> on State<T> {
     final NativeAdBuilder? builder,
     final bool? showProgress,
   }) {
+    assert(!nativeAdLocation.isInternal);
     if (!DSAdsManager.instance.isAdAvailable) return const SizedBox();
     if (DSAdsManager.instance.appState.isPremium) return const SizedBox();
     if (_isDisabled(nativeAdLocation)) return const SizedBox();
