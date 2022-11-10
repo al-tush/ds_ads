@@ -1,3 +1,14 @@
+## 0.2.0
+* added beforeAdShow callback to DSAdsInterstitialCubit.showAd
+* added events base classes: DSAdsInterstitialEvent and DSAdsNativeEvent
+* allowed to dynamically bloc ads loading and showing by DSAdsManager.isAdAllowedCallback
+* allowed to use google_mobile_ads 1.3.0 (for experimental purposes)
+
+BREAKING CHANGES
+* location attribute is strictly typified
+* defaultFetchAdWait renamed to defaultFetchAdDelay and now it's deprecated
+* AdState renamed to DSAdState
+
 ## 0.1.2
 
 * fixed destroying the displayed interstitial ad

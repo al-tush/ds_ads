@@ -1,6 +1,6 @@
 name: ds_ads
 description: Ads components for sect.dev (https://sect.dev/)
-version: 0.1.2
+version: 0.2.0
 repository: https://github.com/altush1983/ds_ads
 
 environment:
