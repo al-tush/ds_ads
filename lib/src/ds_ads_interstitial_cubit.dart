@@ -1,6 +1,9 @@
 import 'dart:async';
 
 import 'package:ds_ads/src/ds_ads_manager.dart';
+import 'package:ds_ads/src/generic_ads/export.dart';
+import 'package:ds_ads/src/google_ads/export.dart';
+import 'package:ds_ads/src/yandex_ads/export.dart';
 import 'package:fimber/fimber.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:google_mobile_ads/google_mobile_ads.dart';
@@ -11,14 +14,36 @@ import 'ds_ads_types.dart';
 part 'ds_ads_interstitial_types.dart';
 
 class DSAdsInterstitialCubit extends Cubit<DSAdsInterstitialState> {
-  final String adUnitId;
+  String get adUnitId {
+    final mediation = DSAdsManager.instance.currentMediation;
+    if (mediation == null) {
+      return 'noMediation';
+    }
+    switch (type) {
+      case DSAdsInterstitialType.def:
+        switch (mediation) {
+          case DSAdMediation.google:
+            return DSAdsManager.instance.interstitialGoogleUnitId!;
+          case DSAdMediation.yandex:
+            return DSAdsManager.instance.interstitialYandexUnitId!;
+        }
+      case DSAdsInterstitialType.splash:
+        switch (mediation) {
+          case DSAdMediation.google:
+            return DSAdsManager.instance.interstitialSplashGoogleUnitId!;
+          case DSAdMediation.yandex:
+            return DSAdsManager.instance.interstitialSplashYandexUnitId!;
+        }
+    }
+  }
+  final DSAdsInterstitialType type;
   final int loadRetryMaxCount;
   final Duration loadRetryDelay;
 
   var _isDisposed = false;
 
   DSAdsInterstitialCubit({
-    required this.adUnitId,
+    required this.type,
     this.loadRetryMaxCount = 3,
     this.loadRetryDelay = const Duration(seconds: 1),
   })
@@ -38,10 +63,13 @@ class DSAdsInterstitialCubit extends Cubit<DSAdsInterstitialState> {
   void _report(String eventName, {
     required DSAdLocation location,
     String? customAdId,
+    Map<String, Object>? attributes,
   }) {
     DSAdsManager.instance.onReportEvent?.call(eventName, {
       'adUnitId': customAdId ?? adUnitId,
       'location': location.val,
+      'mediation': '${DSAdsManager.instance.currentMediation}',
+      ...?attributes,
     });
   }
 
@@ -58,6 +86,10 @@ class DSAdsInterstitialCubit extends Cubit<DSAdsInterstitialState> {
     }
     if (DSAdsManager.instance.isAdAllowedCallback?.call(DSAdSource.interstitial, location) == false) {
       Fimber.i('ads_interstitial: disabled (location: $location)');
+      return true;
+    }
+    if (DSAdsManager.instance.currentMediation == null) {
+      Fimber.i('ads_interstitial: disabled (no mediation)');
       return true;
     }
     return false;
@@ -89,61 +121,147 @@ class DSAdsInterstitialCubit extends Cubit<DSAdsInterstitialState> {
     }
 
     _report('ads_interstitial: start loading', location: location);
-    InterstitialAd.load(
-      adUnitId: adUnitId,
-      request: const AdRequest(),
-      adLoadCallback: InterstitialAdLoadCallback(
-        onAdLoaded: (ad) async {
-          try {
-            _report('ads_interstitial: loaded', location: location, customAdId: ad.adUnitId);
-            ad.onPaidEvent = (ad, valueMicros, precision, currencyCode) {
-              DSAdsManager.instance.onPaidEvent(ad, valueMicros, precision, currencyCode, DSAdSource.interstitial);
-            };
+    switch (DSAdsManager.instance.currentMediation!) {
+      case DSAdMediation.google:
+        InterstitialAd.load(
+          adUnitId: adUnitId,
+          request: const AdRequest(),
+          adLoadCallback: InterstitialAdLoadCallback(
+            onAdLoaded: (ad) async {
+              try {
+                _report('ads_interstitial: loaded', location: location, customAdId: ad.adUnitId);
+                ad.onPaidEvent = (ad, valueMicros, precision, currencyCode) {
+                  DSAdsManager.instance.onPaidEvent(ad, valueMicros, precision, currencyCode, DSAdSource.interstitial);
+                };
 
-            await state.ad?.dispose();
-            emit(state.copyWith(
-              ad: ad,
-              adState: DSAdState.loaded,
-              loadedTime: DateTime.now(),
-              loadRetryCount: 0,
-            ));
+                await state.ad?.dispose();
+                final dsAd = DSGoogleInterstitialAd(ad);
+                emit(state.copyWith(
+                  ad: dsAd,
+                  adState: DSAdState.loaded,
+                  loadedTime: DateTime.now(),
+                  loadRetryCount: 0,
+                ));
 
-            then?.call();
-            DSAdsManager.instance.emitEvent(DSAdsInterstitialLoadedEvent._(ad: ad));
-          } catch (e, stack) {
-            Fimber.e('$e', stacktrace: stack);
-          }
-        },
-        onAdFailedToLoad: (err) async {
-          try {
-            await state.ad?.dispose();
-            emit(state.copyWith(
-              ad: null,
-              adState: DSAdState.none,
-              loadRetryCount: state.loadRetryCount + 1,
-            ));
-            if (state.loadRetryCount < loadRetryMaxCount) {
-              await Future.delayed(loadRetryDelay);
-              if (state.adState == DSAdState.none && !_isDisposed) {
-                _report('ads_interstitial: retry loading', location: location);
-                fetchAd(location: location, fetchDelay: fetchDelay, then: then);
+                then?.call();
+                DSAdsManager.instance.emitEvent(DSAdsInterstitialLoadedEvent._(ad: dsAd));
+              } catch (e, stack) {
+                Fimber.e('$e', stacktrace: stack);
               }
-            } else {
-              _report('ads_interstitial: failed to load', location: location);
-              Fimber.w('$err', stacktrace: StackTrace.current);
+            },
+            onAdFailedToLoad: (err) async {
+              try {
+                await state.ad?.dispose();
+                emit(state.copyWith(
+                  ad: null,
+                  adState: DSAdState.error,
+                  loadRetryCount: state.loadRetryCount + 1,
+                ));
+                _report('ads_interstitial: failed to load', location: location, attributes: {
+                  'error_text': err.message,
+                  'error_code': err.code,
+                });
+                final oldMediation = DSAdsManager.instance.currentMediation;
+                await DSAdsManager.instance.onLoadAdError.call(err.code, err.message, DSAdSource.interstitial);
+                if (DSAdsManager.instance.currentMediation != oldMediation) {
+                  emit(state.copyWith(
+                    loadRetryCount: 0,
+                  ));
+                }
+                if (state.loadRetryCount < loadRetryMaxCount) {
+                  await Future.delayed(loadRetryDelay);
+                  if ({DSAdState.none, DSAdState.error}.contains(state.adState) && !_isDisposed) {
+                    _report('ads_interstitial: retry loading', location: location);
+                    fetchAd(location: location, fetchDelay: fetchDelay, then: then);
+                  }
+                } else {
+                  Fimber.w('$err', stacktrace: StackTrace.current);
+                  emit(state.copyWith(
+                    ad: null,
+                    adState: DSAdState.none,
+                    loadedTime: DateTime.now(),
+                  ));
+                  then?.call();
+                  DSAdsManager.instance.emitEvent(DSAdsInterstitialLoadFailedEvent._(
+                    errCode: err.code,
+                    errText: err.message,
+                  ));
+                }
+              } catch (e, stack) {
+                Fimber.e('$e', stacktrace: stack);
+              }
+            },
+          ),
+        );
+        break;
+      case DSAdMediation.yandex:
+        // ToDo: deduplicate with DSAdMediation.google case
+        YandexAds.instance.loadInterstitial(
+          adUnitId: adUnitId,
+          onAdLoaded: (YandexInterstitialAd ad) async {
+            try {
+              _report('ads_interstitial: loaded', location: location, customAdId: ad.adUnitId);
+              // ToDo: implement
+              // ad.onPaidEvent = (ad, valueMicros, precision, currencyCode) {
+              //   DSAdsManager.instance.onPaidEvent(ad, valueMicros, precision, currencyCode, DSAdSource.interstitial);
+              // };
+
+              emit(state.copyWith(
+                ad: ad,
+                adState: DSAdState.loaded,
+                loadedTime: DateTime.now(),
+                loadRetryCount: 0,
+              ));
+
+              then?.call();
+              DSAdsManager.instance.emitEvent(DSAdsInterstitialLoadedEvent._(ad: ad));
+            } catch (e, stack) {
+              Fimber.e('$e', stacktrace: stack);
+            }
+          },
+          onAdFailedToLoad: (YandexInterstitialAd ad, int errCode, String errDescription) async {
+            try {
               emit(state.copyWith(
                 ad: null,
-                loadedTime: DateTime.now(),
+                adState: DSAdState.error,
+                loadRetryCount: state.loadRetryCount + 1,
               ));
-              then?.call();
-              DSAdsManager.instance.emitEvent(DSAdsInterstitialLoadFailedEvent._(err: err));
+              _report('ads_interstitial: failed to load', location: location, attributes: {
+                'error_text': errDescription,
+                'error_code': errCode,
+              });
+              final oldMediation = DSAdsManager.instance.currentMediation;
+              await DSAdsManager.instance.onLoadAdError.call(errCode, errDescription, DSAdSource.interstitial);
+              if (DSAdsManager.instance.currentMediation != oldMediation) {
+                emit(state.copyWith(
+                  loadRetryCount: 0,
+                ));
+              }
+              if (state.loadRetryCount < loadRetryMaxCount) {
+                await Future.delayed(loadRetryDelay);
+                if ({DSAdState.none, DSAdState.error}.contains(state.adState) && !_isDisposed) {
+                  _report('ads_interstitial: retry loading', location: location);
+                  fetchAd(location: location, fetchDelay: fetchDelay, then: then);
+                }
+              } else {
+                Fimber.w('$errDescription ($errCode)', stacktrace: StackTrace.current);
+                emit(state.copyWith(
+                  ad: null,
+                  adState: DSAdState.none,
+                  loadedTime: DateTime.now(),
+                ));
+                then?.call();
+                DSAdsManager.instance.emitEvent(DSAdsInterstitialLoadFailedEvent._(
+                  errCode: errCode,
+                  errText: errDescription,
+                ));
+              }
+            } catch (e, stack) {
+              Fimber.e('$e', stacktrace: stack);
             }
-          } catch (e, stack) {
-            Fimber.e('$e', stacktrace: stack);
-          }
-        },
-      ),
-    );
+          },
+        );
+    }
 
     emit(state.copyWith(
       adState: DSAdState.loading,
@@ -199,7 +317,7 @@ class DSAdsInterstitialCubit extends Cubit<DSAdsInterstitialState> {
       return;
     }
 
-    if ([DSAdState.none, DSAdState.loading].contains(state.adState)) {
+    if ([DSAdState.none, DSAdState.loading, DSAdState.error].contains(state.adState)) {
       if (dismissAdAfter.inSeconds <= 0) {
         _report('ads_interstitial: showing canceled: not ready immediately (dismiss ad after ${dismissAdAfter.inSeconds}s)',
           location: location,
@@ -219,7 +337,7 @@ class DSAdsInterstitialCubit extends Cubit<DSAdsInterstitialState> {
         fetchAd(
           location: location,
           then: () async {
-            while (state.adState == DSAdState.loading) {
+            while (state.adState == DSAdState.loading || state.adState == DSAdState.error) {
               await Future.delayed(const Duration(milliseconds: 100));
             }
             if (processed) return;
@@ -255,69 +373,67 @@ class DSAdsInterstitialCubit extends Cubit<DSAdsInterstitialState> {
       return;
     }
 
-    ad.fullScreenContentCallback = FullScreenContentCallback(
-        onAdImpression: (ad) {
-          try {
-            _report('ads_interstitial: impression', location: location);
-          } catch (e, stack) {
-            Fimber.e('$e', stacktrace: stack);
-          }
-        },
-        onAdShowedFullScreenContent: (ad) {
-          try {
-            _report('ads_interstitial: showed full screen content', location: location);
-            if (_isDisposed) {
-              Fimber.e('ads_interstitial: showing disposed ad', stacktrace: StackTrace.current);
-            }
-            emit(state.copyWith(
-              adState: DSAdState.showing,
-            ));
-            onAdShow?.call();
-            DSAdsManager.instance.emitEvent(DSAdsInterstitialShowedEvent._(ad: ad));
-          } catch (e, stack) {
-            Fimber.e('$e', stacktrace: stack);
-          }
-          then?.call();
-        },
-        onAdDismissedFullScreenContent: (InterstitialAd ad) {
-          try {
-            _report('ads_interstitial: full screen content dismissed', location: location);
-            ad.dispose();
-            emit(state.copyWith(
-              ad: null,
-              adState: DSAdState.none,
-              lastShowedTime: DateTime.now(),
-            ));
-            // если перенести then?.call() сюда, возникает краткий показ предыдущего экрана при закрытии интерстишла
-            DSAdsManager.instance.emitEvent(DSAdsInterstitialShowDismissedEvent._(ad: ad));
-          } catch (e, stack) {
-            Fimber.e('$e', stacktrace: stack);
-          }
-        },
-        onAdFailedToShowFullScreenContent: (ad, error) {
-          try {
-            _report('ads_interstitial: showing canceled by error', location: location);
-            Fimber.e('$error', stacktrace: StackTrace.current);
-            ad.dispose();
-            emit(state.copyWith(
-              ad: null,
-              adState: DSAdState.none,
-              lastShowedTime: DateTime.now(),
-            ));
-          } catch (e, stack) {
-            Fimber.e('$e', stacktrace: stack);
-          }
-          then?.call();
-          DSAdsManager.instance.emitEvent(const DSAdsInterstitialShowErrorEvent._());
-        },
-        onAdClicked: (ad) {
-          try {
-            _report('ads_interstitial: ad clicked', location: location);
-          } catch (e, stack) {
-            Fimber.e('$e', stacktrace: stack);
-          }
+    ad.onAdImpression = (ad) {
+      try {
+        _report('ads_interstitial: impression', location: location);
+      } catch (e, stack) {
+        Fimber.e('$e', stacktrace: stack);
+      }
+    };
+    ad.onAdShown = (ad) {
+      try {
+        _report('ads_interstitial: showed full screen content', location: location);
+        if (_isDisposed) {
+          Fimber.e('ads_interstitial: showing disposed ad', stacktrace: StackTrace.current);
         }
-    );
+        emit(state.copyWith(
+          adState: DSAdState.showing,
+        ));
+        onAdShow?.call();
+        DSAdsManager.instance.emitEvent(DSAdsInterstitialShowedEvent._(ad: ad));
+      } catch (e, stack) {
+        Fimber.e('$e', stacktrace: stack);
+      }
+      then?.call();
+    };
+    ad.onAdDismissed = (ad) {
+      try {
+        _report('ads_interstitial: full screen content dismissed', location: location);
+        ad.dispose();
+        emit(state.copyWith(
+          ad: null,
+          adState: DSAdState.none,
+          lastShowedTime: DateTime.now(),
+        ));
+        // если перенести then?.call() сюда, возникает краткий показ предыдущего экрана при закрытии интерстишла
+        DSAdsManager.instance.emitEvent(DSAdsInterstitialShowDismissedEvent._(ad: ad));
+      } catch (e, stack) {
+        Fimber.e('$e', stacktrace: stack);
+      }
+    };
+    ad.onAdFailedToShow = (ad, int errCode, String errText) {
+      try {
+        _report('ads_interstitial: showing canceled by error', location: location);
+        Fimber.e('$errText ($errCode)', stacktrace: StackTrace.current);
+        ad.dispose();
+        emit(state.copyWith(
+          ad: null,
+          adState: DSAdState.none,
+          lastShowedTime: DateTime.now(),
+        ));
+      } catch (e, stack) {
+        Fimber.e('$e', stacktrace: stack);
+      }
+      then?.call();
+      DSAdsManager.instance.emitEvent(const DSAdsInterstitialShowErrorEvent._());
+    };
+    ad.onAdClicked = (ad) {
+      try {
+        _report('ads_interstitial: ad clicked', location: location);
+      } catch (e, stack) {
+        Fimber.e('$e', stacktrace: stack);
+      }
+    };
 
     if (_isDisposed) {
       _report('ads_interstitial: showing canceled: manager disposed', location: location);

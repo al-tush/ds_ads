@@ -1,11 +1,16 @@
 part of 'ds_ads_interstitial_cubit.dart';
 
+enum DSAdsInterstitialType {
+  def,
+  splash
+}
+
 abstract class DSAdsInterstitialEvent extends DSAdsEvent {
   const DSAdsInterstitialEvent();
 }
 
 class DSAdsInterstitialLoadedEvent extends DSAdsInterstitialEvent {
-  final Ad ad;
+  final DSInterstitialAd ad;
 
   const DSAdsInterstitialLoadedEvent._({
     required this.ad,
@@ -13,15 +18,17 @@ class DSAdsInterstitialLoadedEvent extends DSAdsInterstitialEvent {
 }
 
 class DSAdsInterstitialLoadFailedEvent extends DSAdsInterstitialEvent {
-  final LoadAdError err;
+  final int errCode;
+  final String errText;
 
   const DSAdsInterstitialLoadFailedEvent._({
-    required this.err,
+    required this.errCode,
+    required this.errText,
   });
 }
 
 class DSAdsInterstitialPreShowingEvent extends DSAdsInterstitialEvent {
-  final Ad ad;
+  final DSInterstitialAd ad;
 
   const DSAdsInterstitialPreShowingEvent._({
     required this.ad,
@@ -29,7 +36,7 @@ class DSAdsInterstitialPreShowingEvent extends DSAdsInterstitialEvent {
 }
 
 class DSAdsInterstitialShowedEvent extends DSAdsInterstitialEvent {
-  final Ad ad;
+  final DSInterstitialAd ad;
 
   const DSAdsInterstitialShowedEvent._({
     required this.ad,
@@ -44,7 +51,7 @@ class DSAdsInterstitialShowErrorEvent extends DSAdsInterstitialEvent {
 }
 
 class DSAdsInterstitialShowDismissedEvent extends DSAdsInterstitialEvent {
-  final Ad ad;
+  final DSInterstitialAd ad;
 
   const DSAdsInterstitialShowDismissedEvent._({
     required this.ad,

@@ -16,7 +16,7 @@ final _privateConstructorUsedError = UnsupportedError(
 
 /// @nodoc
 mixin _$AdsInterstitialState {
-  InterstitialAd? get ad => throw _privateConstructorUsedError;
+  DSInterstitialAd? get ad => throw _privateConstructorUsedError;
   DSAdState get adState => throw _privateConstructorUsedError;
   DateTime get loadedTime => throw _privateConstructorUsedError;
   DateTime get lastShowedTime => throw _privateConstructorUsedError;
@@ -33,7 +33,7 @@ abstract class $AdsInterstitialStateCopyWith<$Res> {
           $Res Function(DSAdsInterstitialState) then) =
       _$AdsInterstitialStateCopyWithImpl<$Res>;
   $Res call(
-      {InterstitialAd? ad,
+      {DSInterstitialAd? ad,
       DSAdState adState,
       DateTime loadedTime,
       DateTime lastShowedTime,
@@ -61,7 +61,7 @@ class _$AdsInterstitialStateCopyWithImpl<$Res>
       ad: ad == freezed
           ? _value.ad
           : ad // ignore: cast_nullable_to_non_nullable
-              as InterstitialAd?,
+              as DSInterstitialAd?,
       adState: adState == freezed
           ? _value.adState
           : adState // ignore: cast_nullable_to_non_nullable
@@ -91,7 +91,7 @@ abstract class _$$_AdsInterstitialStateDataCopyWith<$Res>
       __$$_AdsInterstitialStateDataCopyWithImpl<$Res>;
   @override
   $Res call(
-      {InterstitialAd? ad,
+      {DSInterstitialAd? ad,
       DSAdState adState,
       DateTime loadedTime,
       DateTime lastShowedTime,
@@ -122,7 +122,7 @@ class __$$_AdsInterstitialStateDataCopyWithImpl<$Res>
       ad: ad == freezed
           ? _value.ad
           : ad // ignore: cast_nullable_to_non_nullable
-              as InterstitialAd?,
+              as DSInterstitialAd?,
       adState: adState == freezed
           ? _value.adState
           : adState // ignore: cast_nullable_to_non_nullable
@@ -154,7 +154,7 @@ class _$_AdsInterstitialStateData implements _AdsInterstitialStateData {
       required this.loadRetryCount});
 
   @override
-  final InterstitialAd? ad;
+  final DSInterstitialAd? ad;
   @override
   final DSAdState adState;
   @override
@@ -202,14 +202,14 @@ class _$_AdsInterstitialStateData implements _AdsInterstitialStateData {
 
 abstract class _AdsInterstitialStateData implements DSAdsInterstitialState {
   factory _AdsInterstitialStateData(
-      {required final InterstitialAd? ad,
+      {required final DSInterstitialAd? ad,
       required final DSAdState adState,
       required final DateTime loadedTime,
       required final DateTime lastShowedTime,
       required final int loadRetryCount}) = _$_AdsInterstitialStateData;
 
   @override
-  InterstitialAd? get ad => throw _privateConstructorUsedError;
+  DSInterstitialAd? get ad => throw _privateConstructorUsedError;
   @override
   DSAdState get adState => throw _privateConstructorUsedError;
   @override

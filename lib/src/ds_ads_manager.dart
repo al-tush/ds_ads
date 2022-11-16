@@ -2,6 +2,8 @@ import 'dart:async';
 
 import 'package:ds_ads/src/ds_ads_interstitial_cubit.dart';
 import 'package:ds_ads/src/ds_ads_native_loader_mixin.dart';
+import 'package:ds_ads/src/yandex_ads/export.dart';
+import 'package:fimber/fimber.dart';
 import 'package:freezed_annotation/freezed_annotation.dart';
 import 'package:google_mobile_ads/google_mobile_ads.dart';
 
@@ -14,27 +16,49 @@ class DSAdsManager {
     return _instance!;
   }
 
-  static DSAdsInterstitialCubit get interstitial {
-    assert(_instance?._adsInterstitialCubit != null, 'Pass interstitialUnitId to AdsManager(...) on app start');
-    return instance._adsInterstitialCubit!;
+  final _nextMediationWait = const Duration(minutes: 1);
+
+  final _adsInterstitialCubit = DSAdsInterstitialCubit(type: DSAdsInterstitialType.def);
+  DSAdsInterstitialCubit? _splashInterstitial;
+
+  static bool get isInitialized => _instance != null;
+
+  static DSAdsInterstitialCubit get interstitial => instance._adsInterstitialCubit;
+  static DSAdsInterstitialCubit get splashInterstitial {
+    if (instance._splashInterstitial == null) {
+      Fimber.i('splash interstitial created');
+      instance._splashInterstitial = DSAdsInterstitialCubit(type: DSAdsInterstitialType.splash);
+    }
+    return instance._splashInterstitial!;
   }
 
-  final DSAdsInterstitialCubit? _adsInterstitialCubit;
+  void disposeSplashInterstitial() {
+    _splashInterstitial?.dispose();
+    _splashInterstitial = null;
+    Fimber.i('splash interstitial disposed');
+  }
 
   var _isAdAvailable = false;
+  DSAdMediation? _currentMediation;
+  final _mediationInitialized = <DSAdMediation>{};
   /// Was the ad successfully loaded at least once in this session
   bool get isAdAvailable => _isAdAvailable;
+  DSAdMediation? get currentMediation => _currentMediation;
 
   final _eventController = StreamController<DSAdsEvent>.broadcast();
 
   Stream<DSAdsEvent> get eventStream => _eventController.stream;
-
+  
+  final List<DSAdMediation> mediationPriorities;
   final OnPaidEvent onPaidEvent;
   final DSAppAdsState appState;
   final OnReportEvent? onReportEvent;
   final Set<DSAdLocation>? locations;
-  final String? interstitialUnitId;
-  final String? nativeUnitId;
+  final String? interstitialGoogleUnitId;
+  final String? interstitialSplashGoogleUnitId;
+  final String? nativeGoogleUnitId;
+  final String? interstitialYandexUnitId;
+  final String? interstitialSplashYandexUnitId;
   final Duration defaultFetchAdDelay;
   final bool defaultShowNativeAdProgress;
   final DSNativeAdBannerStyle nativeAdBannerStyle;
@@ -47,18 +71,23 @@ class DSAdsManager {
   /// [nativeAdBannerStyle] defines the appearance of the native ad unit.
   /// If this [locations] set is defined, the nativeAdLocation method and the location parameter can return only one 
   /// of the values listed in [locations].
+  /// [onLoadAdError] ToDo: TBD
   /// [onReportEvent] is an event handler for the ability to send events to analytics.
   /// [interstitialUnitId] is the default unitId for the interstitial.
   /// [nativeUnitId] unitId for native block.
   /// [isAdAllowedCallback] allows you to dynamically determine whether an ad can be displayed.
   DSAdsManager({
+    required this.mediationPriorities,
     required this.onPaidEvent,
     required this.appState,
     required this.nativeAdBannerStyle,
     this.locations,
     this.onReportEvent,
-    this.interstitialUnitId,
-    this.nativeUnitId,
+    this.interstitialGoogleUnitId,
+    this.interstitialSplashGoogleUnitId,
+    this.nativeGoogleUnitId,
+    this.interstitialYandexUnitId,
+    this.interstitialSplashYandexUnitId,
     this.isAdAllowedCallback,
 
     @Deprecated('looks as useless parameter')
@@ -66,12 +95,17 @@ class DSAdsManager {
     @Deprecated('looks as useless parameter')
     this.defaultShowNativeAdProgress = true,
   }) :
-    _adsInterstitialCubit = interstitialUnitId != null
-        ? DSAdsInterstitialCubit(adUnitId: interstitialUnitId)
-        : null {
-    assert(_instance == null, 'dismiss previous Ads instance before init new');
-    MobileAds.instance.initialize();
+        assert(_instance == null, 'dismiss previous Ads instance before init new'),
+        assert(mediationPriorities.isNotEmpty, 'mediationPriorities should not be empty'),
+        assert(!mediationPriorities.contains(DSAdMediation.google) || interstitialGoogleUnitId?.isNotEmpty == true,
+        'setup interstitialGoogleUnitId or remove DSAdMediation.google from mediationPriorities'),
+        assert(!mediationPriorities.contains(DSAdMediation.yandex) || interstitialYandexUnitId?.isNotEmpty == true,
+        'setup interstitialYandexUnitId or remove DSAdMediation.yandex from mediationPriorities'),
+        assert(interstitialYandexUnitId == null || interstitialYandexUnitId.startsWith('R-M-'),
+        'interstitialYandexUnitId must begin with R-M-')
+  {
     _instance = this;
+    unawaited(_tryNextMediation());
 
     unawaited(() async {
       await for (final event in eventStream) {
@@ -91,4 +125,51 @@ class DSAdsManager {
   void emitEvent(DSAdsEvent event) {
     _eventController.sink.add(event);
   }
+  
+  var _lockMediationTill = DateTime(0);
+  
+  Future<void> _tryNextMediation() async {
+    final DSAdMediation next;
+    if (_currentMediation == null) {
+      if (_lockMediationTill.isAfter(DateTime.now())) return;
+      next = mediationPriorities.first;
+    } else {
+      if (_currentMediation == mediationPriorities.last) {
+        _lockMediationTill = DateTime.now().add(_nextMediationWait);
+        _currentMediation = null;
+        onReportEvent?.call('ads_manager: no next mediation, waiting ${_nextMediationWait.inSeconds}s', {});
+        return;
+      }
+      final curr = mediationPriorities.indexOf(_currentMediation!);
+      next = mediationPriorities[curr + 1];
+    }
+    
+    onReportEvent?.call('ads_manager: select mediation', {
+      'mediation': '$next',
+    });
+    logDeb('555');
+    _currentMediation = next;
+    if (!_mediationInitialized.contains(next)) {
+      _mediationInitialized.add(next);
+      switch (next) {
+        case DSAdMediation.google:
+          await MobileAds.instance.initialize();
+          break;
+        case DSAdMediation.yandex:
+          await YandexAds.instance.initialize();
+          break;
+      }
+      onReportEvent?.call('ads_manager: mediation initialized', {
+        'mediation': '$next',
+      });
+    }
+  }
+  
+  @internal
+  Future<void> onLoadAdError(int errCode, String errText, DSAdSource source) async {
+    if (errCode == 3) {
+      await _tryNextMediation();
+    }
+  }
+  
 }
