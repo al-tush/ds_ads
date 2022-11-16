@@ -6,5 +6,6 @@ linter:
     - unawaited_futures
     - avoid_void_async
 
-# Additional information about this file can be found at
-# https://dart.dev/guides/language/analysis-options
+analyzer:
+  exclude:
+    - example/
