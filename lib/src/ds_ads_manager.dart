@@ -60,7 +60,6 @@ class DSAdsManager {
   final String? interstitialYandexUnitId;
   final String? interstitialSplashYandexUnitId;
   final Duration defaultFetchAdDelay;
-  final bool defaultShowNativeAdProgress;
   final DSNativeAdBannerStyle nativeAdBannerStyle;
   final DSIsAdAllowedCallback? isAdAllowedCallback;
 
@@ -92,8 +91,6 @@ class DSAdsManager {
 
     @Deprecated('looks as useless parameter')
     this.defaultFetchAdDelay = const Duration(),
-    @Deprecated('looks as useless parameter')
-    this.defaultShowNativeAdProgress = true,
   }) :
         assert(_instance == null, 'dismiss previous Ads instance before init new'),
         assert(mediationPriorities.isNotEmpty, 'mediationPriorities should not be empty'),

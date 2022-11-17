@@ -218,7 +218,6 @@ mixin DSAdsNativeLoaderMixin<T extends StatefulWidget> on State<T> {
 
   Widget nativeAdWidget({
     final NativeAdBuilder? builder,
-    final bool? showProgress,
   }) {
     assert(!nativeAdLocation.isInternal);
     if (!DSAdsManager.instance.isAdAvailable) return const SizedBox();
@@ -229,7 +228,7 @@ mixin DSAdsNativeLoaderMixin<T extends StatefulWidget> on State<T> {
       height: nativeAdHeight,
       child: isLoaded
           ? AdWidget(key: _adKey, ad: _loadedAds[this]!)
-          : (showProgress ?? DSAdsManager.instance.defaultShowNativeAdProgress) ? const Center(child: CircularProgressIndicator()) : const SizedBox(),
+          : const Center(child: CircularProgressIndicator()),
     );
     if (builder != null) {
       return builder(context, isLoaded, child);
