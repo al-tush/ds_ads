@@ -1,6 +1,6 @@
 import 'dart:async';
 
-import 'package:ds_ads/src/ds_ads_interstitial_cubit.dart';
+import 'package:ds_ads/src/ds_ads_interstitial.dart';
 import 'package:ds_ads/src/ds_ads_native_loader_mixin.dart';
 import 'package:ds_ads/src/yandex_ads/export.dart';
 import 'package:fimber/fimber.dart';
@@ -18,16 +18,16 @@ class DSAdsManager {
 
   final _nextMediationWait = const Duration(minutes: 1);
 
-  final _adsInterstitialCubit = DSAdsInterstitialCubit(type: DSAdsInterstitialType.def);
-  DSAdsInterstitialCubit? _splashInterstitial;
+  final _adsInterstitialCubit = DSAdsInterstitial(type: DSAdsInterstitialType.def);
+  DSAdsInterstitial? _splashInterstitial;
 
   static bool get isInitialized => _instance != null;
 
-  static DSAdsInterstitialCubit get interstitial => instance._adsInterstitialCubit;
-  static DSAdsInterstitialCubit get splashInterstitial {
+  static DSAdsInterstitial get interstitial => instance._adsInterstitialCubit;
+  static DSAdsInterstitial get splashInterstitial {
     if (instance._splashInterstitial == null) {
       Fimber.i('splash interstitial created');
-      instance._splashInterstitial = DSAdsInterstitialCubit(type: DSAdsInterstitialType.splash);
+      instance._splashInterstitial = DSAdsInterstitial(type: DSAdsInterstitialType.splash);
     }
     return instance._splashInterstitial!;
   }
@@ -144,7 +144,6 @@ class DSAdsManager {
     onReportEvent?.call('ads_manager: select mediation', {
       'mediation': '$next',
     });
-    logDeb('555');
     _currentMediation = next;
     if (!_mediationInitialized.contains(next)) {
       _mediationInitialized.add(next);

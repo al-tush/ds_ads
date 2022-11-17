@@ -1,4 +1,4 @@
-part of 'ds_ads_interstitial_cubit.dart';
+part of 'ds_ads_interstitial.dart';
 
 enum DSAdsInterstitialType {
   def,

@@ -13,7 +13,7 @@ import 'ds_ads_types.dart';
 
 part 'ds_ads_interstitial_types.dart';
 
-class DSAdsInterstitialCubit extends Cubit<DSAdsInterstitialState> {
+class DSAdsInterstitial extends Cubit<DSAdsInterstitialState> {
   String get adUnitId {
     final mediation = DSAdsManager.instance.currentMediation;
     if (mediation == null) {
@@ -42,7 +42,7 @@ class DSAdsInterstitialCubit extends Cubit<DSAdsInterstitialState> {
 
   var _isDisposed = false;
 
-  DSAdsInterstitialCubit({
+  DSAdsInterstitial({
     required this.type,
     this.loadRetryMaxCount = 3,
     this.loadRetryDelay = const Duration(seconds: 1),
