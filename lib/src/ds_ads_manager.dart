@@ -59,7 +59,8 @@ class DSAdsManager {
   final String? nativeGoogleUnitId;
   final String? interstitialYandexUnitId;
   final String? interstitialSplashYandexUnitId;
-  final Duration defaultFetchAdDelay;
+  final Duration interstitialFetchDelay;
+  final Duration interstitialShowLock;
   final DSNativeAdBannerStyle nativeAdBannerStyle;
   final DSIsAdAllowedCallback? isAdAllowedCallback;
 
@@ -75,6 +76,8 @@ class DSAdsManager {
   /// [interstitialUnitId] is the default unitId for the interstitial.
   /// [nativeUnitId] unitId for native block.
   /// [isAdAllowedCallback] allows you to dynamically determine whether an ad can be displayed.
+  /// [interstitialFetchDelay] sets the minimum time after displaying an interstitial before the next interstitial is started to load.
+  /// [interstitialShowLock] the time from the moment the user closes the interstitial for which the interstitials show are blocked.
   DSAdsManager({
     required this.mediationPriorities,
     required this.onPaidEvent,
@@ -89,8 +92,8 @@ class DSAdsManager {
     this.interstitialSplashYandexUnitId,
     this.isAdAllowedCallback,
 
-    @Deprecated('looks as useless parameter')
-    this.defaultFetchAdDelay = const Duration(),
+    this.interstitialFetchDelay = const Duration(),
+    this.interstitialShowLock = const Duration(),
   }) :
         assert(_instance == null, 'dismiss previous Ads instance before init new'),
         assert(mediationPriorities.isNotEmpty, 'mediationPriorities should not be empty'),

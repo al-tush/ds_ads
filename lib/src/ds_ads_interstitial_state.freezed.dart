@@ -18,8 +18,6 @@ final _privateConstructorUsedError = UnsupportedError(
 mixin _$AdsInterstitialState {
   DSInterstitialAd? get ad => throw _privateConstructorUsedError;
   DSAdState get adState => throw _privateConstructorUsedError;
-  DateTime get loadedTime => throw _privateConstructorUsedError;
-  DateTime get lastShowedTime => throw _privateConstructorUsedError;
   int get loadRetryCount => throw _privateConstructorUsedError;
 
   @JsonKey(ignore: true)
@@ -35,8 +33,6 @@ abstract class $AdsInterstitialStateCopyWith<$Res> {
   $Res call(
       {DSInterstitialAd? ad,
       DSAdState adState,
-      DateTime loadedTime,
-      DateTime lastShowedTime,
       int loadRetryCount});
 }
 
@@ -53,8 +49,6 @@ class _$AdsInterstitialStateCopyWithImpl<$Res>
   $Res call({
     Object? ad = freezed,
     Object? adState = freezed,
-    Object? loadedTime = freezed,
-    Object? lastShowedTime = freezed,
     Object? loadRetryCount = freezed,
   }) {
     return _then(_value.copyWith(
@@ -66,14 +60,6 @@ class _$AdsInterstitialStateCopyWithImpl<$Res>
           ? _value.adState
           : adState // ignore: cast_nullable_to_non_nullable
               as DSAdState,
-      loadedTime: loadedTime == freezed
-          ? _value.loadedTime
-          : loadedTime // ignore: cast_nullable_to_non_nullable
-              as DateTime,
-      lastShowedTime: lastShowedTime == freezed
-          ? _value.lastShowedTime
-          : lastShowedTime // ignore: cast_nullable_to_non_nullable
-              as DateTime,
       loadRetryCount: loadRetryCount == freezed
           ? _value.loadRetryCount
           : loadRetryCount // ignore: cast_nullable_to_non_nullable
@@ -93,8 +79,6 @@ abstract class _$$_AdsInterstitialStateDataCopyWith<$Res>
   $Res call(
       {DSInterstitialAd? ad,
       DSAdState adState,
-      DateTime loadedTime,
-      DateTime lastShowedTime,
       int loadRetryCount});
 }
 
@@ -114,8 +98,6 @@ class __$$_AdsInterstitialStateDataCopyWithImpl<$Res>
   $Res call({
     Object? ad = freezed,
     Object? adState = freezed,
-    Object? loadedTime = freezed,
-    Object? lastShowedTime = freezed,
     Object? loadRetryCount = freezed,
   }) {
     return _then(_$_AdsInterstitialStateData(
@@ -127,14 +109,6 @@ class __$$_AdsInterstitialStateDataCopyWithImpl<$Res>
           ? _value.adState
           : adState // ignore: cast_nullable_to_non_nullable
               as DSAdState,
-      loadedTime: loadedTime == freezed
-          ? _value.loadedTime
-          : loadedTime // ignore: cast_nullable_to_non_nullable
-              as DateTime,
-      lastShowedTime: lastShowedTime == freezed
-          ? _value.lastShowedTime
-          : lastShowedTime // ignore: cast_nullable_to_non_nullable
-              as DateTime,
       loadRetryCount: loadRetryCount == freezed
           ? _value.loadRetryCount
           : loadRetryCount // ignore: cast_nullable_to_non_nullable
@@ -149,8 +123,6 @@ class _$_AdsInterstitialStateData implements _AdsInterstitialStateData {
   _$_AdsInterstitialStateData(
       {required this.ad,
       required this.adState,
-      required this.loadedTime,
-      required this.lastShowedTime,
       required this.loadRetryCount});
 
   @override
@@ -158,15 +130,11 @@ class _$_AdsInterstitialStateData implements _AdsInterstitialStateData {
   @override
   final DSAdState adState;
   @override
-  final DateTime loadedTime;
-  @override
-  final DateTime lastShowedTime;
-  @override
   final int loadRetryCount;
 
   @override
   String toString() {
-    return 'AdsInterstitialState(ad: $ad, adState: $adState, loadedTime: $loadedTime, lastShowedTime: $lastShowedTime, loadRetryCount: $loadRetryCount)';
+    return 'AdsInterstitialState(ad: $ad, adState: $adState, loadRetryCount: $loadRetryCount)';
   }
 
   @override
@@ -177,10 +145,6 @@ class _$_AdsInterstitialStateData implements _AdsInterstitialStateData {
             const DeepCollectionEquality().equals(other.ad, ad) &&
             const DeepCollectionEquality().equals(other.adState, adState) &&
             const DeepCollectionEquality()
-                .equals(other.loadedTime, loadedTime) &&
-            const DeepCollectionEquality()
-                .equals(other.lastShowedTime, lastShowedTime) &&
-            const DeepCollectionEquality()
                 .equals(other.loadRetryCount, loadRetryCount));
   }
 
@@ -189,8 +153,6 @@ class _$_AdsInterstitialStateData implements _AdsInterstitialStateData {
       runtimeType,
       const DeepCollectionEquality().hash(ad),
       const DeepCollectionEquality().hash(adState),
-      const DeepCollectionEquality().hash(loadedTime),
-      const DeepCollectionEquality().hash(lastShowedTime),
       const DeepCollectionEquality().hash(loadRetryCount));
 
   @JsonKey(ignore: true)
@@ -204,18 +166,12 @@ abstract class _AdsInterstitialStateData implements DSAdsInterstitialState {
   factory _AdsInterstitialStateData(
       {required final DSInterstitialAd? ad,
       required final DSAdState adState,
-      required final DateTime loadedTime,
-      required final DateTime lastShowedTime,
       required final int loadRetryCount}) = _$_AdsInterstitialStateData;
 
   @override
   DSInterstitialAd? get ad => throw _privateConstructorUsedError;
   @override
   DSAdState get adState => throw _privateConstructorUsedError;
-  @override
-  DateTime get loadedTime => throw _privateConstructorUsedError;
-  @override
-  DateTime get lastShowedTime => throw _privateConstructorUsedError;
   @override
   int get loadRetryCount => throw _privateConstructorUsedError;
   @override

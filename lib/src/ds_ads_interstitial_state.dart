@@ -10,8 +10,6 @@ class DSAdsInterstitialState with _$AdsInterstitialState {
   factory DSAdsInterstitialState({
     required DSInterstitialAd? ad,
     required DSAdState adState,
-    required DateTime loadedTime,
-    required DateTime lastShowedTime,
     required int loadRetryCount,
   }) = _AdsInterstitialStateData;
 }
