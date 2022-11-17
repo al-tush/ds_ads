@@ -1,5 +1,6 @@
 import 'dart:async';
 
+import 'package:ds_ads/src/ds_ads_manager.dart';
 import 'package:fimber/fimber.dart';
 import 'package:flutter/services.dart';
 
@@ -38,7 +39,10 @@ class YandexAds {
             break;
           case 'onImpression':
             final data = args['data'] as String?;
-            Fimber.i('Yandex onImpression $data');
+            DSAdsManager.instance.onReportEvent?.call('yandex_ads: onImpression', {
+              'adUnitId': '${ad?.adUnitId}',
+              'data': '$data',
+            });
             ad!.onAdImpression?.call(ad);
             break;
         }
@@ -50,6 +54,7 @@ class YandexAds {
 
   Future<void> initialize() async {
     await _channel.invokeMethod('init');
+    DSAdsManager.instance.onReportEvent?.call('yandex_ads: initialized', {});
   }
 
   Future<void> loadInterstitial({

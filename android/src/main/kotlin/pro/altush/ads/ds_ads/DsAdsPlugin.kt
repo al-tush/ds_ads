@@ -48,7 +48,6 @@ class DsAdsPlugin: FlutterPlugin, ActivityAware {
           "loadInterstitial" -> {
             val params = call.arguments as List<*>
             val unitId = params[0] as String
-            Timber.i("TEST: loadInterstitial $unitId")
             assert(unitId.startsWith("R-M-"))
             if (interstitials.containsKey(unitId)) {
               result.error("", "$unitId is already loaded", null)
@@ -61,14 +60,12 @@ class DsAdsPlugin: FlutterPlugin, ActivityAware {
 
             inter.setInterstitialAdEventListener(object : InterstitialAdEventListener {
               override fun onAdLoaded() {
-                Timber.i("TEST: onAdLoaded")
                 invokeEvent("onAdLoaded", mapOf(
                         "unitId" to unitId,
                 ))
               }
 
               override fun onAdFailedToLoad(error: AdRequestError) {
-                Timber.i("TEST: onAdFailedToLoad")
                 interstitials.remove(unitId)
                 invokeEvent("onAdFailedToLoad", mapOf(
                         "unitId" to unitId,
@@ -78,14 +75,12 @@ class DsAdsPlugin: FlutterPlugin, ActivityAware {
               }
 
               override fun onAdShown() {
-                Timber.i("TEST: onAdShown")
                 invokeEvent("onAdShown", mapOf(
                         "unitId" to unitId,
                 ))
               }
 
               override fun onAdDismissed() {
-                Timber.i("TEST: onAdDismissed")
                 interstitials.remove(unitId)
                 invokeEvent("onAdDismissed", mapOf(
                         "unitId" to unitId,
@@ -93,22 +88,20 @@ class DsAdsPlugin: FlutterPlugin, ActivityAware {
               }
 
               override fun onAdClicked() {
-                Timber.i("TEST: onAdClicked")
                 invokeEvent("onAdClicked", mapOf(
                         "unitId" to unitId,
                 ))
               }
 
               override fun onLeftApplication() {
-                Timber.i("TEST: onLeftApplication")
+                Timber.i("yandex_ads: onLeftApplication")
               }
 
               override fun onReturnedToApplication() {
-                Timber.i("TEST: onReturnedToApplication")
+                Timber.i("yandex_ads: onReturnedToApplication")
               }
 
               override fun onImpression(data: ImpressionData?) {
-                Timber.i("TEST: onImpression")
                 invokeEvent("onImpression", mapOf(
                         "unitId" to unitId,
                         "data" to data?.rawData,
