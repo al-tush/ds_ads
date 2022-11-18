@@ -138,6 +138,7 @@ mixin DSAdsNativeLoaderMixin<T extends StatefulWidget> on State<T> {
       return;
     }
     _report('ads_native: start loading', location: location);
+    final mediation = DSAdsManager.instance.currentMediation!;
     _isBannerLoading = true;
     await NativeAd(
       factoryId: _getFactoryId(),
@@ -165,11 +166,11 @@ mixin DSAdsNativeLoaderMixin<T extends StatefulWidget> on State<T> {
             _isBannerLoading = false;
             _report('ads_native: failed to load', location: location, attributes: {
               'error_text': err.message,
-              'error_code': err.code,
+              'error_code': '${err.code} ($mediation)',
             });
             DSAdsManager.instance.emitEvent(const DSAdsNativeLoadFailed._());
             await ad.dispose();
-            await DSAdsManager.instance.onLoadAdError.call(err.code, err.message, DSAdSource.native);
+            await DSAdsManager.instance.onLoadAdError.call(err.code, err.message, mediation, DSAdSource.native);
           } catch (e, stack) {
             Fimber.e('$e', stacktrace: stack);
           }

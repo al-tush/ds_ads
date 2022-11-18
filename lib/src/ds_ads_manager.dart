@@ -138,6 +138,11 @@ class DSAdsManager {
         _lockMediationTill = DateTime.now().add(_nextMediationWait);
         _currentMediation = null;
         onReportEvent?.call('ads_manager: no next mediation, waiting ${_nextMediationWait.inSeconds}s', {});
+        Timer(_nextMediationWait, () async {
+          if (currentMediation == null) {
+            await _tryNextMediation();
+          }
+        });
         return;
       }
       final curr = mediationPriorities.indexOf(_currentMediation!);
@@ -165,10 +170,21 @@ class DSAdsManager {
   }
   
   @internal
-  Future<void> onLoadAdError(int errCode, String errText, DSAdSource source) async {
-    if (errCode == 3) {
-      await _tryNextMediation();
+  Future<void> onLoadAdError(int errCode, String errText, DSAdMediation mediation, DSAdSource source) async {
+    switch (mediation) {
+      case DSAdMediation.google:
+      // https://support.google.com/admob/thread/3494603/admob-error-codes-logs?hl=en
+        if (errCode == 3) {
+          await _tryNextMediation();
+        }
+        break;
+      case DSAdMediation.yandex:
+      // https://yandex.com/dev/mobile-ads/doc/android/ref/constant-values.html#com.yandex.mobile.ads.common.AdRequestError.Code.NO_FILL
+        if (errCode == 4) {
+          await _tryNextMediation();
+        }
+        break;
     }
   }
-  
+
 }

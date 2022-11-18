@@ -137,7 +137,8 @@ class DSAdsInterstitial extends Cubit<DSAdsInterstitialState> {
     }
 
     _report('ads_interstitial: start loading', location: location);
-    switch (DSAdsManager.instance.currentMediation!) {
+    final mediation = DSAdsManager.instance.currentMediation!;
+    switch (mediation) {
       case DSAdMediation.google:
         InterstitialAd.load(
           adUnitId: adUnitId,
@@ -145,7 +146,9 @@ class DSAdsInterstitial extends Cubit<DSAdsInterstitialState> {
           adLoadCallback: InterstitialAdLoadCallback(
             onAdLoaded: (ad) async {
               try {
-                _report('ads_interstitial: loaded', location: location, customAdId: ad.adUnitId);
+                _report('ads_interstitial: loaded', location: location, customAdId: ad.adUnitId, attributes: {
+                  'mediation': '$mediation', // override
+                });
                 ad.onPaidEvent = (ad, valueMicros, precision, currencyCode) {
                   DSAdsManager.instance.onPaidEvent(ad, valueMicros, precision, currencyCode, DSAdSource.interstitial);
                 };
@@ -174,10 +177,11 @@ class DSAdsInterstitial extends Cubit<DSAdsInterstitialState> {
                 ));
                 _report('ads_interstitial: failed to load', location: location, attributes: {
                   'error_text': err.message,
-                  'error_code': err.code,
+                  'error_code': '${err.code} ($mediation)',
+                  'mediation': '$mediation', // override
                 });
                 final oldMediation = DSAdsManager.instance.currentMediation;
-                await DSAdsManager.instance.onLoadAdError.call(err.code, err.message, DSAdSource.interstitial);
+                await DSAdsManager.instance.onLoadAdError.call(err.code, err.message, mediation, DSAdSource.interstitial);
                 if (DSAdsManager.instance.currentMediation != oldMediation) {
                   emit(state.copyWith(
                     loadRetryCount: 0,
@@ -186,7 +190,9 @@ class DSAdsInterstitial extends Cubit<DSAdsInterstitialState> {
                 if (state.loadRetryCount < loadRetryMaxCount) {
                   await Future.delayed(loadRetryDelay);
                   if ({DSAdState.none, DSAdState.error}.contains(state.adState) && !_isDisposed) {
-                    _report('ads_interstitial: retry loading', location: location);
+                    _report('ads_interstitial: retry loading', location: location, attributes: {
+                      'mediation': '$mediation', // override
+                    });
                     fetchAd(location: location, then: then);
                   }
                 } else {
@@ -214,7 +220,9 @@ class DSAdsInterstitial extends Cubit<DSAdsInterstitialState> {
           adUnitId: adUnitId,
           onAdLoaded: (YandexInterstitialAd ad) async {
             try {
-              _report('ads_interstitial: loaded', location: location, customAdId: ad.adUnitId);
+              _report('ads_interstitial: loaded', location: location, customAdId: ad.adUnitId, attributes: {
+                'mediation': '$mediation', // override
+              });
               // ToDo: implement
               // ad.onPaidEvent = (ad, valueMicros, precision, currencyCode) {
               //   DSAdsManager.instance.onPaidEvent(ad, valueMicros, precision, currencyCode, DSAdSource.interstitial);
@@ -241,10 +249,11 @@ class DSAdsInterstitial extends Cubit<DSAdsInterstitialState> {
               ));
               _report('ads_interstitial: failed to load', location: location, attributes: {
                 'error_text': errDescription,
-                'error_code': errCode,
+                'error_code': '$errCode ($mediation)',
+                'mediation': '$mediation', // override
               });
               final oldMediation = DSAdsManager.instance.currentMediation;
-              await DSAdsManager.instance.onLoadAdError.call(errCode, errDescription, DSAdSource.interstitial);
+              await DSAdsManager.instance.onLoadAdError.call(errCode, errDescription, mediation, DSAdSource.interstitial);
               if (DSAdsManager.instance.currentMediation != oldMediation) {
                 emit(state.copyWith(
                   loadRetryCount: 0,
@@ -253,7 +262,9 @@ class DSAdsInterstitial extends Cubit<DSAdsInterstitialState> {
               if (state.loadRetryCount < loadRetryMaxCount) {
                 await Future.delayed(loadRetryDelay);
                 if ({DSAdState.none, DSAdState.error}.contains(state.adState) && !_isDisposed) {
-                  _report('ads_interstitial: retry loading', location: location);
+                  _report('ads_interstitial: retry loading', location: location, attributes: {
+                    'mediation': '$mediation', // override
+                  });
                   fetchAd(location: location, then: then);
                 }
               } else {
