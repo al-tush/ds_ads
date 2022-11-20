@@ -2,8 +2,10 @@ import 'package:fimber/fimber.dart';
 import 'package:flutter/foundation.dart';
 import 'package:google_mobile_ads/google_mobile_ads.dart';
 
+import 'generic_ads/export.dart';
+
 typedef OnReportEvent = void Function(String eventName, Map<String, Object> attributes);
-typedef OnPaidEvent = void Function(Ad ad, double valueMicros, PrecisionType precision,
+typedef OnPaidEvent = void Function(DSAd ad, double valueMicros, PrecisionType precision,
     String currencyCode, DSAdSource source);
 
 typedef DSIsAdAllowedCallback = bool Function(DSAdSource source, DSAdLocation location);

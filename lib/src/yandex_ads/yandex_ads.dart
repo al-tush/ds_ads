@@ -1,6 +1,7 @@
 import 'dart:async';
 
 import 'package:ds_ads/src/ds_ads_manager.dart';
+import 'package:ds_ads/src/generic_ads/export.dart';
 import 'package:fimber/fimber.dart';
 import 'package:flutter/services.dart';
 
@@ -59,8 +60,8 @@ class YandexAds {
 
   Future<void> loadInterstitial({
     required String adUnitId,
-    required void Function(YandexInterstitialAd ad)? onAdLoaded,
-    required OnAdFailedToLoad? onAdFailedToLoad,
+    required void Function(DSInterstitialAd ad) onAdLoaded,
+    required OnAdFailedToLoad onAdFailedToLoad,
   }) async {
     assert(adUnitId.startsWith('R-M-'));
     final prevState = _interstitials[adUnitId]?.state;
@@ -83,7 +84,7 @@ class YandexAds {
     );
     bool validateId() {
       if (_interstitials[adUnitId]?.ad.id != adId) {
-        onAdFailedToLoad?.call(ad, -1, 'ds_ads: interstitial ad info replaced');
+        onAdFailedToLoad(ad, -1, 'ds_ads: interstitial ad info replaced');
         return false;
       }
       return true;
@@ -93,13 +94,13 @@ class YandexAds {
       onAdLoaded: (YandexInterstitialAd ad) {
         if (validateId()) {
           ad.setState(YandexAdState.loaded);
-          onAdLoaded?.call(ad);
+          onAdLoaded(ad);
         }
       },
-      onAdFailedToLoad: (YandexInterstitialAd ad, int errCode, String errDescription) {
+      onAdFailedToLoad: (DSInterstitialAd ad, int errCode, String errDescription) {
         if (validateId()) {
           _interstitials.remove(ad.adUnitId);
-          onAdFailedToLoad?.call(ad, errCode, errDescription);
+          onAdFailedToLoad(ad, errCode, errDescription);
         }
       },
     );
@@ -110,7 +111,7 @@ class YandexAds {
     } catch (e, stack) {
       Fimber.e('$e', stacktrace: stack);
       _interstitials.remove(adUnitId);
-      onAdFailedToLoad?.call(ad, -2, 'ds_ads: $e');
+      onAdFailedToLoad(ad, -2, 'ds_ads: $e');
     }
   }
 
@@ -130,5 +131,5 @@ class YandexAds {
     inter.ad.setState(YandexAdState.showing);
     await _channel.invokeMethod('showInterstitial', [ad.adUnitId]);
   }
-  
+
 }

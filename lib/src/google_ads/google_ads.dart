@@ -2,49 +2,66 @@ import 'package:ds_ads/src/generic_ads/export.dart';
 import 'package:google_mobile_ads/google_mobile_ads.dart';
 
 class DSGoogleInterstitialAd extends DSInterstitialAd {
-  final InterstitialAd _ad;
+  InterstitialAd? _ad;
 
-  DSGoogleInterstitialAd(this._ad) {
-    _ad.onPaidEvent = (Ad ad, double valueMicros, PrecisionType precision, String currencyCode) {
-      assert(_ad == ad);
-      onPaidEvent?.call(this, valueMicros, precision, currencyCode);
-    };
-    _ad.fullScreenContentCallback = FullScreenContentCallback(
-        onAdImpression: (ad) {
-          assert(_ad == ad);
-          onAdImpression?.call(this);
-        },
-        onAdShowedFullScreenContent: (ad) {
-          assert(_ad == ad);
-          onAdShown?.call(this);
-        },
-        onAdDismissedFullScreenContent: (InterstitialAd ad) {
-          assert(_ad == ad);
-          onAdDismissed?.call(this);
-        },
-        onAdFailedToShowFullScreenContent: (ad, error) {
-          assert(_ad == ad);
-          onAdFailedToShow?.call(this, error.code, error.message);
-        },
-        onAdClicked: (ad) {
-          assert(_ad == ad);
-          onAdClicked?.call(this);
-        }
+  DSGoogleInterstitialAd({
+    required super.adUnitId,
+  });
+
+  Future<void> load({
+    required void Function(DSInterstitialAd ad) onAdLoaded,
+    required OnAdFailedToLoad onAdFailedToLoad,
+  }) async {
+    await InterstitialAd.load(
+        adUnitId: adUnitId,
+        request: const AdRequest(),
+        adLoadCallback: InterstitialAdLoadCallback(
+          onAdLoaded: (ad) async {
+            _ad = ad;
+            ad.onPaidEvent = (Ad ad, double valueMicros, PrecisionType precision, String currencyCode) {
+              assert(_ad == ad);
+              onPaidEvent?.call(this, valueMicros, precision, currencyCode);
+            };
+            ad.fullScreenContentCallback = FullScreenContentCallback(
+              onAdImpression: (ad) {
+                assert(_ad == ad);
+                onAdImpression?.call(this);
+              },
+              onAdShowedFullScreenContent: (ad) {
+                assert(_ad == ad);
+                onAdShown?.call(this);
+              },
+              onAdDismissedFullScreenContent: (InterstitialAd ad) {
+                assert(_ad == ad);
+                onAdDismissed?.call(this);
+              },
+              onAdFailedToShowFullScreenContent: (ad, error) {
+                assert(_ad == ad);
+                onAdFailedToShow?.call(this, error.code, error.message);
+              },
+              onAdClicked: (ad) {
+                assert(_ad == ad);
+                onAdClicked?.call(this);
+              },
+            );
+            onAdLoaded(this);
+          },
+          onAdFailedToLoad: (LoadAdError error) {
+            onAdFailedToLoad(this, error.code, error.message);
+          },
+        ),
     );
-
   }
 
   @override
-  String get adUnitId => _ad.adUnitId;
-
-  @override
   Future<void> show() async {
-    await _ad.show();
+    await _ad!.show();
   }
 
   @override
   Future<void> dispose() async {
-    await _ad.dispose();
+    await _ad?.dispose();
+    _ad = null;
   }
 
   @override
@@ -59,5 +76,21 @@ class DSGoogleInterstitialAd extends DSInterstitialAd {
   void Function(DSInterstitialAd ad)? onAdClicked;
   @override
   void Function(DSInterstitialAd ad)? onAdImpression;
+
+  @override
+  String get mediationAdapterClassName => '${_ad!.responseInfo?.mediationAdapterClassName}';
+
+}
+
+// ToDo: replace wrapper to full implementation
+class DSNativeAd extends DSAd {
+  final NativeAd ad;
+
+  DSNativeAd({
+    required this.ad,
+  }) : super(adUnitId: ad.adUnitId);
+
+  @override
+  String get mediationAdapterClassName => '${ad.responseInfo?.mediationAdapterClassName}';
 
 }

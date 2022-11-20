@@ -2,13 +2,26 @@ import 'package:google_mobile_ads/google_mobile_ads.dart';
 
 typedef DSOnPaidEventCallback = void Function(
     DSInterstitialAd ad, double valueMicros, PrecisionType precision, String currencyCode);
+typedef OnAdFailedToLoad = void Function(DSInterstitialAd ad, int errCode, String errDescription);
 
-abstract class DSInterstitialAd {
+abstract class DSAd {
+  final String adUnitId;
+
+  String get mediationAdapterClassName;
+
+  const DSAd({
+    required this.adUnitId,
+  });
+}
+
+abstract class DSInterstitialAd extends DSAd {
+  const DSInterstitialAd({
+    required super.adUnitId,
+  });
+
   Future<void> show();
 
   Future<void> dispose();
-
-  String get adUnitId;
 
   set onPaidEvent(DSOnPaidEventCallback? value);
 

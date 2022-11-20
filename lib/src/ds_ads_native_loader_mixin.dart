@@ -6,6 +6,8 @@ import 'package:flutter/material.dart';
 import 'package:freezed_annotation/freezed_annotation.dart';
 import 'package:google_mobile_ads/google_mobile_ads.dart';
 
+import 'google_ads/export.dart';
+
 part 'ds_ads_native_loader_types.dart';
 
 mixin DSAdsNativeLoaderMixin<T extends StatefulWidget> on State<T> {
@@ -177,7 +179,7 @@ mixin DSAdsNativeLoaderMixin<T extends StatefulWidget> on State<T> {
         },
         onPaidEvent: (ad, valueMicros, precision, currencyCode) async {
           try {
-            DSAdsManager.instance.onPaidEvent(ad, valueMicros, precision, currencyCode, DSAdSource.native);
+            DSAdsManager.instance.onPaidEvent(DSNativeAd(ad: ad as NativeAd), valueMicros, precision, currencyCode, DSAdSource.native);
           } catch (e, stack) {
             Fimber.e('$e', stacktrace: stack);
           }

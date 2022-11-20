@@ -3,9 +3,6 @@ import 'package:freezed_annotation/freezed_annotation.dart';
 
 import 'yandex_ads.dart';
 
-typedef OnAdFailedToLoad = void Function(YandexInterstitialAd ad, int errCode, String errDescription);
-typedef OnImpression = void Function(YandexInterstitialAd ad, String? data);
-
 enum YandexAdState {
   none,
   loading,
@@ -15,14 +12,12 @@ enum YandexAdState {
 
 class YandexInterstitialAd extends DSInterstitialAd {
   final int id;
-  @override
-  final String adUnitId;
   var _state = YandexAdState.none;
   YandexAdState get state => _state;
 
   YandexInterstitialAd({
     required this.id,
-    required this.adUnitId,
+    required super.adUnitId,
   }) : assert(adUnitId.startsWith('R-M-'));
 
   @internal
@@ -54,6 +49,9 @@ class YandexInterstitialAd extends DSInterstitialAd {
   Future<void> dispose() async {
     // do nothing
   }
+
+  @override
+  String get mediationAdapterClassName => ''; // ToDo: implement
 }
 
 @internal
