@@ -49,7 +49,7 @@ class DSAdsManager {
 
   Stream<DSAdsEvent> get eventStream => _eventController.stream;
   
-  final List<DSAdMediation> mediationPriorities;
+  final List<DSAdMediation> Function() mediationPrioritiesCallback;
   final OnPaidEvent onPaidEvent;
   final DSAppAdsState appState;
   final OnReportEvent? onReportEvent;
@@ -79,7 +79,7 @@ class DSAdsManager {
   /// [interstitialFetchDelay] sets the minimum time after displaying an interstitial before the next interstitial is started to load.
   /// [interstitialShowLock] the time from the moment the user closes the interstitial for which the interstitials show are blocked.
   DSAdsManager({
-    required this.mediationPriorities,
+    required this.mediationPrioritiesCallback,
     required this.onPaidEvent,
     required this.appState,
     required this.nativeAdBannerStyle,
@@ -96,11 +96,6 @@ class DSAdsManager {
     this.interstitialShowLock = const Duration(),
   }) :
         assert(_instance == null, 'dismiss previous Ads instance before init new'),
-        assert(mediationPriorities.isNotEmpty, 'mediationPriorities should not be empty'),
-        assert(!mediationPriorities.contains(DSAdMediation.google) || interstitialGoogleUnitId?.isNotEmpty == true,
-        'setup interstitialGoogleUnitId or remove DSAdMediation.google from mediationPriorities'),
-        assert(!mediationPriorities.contains(DSAdMediation.yandex) || interstitialYandexUnitId?.isNotEmpty == true,
-        'setup interstitialYandexUnitId or remove DSAdMediation.yandex from mediationPriorities'),
         assert(interstitialYandexUnitId == null || interstitialYandexUnitId.startsWith('R-M-'),
         'interstitialYandexUnitId must begin with R-M-')
   {
@@ -129,6 +124,24 @@ class DSAdsManager {
   var _lockMediationTill = DateTime(0);
   
   Future<void> _tryNextMediation() async {
+    final mediationPriorities = mediationPrioritiesCallback();
+    if (mediationPriorities.contains(DSAdMediation.google)) {
+      if (interstitialGoogleUnitId?.isNotEmpty != true) {
+        mediationPriorities.remove(DSAdMediation.google);
+        assert(false, 'setup interstitialGoogleUnitId or remove DSAdMediation.google from mediationPrioritiesCallack');
+      }
+    }
+    if (mediationPriorities.contains(DSAdMediation.yandex)) {
+      if (interstitialYandexUnitId?.isNotEmpty != true) {
+        mediationPriorities.remove(DSAdMediation.yandex);
+        assert(false, 'setup interstitialYandexUnitId or remove DSAdMediation.yandex from mediationPrioritiesCallack');
+      }
+    }
+    if (mediationPriorities.isEmpty) {
+      Fimber.e('ads_manager: no mediation', stacktrace: StackTrace.current);
+      return;
+    }
+
     final DSAdMediation next;
     if (_currentMediation == null) {
       if (_lockMediationTill.isAfter(DateTime.now())) return;
@@ -171,7 +184,7 @@ class DSAdsManager {
   
   @internal
   Future<void> onLoadAdError(int errCode, String errText, DSAdMediation mediation, DSAdSource source) async {
-    if (mediationPriorities.length == 1) return;
+    if (mediationPrioritiesCallback().length <= 1) return;
     switch (mediation) {
       case DSAdMediation.google:
       // https://support.google.com/admob/thread/3494603/admob-error-codes-logs?hl=en
