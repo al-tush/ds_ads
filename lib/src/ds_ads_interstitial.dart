@@ -429,10 +429,10 @@ class DSAdsInterstitial extends Cubit<DSAdsInterstitialState> {
         ));
         onAdShow?.call();
         DSAdsManager.instance.emitEvent(DSAdsInterstitialShowedEvent._(ad: ad));
+        then?.call();
       } catch (e, stack) {
         Fimber.e('$e', stacktrace: stack);
       }
-      then?.call();
     };
     ad.onAdDismissed = (ad) {
       try {
@@ -459,11 +459,11 @@ class DSAdsInterstitial extends Cubit<DSAdsInterstitialState> {
           ad: null,
           adState: DSAdState.none,
         ));
+        then?.call();
+        DSAdsManager.instance.emitEvent(const DSAdsInterstitialShowErrorEvent._());
       } catch (e, stack) {
         Fimber.e('$e', stacktrace: stack);
       }
-      then?.call();
-      DSAdsManager.instance.emitEvent(const DSAdsInterstitialShowErrorEvent._());
     };
     ad.onAdClicked = (ad) {
       try {
