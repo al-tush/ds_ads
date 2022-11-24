@@ -171,6 +171,7 @@ class DSAdsManager {
   
   @internal
   Future<void> onLoadAdError(int errCode, String errText, DSAdMediation mediation, DSAdSource source) async {
+    if (mediationPriorities.length == 1) return;
     switch (mediation) {
       case DSAdMediation.google:
       // https://support.google.com/admob/thread/3494603/admob-error-codes-logs?hl=en
