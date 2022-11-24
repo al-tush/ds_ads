@@ -135,6 +135,7 @@ class DSAdsInterstitial extends Cubit<DSAdsInterstitialState> {
       return;
     }
 
+    final startTime = DateTime.now();
     _report('ads_interstitial: start loading', location: location);
     final mediation = DSAdsManager.instance.currentMediation!;
     switch (mediation) {
@@ -142,8 +143,11 @@ class DSAdsInterstitial extends Cubit<DSAdsInterstitialState> {
         DSGoogleInterstitialAd(adUnitId: adUnitId).load(
           onAdLoaded: (ad) async {
             try {
+              final duration = DateTime.now().difference(startTime);
               _report('ads_interstitial: loaded', location: location, customAdId: ad.adUnitId, attributes: {
                 'mediation': '$mediation', // override
+                'google_ads_loaded_seconds': duration.inSeconds,
+                'google_ads_loaded_milliseconds': duration.inMilliseconds,
               });
               ad.onPaidEvent = (ad, valueMicros, precision, currencyCode) {
                 DSAdsManager.instance.onPaidEvent(ad, valueMicros, precision, currencyCode, DSAdSource.interstitial);
@@ -164,6 +168,7 @@ class DSAdsInterstitial extends Cubit<DSAdsInterstitialState> {
           },
           onAdFailedToLoad: (DSInterstitialAd ad, int errCode, String errDescription) async {
             try {
+              final duration = DateTime.now().difference(startTime);
               await state.ad?.dispose();
               emit(state.copyWith(
                 ad: null,
@@ -174,6 +179,8 @@ class DSAdsInterstitial extends Cubit<DSAdsInterstitialState> {
                 'error_text': errDescription,
                 'error_code': '$errCode ($mediation)',
                 'mediation': '$mediation', // override
+                'google_ads_load_error_seconds': duration.inSeconds,
+                'google_ads_load_error_milliseconds': duration.inMilliseconds,
               });
               final oldMediation = DSAdsManager.instance.currentMediation;
               await DSAdsManager.instance.onLoadAdError(errCode, errDescription, mediation, DSAdSource.interstitial);
@@ -214,8 +221,11 @@ class DSAdsInterstitial extends Cubit<DSAdsInterstitialState> {
           adUnitId: adUnitId,
           onAdLoaded: (DSInterstitialAd ad) async {
             try {
+              final duration = DateTime.now().difference(startTime);
               _report('ads_interstitial: loaded', location: location, customAdId: ad.adUnitId, attributes: {
                 'mediation': '$mediation', // override
+                'yandex_ads_loaded_seconds': duration.inSeconds,
+                'yandex_ads_loaded_milliseconds': duration.inMilliseconds,
               });
               // ToDo: implement
               // ad.onPaidEvent = (ad, valueMicros, precision, currencyCode) {
@@ -236,6 +246,7 @@ class DSAdsInterstitial extends Cubit<DSAdsInterstitialState> {
           },
           onAdFailedToLoad: (DSInterstitialAd ad, int errCode, String errDescription) async {
             try {
+              final duration = DateTime.now().difference(startTime);
               emit(state.copyWith(
                 ad: null,
                 adState: DSAdState.error,
@@ -245,6 +256,8 @@ class DSAdsInterstitial extends Cubit<DSAdsInterstitialState> {
                 'error_text': errDescription,
                 'error_code': '$errCode ($mediation)',
                 'mediation': '$mediation', // override
+                'yandex_ads_load_error_seconds': duration.inSeconds,
+                'yandex_ads_load_error_milliseconds': duration.inMilliseconds,
               });
               final oldMediation = DSAdsManager.instance.currentMediation;
               await DSAdsManager.instance.onLoadAdError(errCode, errDescription, mediation, DSAdSource.interstitial);
