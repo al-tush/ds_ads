@@ -155,7 +155,7 @@ class DSAdsInterstitial extends Cubit<DSAdsInterstitialState> {
                 'google_ads_loaded_milliseconds': duration.inMilliseconds,
               });
               ad.onPaidEvent = (ad, valueMicros, precision, currencyCode, appLovinDspName) {
-                DSAdsManager.instance.onPaidEvent(ad, valueMicros, precision, currencyCode, DSAdSource.interstitial, appLovinDspName);
+                DSAdsManager.instance.onPaidEvent(ad, mediation, valueMicros, precision, currencyCode, DSAdSource.interstitial, appLovinDspName);
               };
 
               await state.ad?.dispose();
@@ -234,7 +234,7 @@ class DSAdsInterstitial extends Cubit<DSAdsInterstitialState> {
               });
               // ToDo: implement
               // ad.onPaidEvent = (ad, valueMicros, precision, currencyCode, appLovinDspName) {
-              //   DSAdsManager.instance.onPaidEvent(ad, valueMicros, precision, currencyCode, DSAdSource.interstitial, appLovinDspName);
+              //   DSAdsManager.instance.onPaidEvent(ad, mediation, valueMicros, precision, currencyCode, DSAdSource.interstitial, appLovinDspName);
               // };
 
               emit(state.copyWith(
@@ -309,7 +309,7 @@ class DSAdsInterstitial extends Cubit<DSAdsInterstitialState> {
                 'applovin_ads_loaded_milliseconds': duration.inMilliseconds,
               });
               ad.onPaidEvent = (ad, valueMicros, precision, currencyCode, appLovinDspName) {
-                DSAdsManager.instance.onPaidEvent(ad, valueMicros, precision, currencyCode, DSAdSource.interstitial, appLovinDspName);
+                DSAdsManager.instance.onPaidEvent(ad, mediation, valueMicros, precision, currencyCode, DSAdSource.interstitial, appLovinDspName);
               };
 
               await state.ad?.dispose();

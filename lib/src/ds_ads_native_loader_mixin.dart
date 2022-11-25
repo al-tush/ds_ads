@@ -179,7 +179,7 @@ mixin DSAdsNativeLoaderMixin<T extends StatefulWidget> on State<T> {
         },
         onPaidEvent: (ad, valueMicros, precision, currencyCode) async {
           try {
-            DSAdsManager.instance.onPaidEvent(DSNativeAd(ad: ad as NativeAd), valueMicros, precision, currencyCode, DSAdSource.native, null);
+            DSAdsManager.instance.onPaidEvent(DSNativeAd(ad: ad as NativeAd), mediation, valueMicros, precision, currencyCode, DSAdSource.native, null);
           } catch (e, stack) {
             Fimber.e('$e', stacktrace: stack);
           }
