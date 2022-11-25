@@ -1,5 +1,6 @@
 import 'dart:async';
 
+import 'package:applovin_max/applovin_max.dart';
 import 'package:ds_ads/src/ds_ads_interstitial.dart';
 import 'package:ds_ads/src/ds_ads_native_loader_mixin.dart';
 import 'package:ds_ads/src/yandex_ads/export.dart';
@@ -20,6 +21,9 @@ class DSAdsManager {
 
   final _adsInterstitialCubit = DSAdsInterstitial(type: DSAdsInterstitialType.def);
   DSAdsInterstitial? _splashInterstitial;
+
+  @protected
+  final appLovinSDKConfiguration = {};
 
   static bool get isInitialized => _instance != null;
 
@@ -59,6 +63,9 @@ class DSAdsManager {
   final String? nativeGoogleUnitId;
   final String? interstitialYandexUnitId;
   final String? interstitialSplashYandexUnitId;
+  final String? appLovinSDKKey;
+  final String? interstitialAppLovinUnitId;
+  final String? interstitialSplashAppLovinUnitId;
   final Duration interstitialFetchDelay;
   final Duration interstitialShowLock;
   final DSNativeAdBannerStyle nativeAdBannerStyle;
@@ -90,6 +97,9 @@ class DSAdsManager {
     this.nativeGoogleUnitId,
     this.interstitialYandexUnitId,
     this.interstitialSplashYandexUnitId,
+    this.appLovinSDKKey,
+    this.interstitialAppLovinUnitId,
+    this.interstitialSplashAppLovinUnitId,
     this.isAdAllowedCallback,
 
     this.interstitialFetchDelay = const Duration(),
@@ -137,6 +147,16 @@ class DSAdsManager {
         assert(false, 'setup interstitialYandexUnitId or remove DSAdMediation.yandex from mediationPrioritiesCallack');
       }
     }
+    if (mediationPriorities.contains(DSAdMediation.appLovin)) {
+      if (appLovinSDKKey?.isNotEmpty != true) {
+        mediationPriorities.remove(DSAdMediation.appLovin);
+        assert(false, 'setup appLovinSDKKey or remove DSAdMediation.appLovin from mediationPrioritiesCallack');
+      }
+      if (interstitialAppLovinUnitId?.isNotEmpty != true) {
+        mediationPriorities.remove(DSAdMediation.appLovin);
+        assert(false, 'setup interstitialAppLovinUnitId or remove DSAdMediation.appLovin from mediationPrioritiesCallack');
+      }
+    }
     if (mediationPriorities.isEmpty) {
       Fimber.e('ads_manager: no mediation', stacktrace: StackTrace.current);
       return;
@@ -175,6 +195,12 @@ class DSAdsManager {
         case DSAdMediation.yandex:
           await YandexAds.instance.initialize();
           break;
+        case DSAdMediation.appLovin:
+          appLovinSDKConfiguration.clear();
+          final config = await AppLovinMAX.initialize(appLovinSDKKey!);
+          if (config != null) {
+            appLovinSDKConfiguration.addAll(config);
+          }
       }
       onReportEvent?.call('ads_manager: mediation initialized', {
         'mediation': '$next',
@@ -195,6 +221,12 @@ class DSAdsManager {
       case DSAdMediation.yandex:
       // https://yandex.com/dev/mobile-ads/doc/android/ref/constant-values.html#com.yandex.mobile.ads.common.AdRequestError.Code.NO_FILL
         if (errCode == 4) {
+          await _tryNextMediation();
+        }
+        break;
+      case DSAdMediation.appLovin:
+      // https://dash.applovin.com/documentation/mediation/flutter/getting-started/errorcodes
+        if (errCode == 204 || errCode == -5001) {
           await _tryNextMediation();
         }
         break;

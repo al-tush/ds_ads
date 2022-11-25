@@ -6,7 +6,7 @@ import 'generic_ads/export.dart';
 
 typedef OnReportEvent = void Function(String eventName, Map<String, Object> attributes);
 typedef OnPaidEvent = void Function(DSAd ad, double valueMicros, PrecisionType precision,
-    String currencyCode, DSAdSource source);
+    String currencyCode, DSAdSource source, String? appLovinDspName);
 
 typedef DSIsAdAllowedCallback = bool Function(DSAdSource source, DSAdLocation location);
 
@@ -18,6 +18,7 @@ enum DSAdSource {
 enum DSAdMediation {
   google,
   yandex,
+  appLovin,
 }
 
 @immutable

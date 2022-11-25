@@ -1,7 +1,7 @@
 import 'package:google_mobile_ads/google_mobile_ads.dart';
 
 typedef DSOnPaidEventCallback = void Function(
-    DSInterstitialAd ad, double valueMicros, PrecisionType precision, String currencyCode);
+    DSInterstitialAd ad, double valueMicros, PrecisionType precision, String currencyCode, String? appLovinDspName);
 typedef OnAdFailedToLoad = void Function(DSInterstitialAd ad, int errCode, String errDescription);
 
 abstract class DSAd {

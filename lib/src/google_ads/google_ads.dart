@@ -20,7 +20,7 @@ class DSGoogleInterstitialAd extends DSInterstitialAd {
             _ad = ad;
             ad.onPaidEvent = (Ad ad, double valueMicros, PrecisionType precision, String currencyCode) {
               assert(_ad == ad);
-              onPaidEvent?.call(this, valueMicros, precision, currencyCode);
+              onPaidEvent?.call(this, valueMicros, precision, currencyCode, null);
             };
             ad.fullScreenContentCallback = FullScreenContentCallback(
               onAdImpression: (ad) {
