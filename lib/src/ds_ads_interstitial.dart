@@ -395,13 +395,14 @@ class DSAdsInterstitial extends Cubit<DSAdsInterstitialState> {
     ));
   }
 
-  /// Show interstitial ad. Can wait fetching if [dismissAdAfter] more than zero.
+  /// Show interstitial ad. Can wait fetching if [dismissAdAfter] (or [dismissAdAfterCallback]) more than zero.
   /// [allowFetchNext] allows start fetching after show interstitial ad.
   /// [location] sets location attribute to report (any string allowed)
   /// [beforeAdShow] allows to cancel ad by return false
   Future<void> showAd({
     required final DSAdLocation location,
     final Duration dismissAdAfter = const Duration(),
+    final Duration Function()? dismissAdAfterCallback,
     final Future<bool> Function()? beforeAdShow,
     final Function()? onAdShow,
     final Function()? then,
@@ -432,19 +433,26 @@ class DSAdsInterstitial extends Cubit<DSAdsInterstitialState> {
       return;
     }
 
+    Duration calcDismissAdAfter() {
+      if (dismissAdAfterCallback != null) {
+        return dismissAdAfterCallback();
+      }
+      return dismissAdAfter;
+    }
+
     if ([DSAdState.none, DSAdState.loading, DSAdState.error].contains(state.adState)) {
-      if (dismissAdAfter.inSeconds <= 0) {
-        _report('ads_interstitial: showing canceled: not ready immediately (dismiss ad after ${dismissAdAfter.inSeconds}s)',
+      if (calcDismissAdAfter().inSeconds <= 0) {
+        _report('ads_interstitial: showing canceled: not ready immediately (dismiss ad after ${calcDismissAdAfter().inSeconds}s)',
           location: location,
         );
         then?.call();
         DSAdsManager.instance.emitEvent(const DSAdsInterstitialShowErrorEvent._());
       } else {
         var processed = false;
-        Timer(dismissAdAfter, () {
+        Timer(calcDismissAdAfter(), () {
           if (processed) return;
           processed = true;
-          _report('ads_interstitial: showing canceled: not ready after ${dismissAdAfter.inSeconds}s',
+          _report('ads_interstitial: showing canceled: not ready after ${calcDismissAdAfter().inSeconds}s',
             location: location,
           );
           then?.call();
