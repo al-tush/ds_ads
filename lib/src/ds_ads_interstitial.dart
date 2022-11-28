@@ -111,6 +111,8 @@ class DSAdsInterstitial extends Cubit<DSAdsInterstitialState> {
       return;
     }
 
+    unawaited(DSAdsManager.instance.checkMediation()); // ToDo: fix to await?
+
     if (_isDisabled(location)) {
       then?.call();
       return;

@@ -68,7 +68,9 @@ mixin DSAdsNativeLoaderMixin<T extends StatefulWidget> on State<T> {
     required final DSAdLocation location,
     Map<String, Object>? attributes,
   }) {
-    final adUnitId = DSAdsManager.instance.nativeGoogleUnitId;
+    final adUnitId = DSAdsManager.instance.currentMediation == DSAdMediation.google
+        ? DSAdsManager.instance.nativeGoogleUnitId
+        : null;
     DSAdsManager.instance.onReportEvent?.call(eventName, {
       'location': location.val,
       'adUnitId': adUnitId ?? 'unknown',
@@ -127,6 +129,8 @@ mixin DSAdsNativeLoaderMixin<T extends StatefulWidget> on State<T> {
   static Future<void> fetchAd({
     required final DSAdLocation location,
   }) async {
+    await DSAdsManager.instance.checkMediation();
+
     if (_isDisabled(location)) return;
 
     final adUnitId = DSAdsManager.instance.nativeGoogleUnitId;

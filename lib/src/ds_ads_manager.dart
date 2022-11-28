@@ -207,7 +207,16 @@ class DSAdsManager {
       });
     }
   }
-  
+
+  @internal
+  Future<void> checkMediation() async {
+    if (currentMediation == null) return;
+    final mediationPriorities = mediationPrioritiesCallback();
+    if (!mediationPriorities.contains(currentMediation)) {
+      await _tryNextMediation();
+    }
+  }
+
   @internal
   Future<void> onLoadAdError(int errCode, String errText, DSAdMediation mediation, DSAdSource source) async {
     if (mediationPrioritiesCallback().length <= 1) return;
