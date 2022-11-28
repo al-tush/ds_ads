@@ -1,6 +1,7 @@
 import 'dart:async';
 
 import 'package:applovin_max/applovin_max.dart';
+import 'package:collection/collection.dart';
 import 'package:ds_ads/src/ds_ads_interstitial.dart';
 import 'package:ds_ads/src/ds_ads_native_loader_mixin.dart';
 import 'package:ds_ads/src/yandex_ads/export.dart';
@@ -135,6 +136,8 @@ class DSAdsManager {
   
   Future<void> _tryNextMediation() async {
     final mediationPriorities = mediationPrioritiesCallback();
+    _prevMediationPriorities.clear();
+    _prevMediationPriorities.addAll(mediationPriorities);
     if (mediationPriorities.contains(DSAdMediation.google)) {
       if (interstitialGoogleUnitId?.isNotEmpty != true) {
         mediationPriorities.remove(DSAdMediation.google);
@@ -208,12 +211,28 @@ class DSAdsManager {
     }
   }
 
+  final _prevMediationPriorities = <DSAdMediation>{};
+
   @internal
   Future<void> checkMediation() async {
     if (currentMediation == null) return;
     final mediationPriorities = mediationPrioritiesCallback();
-    if (!mediationPriorities.contains(currentMediation)) {
-      await _tryNextMediation();
+    try {
+      if (!mediationPriorities.contains(currentMediation)) {
+        await _tryNextMediation();
+        return;
+      }
+      final isSame = const IterableEquality().equals(mediationPriorities, _prevMediationPriorities);
+      if (!isSame) {
+        if (mediationPriorities.first != currentMediation) {
+          _currentMediation = null;
+          await _tryNextMediation();
+        }
+      }
+    } catch (e, stack) {
+      Fimber.e('$e', stacktrace: stack);
+      _prevMediationPriorities.clear();
+      _prevMediationPriorities.addAll(mediationPriorities);
     }
   }
 
