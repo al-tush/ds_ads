@@ -193,10 +193,12 @@ class DSAdsManager {
       _mediationInitialized.add(next);
       switch (next) {
         case DSAdMediation.google:
-          await MobileAds.instance.initialize();
+          // It seems that init just creates competition for other mediations
+          //await MobileAds.instance.initialize();
           break;
         case DSAdMediation.yandex:
-          await YandexAds.instance.initialize();
+          // It seems that init just creates competition for other mediations
+          // await YandexAds.instance.initialize();
           break;
         case DSAdMediation.appLovin:
           appLovinSDKConfiguration.clear();
