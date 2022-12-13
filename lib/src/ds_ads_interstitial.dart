@@ -100,12 +100,20 @@ class DSAdsInterstitial extends Cubit<DSAdsInterstitialState> {
     return false;
   }
 
+  bool _checkCustomAttributes(Map<String, Object>? attrs) {
+    if (attrs == null) return true;
+    return attrs.keys.every((e) => e.startsWith('custom_attr_'));
+  }
+
   /// Fetch interstitial ad
   void fetchAd({
     required final DSAdLocation location,
+    Map<String, Object>? customAttributes,
     @internal
     final Function()? then,
   }) {
+    assert(_checkCustomAttributes(customAttributes), 'custom attributes must have custom_attr_ prefix');
+
     if (DSAdsManager.instance.appState.isPremium || _isDisposed) {
       then?.call();
       return;
@@ -137,13 +145,13 @@ class DSAdsInterstitial extends Cubit<DSAdsInterstitialState> {
         final spent = DateTime.now().difference(_lastShowTime);
         final delay = DSAdsManager.instance.interstitialFetchDelay - spent;
         await Future.delayed(delay);
-        fetchAd(location: const DSAdLocation('internal_fetch_delayed'));
+        fetchAd(location: const DSAdLocation('internal_fetch_delayed'), customAttributes: customAttributes);
       }());
       return;
     }
 
     final startTime = DateTime.now();
-    _report('ads_interstitial: start loading', location: location);
+    _report('ads_interstitial: start loading', location: location, attributes: customAttributes);
     final mediation = DSAdsManager.instance.currentMediation!;
     switch (mediation) {
       case DSAdMediation.google:
@@ -155,6 +163,7 @@ class DSAdsInterstitial extends Cubit<DSAdsInterstitialState> {
                 'mediation': '$mediation', // override
                 'google_ads_loaded_seconds': duration.inSeconds,
                 'google_ads_loaded_milliseconds': duration.inMilliseconds,
+                ...?customAttributes,
               });
               ad.onPaidEvent = (ad, valueMicros, precision, currencyCode, appLovinDspName) {
                 DSAdsManager.instance.onPaidEvent(ad, mediation, valueMicros, precision, currencyCode, DSAdSource.interstitial, appLovinDspName);
@@ -188,6 +197,7 @@ class DSAdsInterstitial extends Cubit<DSAdsInterstitialState> {
                 'mediation': '$mediation', // override
                 'google_ads_load_error_seconds': duration.inSeconds,
                 'google_ads_load_error_milliseconds': duration.inMilliseconds,
+                ...?customAttributes,
               });
               final oldMediation = DSAdsManager.instance.currentMediation;
               await DSAdsManager.instance.onLoadAdError(errCode, errDescription, mediation, DSAdSource.interstitial);
@@ -201,8 +211,9 @@ class DSAdsInterstitial extends Cubit<DSAdsInterstitialState> {
                 if ({DSAdState.none, DSAdState.error}.contains(state.adState) && !_isDisposed) {
                   _report('ads_interstitial: retry loading', location: location, attributes: {
                     'mediation': '$mediation', // override
+                    ...?customAttributes,
                   });
-                  fetchAd(location: location, then: then);
+                  fetchAd(location: location, then: then, customAttributes: customAttributes);
                 }
               } else {
                 Fimber.w('$errDescription ($errCode)', stacktrace: StackTrace.current);
@@ -233,6 +244,7 @@ class DSAdsInterstitial extends Cubit<DSAdsInterstitialState> {
                 'mediation': '$mediation', // override
                 'yandex_ads_loaded_seconds': duration.inSeconds,
                 'yandex_ads_loaded_milliseconds': duration.inMilliseconds,
+                ...?customAttributes,
               });
               // ToDo: implement
               // ad.onPaidEvent = (ad, valueMicros, precision, currencyCode, appLovinDspName) {
@@ -265,6 +277,7 @@ class DSAdsInterstitial extends Cubit<DSAdsInterstitialState> {
                 'mediation': '$mediation', // override
                 'yandex_ads_load_error_seconds': duration.inSeconds,
                 'yandex_ads_load_error_milliseconds': duration.inMilliseconds,
+                ...?customAttributes,
               });
               final oldMediation = DSAdsManager.instance.currentMediation;
               await DSAdsManager.instance.onLoadAdError(errCode, errDescription, mediation, DSAdSource.interstitial);
@@ -278,8 +291,9 @@ class DSAdsInterstitial extends Cubit<DSAdsInterstitialState> {
                 if ({DSAdState.none, DSAdState.error}.contains(state.adState) && !_isDisposed) {
                   _report('ads_interstitial: retry loading', location: location, attributes: {
                     'mediation': '$mediation', // override
+                    ...?customAttributes,
                   });
-                  fetchAd(location: location, then: then);
+                  fetchAd(location: location, then: then, customAttributes: customAttributes);
                 }
               } else {
                 Fimber.w('$errDescription ($errCode)', stacktrace: StackTrace.current);
@@ -309,6 +323,7 @@ class DSAdsInterstitial extends Cubit<DSAdsInterstitialState> {
                 'mediation': '$mediation', // override
                 'applovin_ads_loaded_seconds': duration.inSeconds,
                 'applovin_ads_loaded_milliseconds': duration.inMilliseconds,
+                ...?customAttributes,
               });
               ad.onPaidEvent = (ad, valueMicros, precision, currencyCode, appLovinDspName) {
                 DSAdsManager.instance.onPaidEvent(ad, mediation, valueMicros, precision, currencyCode, DSAdSource.interstitial, appLovinDspName);
@@ -342,6 +357,7 @@ class DSAdsInterstitial extends Cubit<DSAdsInterstitialState> {
                 'mediation': '$mediation', // override
                 'applovin_ads_load_error_seconds': duration.inSeconds,
                 'applovin_ads_load_error_milliseconds': duration.inMilliseconds,
+                ...?customAttributes,
               });
               final oldMediation = DSAdsManager.instance.currentMediation;
               await DSAdsManager.instance.onLoadAdError(errCode, errDescription, mediation, DSAdSource.interstitial);
@@ -355,8 +371,9 @@ class DSAdsInterstitial extends Cubit<DSAdsInterstitialState> {
                 if ({DSAdState.none, DSAdState.error}.contains(state.adState) && !_isDisposed) {
                   _report('ads_interstitial: retry loading', location: location, attributes: {
                     'mediation': '$mediation', // override
+                    ...?customAttributes,
                   });
-                  fetchAd(location: location, then: then);
+                  fetchAd(location: location, then: then, customAttributes: customAttributes);
                 }
               } else {
                 Fimber.w('$errDescription ($errCode)', stacktrace: StackTrace.current);
@@ -406,8 +423,10 @@ class DSAdsInterstitial extends Cubit<DSAdsInterstitialState> {
     final Future<bool> Function()? beforeAdShow,
     final Function()? onAdShow,
     final Function()? then,
+    Map<String, Object>? customAttributes,
   }) async {
     assert(!location.isInternal);
+    assert(_checkCustomAttributes(customAttributes), 'custom attributes must have custom_attr_ prefix');
 
     if (DSAdsManager.instance.appState.isPremium || _isDisposed) {
       then?.call();
@@ -421,14 +440,14 @@ class DSAdsInterstitial extends Cubit<DSAdsInterstitialState> {
 
     if (!DSAdsManager.instance.appState.isInForeground) {
       then?.call();
-      fetchAd(location: location);
+      fetchAd(location: location, customAttributes: customAttributes);
       // https://support.google.com/admob/answer/6201362#zippy=%2Cdisallowed-example-user-launches-app
       return;
     }
 
     if ([DSAdState.preShowing, DSAdState.showing].contains(state.adState)) {
       Fimber.e('showAd recall (state: $state)', stacktrace: StackTrace.current);
-      _report('ads_interstitial: showing canceled by error', location: location);
+      _report('ads_interstitial: showing canceled by error', location: location, attributes: customAttributes);
       then?.call();
       return;
     }
@@ -444,6 +463,7 @@ class DSAdsInterstitial extends Cubit<DSAdsInterstitialState> {
       if (calcDismissAdAfter().inSeconds <= 0) {
         _report('ads_interstitial: showing canceled: not ready immediately (dismiss ad after ${calcDismissAdAfter().inSeconds}s)',
           location: location,
+          attributes: customAttributes,
         );
         then?.call();
         DSAdsManager.instance.emitEvent(const DSAdsInterstitialShowErrorEvent._());
@@ -454,11 +474,13 @@ class DSAdsInterstitial extends Cubit<DSAdsInterstitialState> {
           processed = true;
           _report('ads_interstitial: showing canceled: not ready after ${calcDismissAdAfter().inSeconds}s',
             location: location,
+            attributes: customAttributes,
           );
           then?.call();
         });
         fetchAd(
           location: location,
+          customAttributes: customAttributes,
           then: () async {
             while (state.adState == DSAdState.loading || state.adState == DSAdState.error) {
               await Future.delayed(const Duration(milliseconds: 100));
@@ -468,6 +490,7 @@ class DSAdsInterstitial extends Cubit<DSAdsInterstitialState> {
             if (_isDisposed) {
               _report('ads_interstitial: showing canceled: manager disposed',
                 location: location,
+                attributes: customAttributes,
               );
               then?.call();
               DSAdsManager.instance.emitEvent(const DSAdsInterstitialShowErrorEvent._());
@@ -479,7 +502,7 @@ class DSAdsInterstitial extends Cubit<DSAdsInterstitialState> {
               DSAdsManager.instance.emitEvent(const DSAdsInterstitialShowErrorEvent._());
               return;
             }
-            await showAd(onAdShow: onAdShow, then: then, location: location);
+            await showAd(onAdShow: onAdShow, then: then, location: location, customAttributes: customAttributes);
           },
         );
       }
@@ -489,6 +512,7 @@ class DSAdsInterstitial extends Cubit<DSAdsInterstitialState> {
     if (DateTime.now().difference(_lastShowTime) < (DSAdsManager.instance.interstitialShowLock)) {
       _report('ads_interstitial: showing canceled: locked for ${DSAdsManager.instance.interstitialShowLock.inSeconds}s',
         location: location,
+        attributes: customAttributes,
       );
       then?.call();
       return;
@@ -497,7 +521,7 @@ class DSAdsInterstitial extends Cubit<DSAdsInterstitialState> {
     final ad = state.ad;
     if (ad == null) {
       Fimber.e('ad $adUnitId is null but state: ${state.adState}', stacktrace: StackTrace.current);
-      _report('ads_interstitial: showing canceled by error', location: location);
+      _report('ads_interstitial: showing canceled by error', location: location, attributes: customAttributes);
       then?.call();
       cancelCurrentAd(location: location);
       DSAdsManager.instance.emitEvent(const DSAdsInterstitialShowErrorEvent._());
@@ -506,14 +530,14 @@ class DSAdsInterstitial extends Cubit<DSAdsInterstitialState> {
 
     ad.onAdImpression = (ad) {
       try {
-        _report('ads_interstitial: impression', location: location);
+        _report('ads_interstitial: impression', location: location, attributes: customAttributes);
       } catch (e, stack) {
         Fimber.e('$e', stacktrace: stack);
       }
     };
     ad.onAdShown = (ad) {
       try {
-        _report('ads_interstitial: showed full screen content', location: location);
+        _report('ads_interstitial: showed full screen content', location: location, attributes: customAttributes);
         if (_isDisposed) {
           Fimber.e('ads_interstitial: showing disposed ad', stacktrace: StackTrace.current);
         }
@@ -529,7 +553,7 @@ class DSAdsInterstitial extends Cubit<DSAdsInterstitialState> {
     };
     ad.onAdDismissed = (ad) {
       try {
-        _report('ads_interstitial: full screen content dismissed', location: location);
+        _report('ads_interstitial: full screen content dismissed', location: location, attributes: customAttributes);
         ad.dispose();
         _lastShowTime = DateTime.now();
         emit(state.copyWith(
@@ -544,7 +568,7 @@ class DSAdsInterstitial extends Cubit<DSAdsInterstitialState> {
     };
     ad.onAdFailedToShow = (ad, int errCode, String errText) {
       try {
-        _report('ads_interstitial: showing canceled by error', location: location);
+        _report('ads_interstitial: showing canceled by error', location: location, attributes: customAttributes);
         Fimber.e('$errText ($errCode)', stacktrace: StackTrace.current);
         ad.dispose();
         _lastShowTime = DateTime.now();
@@ -560,14 +584,14 @@ class DSAdsInterstitial extends Cubit<DSAdsInterstitialState> {
     };
     ad.onAdClicked = (ad) {
       try {
-        _report('ads_interstitial: ad clicked', location: location);
+        _report('ads_interstitial: ad clicked', location: location, attributes: customAttributes);
       } catch (e, stack) {
         Fimber.e('$e', stacktrace: stack);
       }
     };
 
     if (_isDisposed) {
-      _report('ads_interstitial: showing canceled: manager disposed', location: location);
+      _report('ads_interstitial: showing canceled: manager disposed', location: location, attributes: customAttributes);
       then?.call();
       DSAdsManager.instance.emitEvent(const DSAdsInterstitialShowErrorEvent._());
       return;
@@ -575,7 +599,7 @@ class DSAdsInterstitial extends Cubit<DSAdsInterstitialState> {
 
     final res = await beforeAdShow?.call() ?? true;
     if (!res) {
-      _report('ads_interstitial: showing canceled by caller', location: location);
+      _report('ads_interstitial: showing canceled by caller', location: location, attributes: customAttributes);
       then?.call();
       return;
     }
@@ -586,7 +610,7 @@ class DSAdsInterstitial extends Cubit<DSAdsInterstitialState> {
     ));
     DSAdsManager.instance.emitEvent(DSAdsInterstitialPreShowingEvent._(ad: ad));
 
-    _report('ads_interstitial: start showing', location: location);
+    _report('ads_interstitial: start showing', location: location, attributes: customAttributes);
     await ad.show();
   }
 

@@ -82,12 +82,20 @@ class DSAdsRewarded {
     return false;
   }
 
+  bool _checkCustomAttributes(Map<String, Object>? attrs) {
+    if (attrs == null) return true;
+    return attrs.keys.every((e) => e.startsWith('custom_attr_'));
+  }
+
   /// Fetch rewarded ad
   void fetchAd({
     required final DSAdLocation location,
+    Map<String, Object>? customAttributes,
     @internal
     final Function()? then,
   }) {
+    assert(_checkCustomAttributes(customAttributes), 'custom attributes must have custom_attr_ prefix');
+
     if (DSAdsManager.instance.appState.isPremium || _isDisposed) {
       then?.call();
       return;
@@ -119,13 +127,13 @@ class DSAdsRewarded {
         final spent = DateTime.now().difference(_lastShowTime);
         final delay = DSAdsManager.instance.rewardedFetchDelay - spent;
         await Future.delayed(delay);
-        fetchAd(location: const DSAdLocation('internal_fetch_delayed'));
+        fetchAd(location: const DSAdLocation('internal_fetch_delayed'), customAttributes: customAttributes);
       }());
       return;
     }
 
     final startTime = DateTime.now();
-    _report('$_tag: start loading', location: location);
+    _report('$_tag: start loading', location: location, attributes: customAttributes);
     final mediation = DSAdsManager.instance.currentMediation!;
     switch (mediation) {
       case DSAdMediation.google:
@@ -137,6 +145,7 @@ class DSAdsRewarded {
                 'mediation': '$mediation', // override
                 'google_ads_loaded_seconds': duration.inSeconds,
                 'google_ads_loaded_milliseconds': duration.inMilliseconds,
+                ...?customAttributes,
               });
               ad.onPaidEvent = (ad, valueMicros, precision, currencyCode, appLovinDspName) {
                 DSAdsManager.instance.onPaidEvent(ad, mediation, valueMicros, precision, currencyCode, DSAdSource.rewarded, appLovinDspName);
@@ -165,6 +174,7 @@ class DSAdsRewarded {
                 'mediation': '$mediation', // override
                 'google_ads_load_error_seconds': duration.inSeconds,
                 'google_ads_load_error_milliseconds': duration.inMilliseconds,
+                ...?customAttributes,
               });
               final oldMediation = DSAdsManager.instance.currentMediation;
               await DSAdsManager.instance.onLoadAdError(errCode, errDescription, mediation, DSAdSource.rewarded);
@@ -176,8 +186,9 @@ class DSAdsRewarded {
                 if ({DSAdState.none, DSAdState.error}.contains(_adState) && !_isDisposed) {
                   _report('$_tag: retry loading', location: location, attributes: {
                     'mediation': '$mediation', // override
+                    ...?customAttributes,
                   });
-                  fetchAd(location: location, then: then);
+                  fetchAd(location: location, then: then, customAttributes: customAttributes);
                 }
               } else {
                 Fimber.w('$errDescription ($errCode)', stacktrace: StackTrace.current);
@@ -206,6 +217,7 @@ class DSAdsRewarded {
                 'mediation': '$mediation', // override
                 'applovin_ads_loaded_seconds': duration.inSeconds,
                 'applovin_ads_loaded_milliseconds': duration.inMilliseconds,
+                ...?customAttributes,
               });
               ad.onPaidEvent = (ad, valueMicros, precision, currencyCode, appLovinDspName) {
                 DSAdsManager.instance.onPaidEvent(ad, mediation, valueMicros, precision, currencyCode, DSAdSource.rewarded, appLovinDspName);
@@ -234,6 +246,7 @@ class DSAdsRewarded {
                 'mediation': '$mediation', // override
                 'applovin_ads_load_error_seconds': duration.inSeconds,
                 'applovin_ads_load_error_milliseconds': duration.inMilliseconds,
+                ...?customAttributes,
               });
               final oldMediation = DSAdsManager.instance.currentMediation;
               await DSAdsManager.instance.onLoadAdError(errCode, errDescription, mediation, DSAdSource.rewarded);
@@ -245,8 +258,9 @@ class DSAdsRewarded {
                 if ({DSAdState.none, DSAdState.error}.contains(_adState) && !_isDisposed) {
                   _report('$_tag: retry loading', location: location, attributes: {
                     'mediation': '$mediation', // override
+                    ...?customAttributes,
                   });
-                  fetchAd(location: location, then: then);
+                  fetchAd(location: location, then: then, customAttributes: customAttributes);
                 }
               } else {
                 Fimber.w('$errDescription ($errCode)', stacktrace: StackTrace.current);
@@ -289,8 +303,10 @@ class DSAdsRewarded {
     final Future<bool> Function()? beforeAdShow,
     final Function()? onAdShow,
     final Function()? then,
+    Map<String, Object>? customAttributes,
   }) async {
     assert(!location.isInternal);
+    assert(_checkCustomAttributes(customAttributes), 'custom attributes must have custom_attr_ prefix');
 
     if (DSAdsManager.instance.appState.isPremium || _isDisposed) {
       then?.call();
@@ -304,14 +320,14 @@ class DSAdsRewarded {
 
     if (!DSAdsManager.instance.appState.isInForeground) {
       then?.call();
-      fetchAd(location: location);
+      fetchAd(location: location, customAttributes: customAttributes);
       // https://support.google.com/admob/answer/6201362#zippy=%2Cdisallowed-example-user-launches-app
       return;
     }
 
     if ([DSAdState.preShowing, DSAdState.showing].contains(_adState)) {
       Fimber.e('showAd recall (state: $_adState)', stacktrace: StackTrace.current);
-      _report('$_tag: showing canceled by error', location: location);
+      _report('$_tag: showing canceled by error', location: location, attributes: customAttributes);
       then?.call();
       return;
     }
@@ -327,6 +343,7 @@ class DSAdsRewarded {
       if (calcDismissAdAfter().inSeconds <= 0) {
         _report('$_tag: showing canceled: not ready immediately (dismiss ad after ${calcDismissAdAfter().inSeconds}s)',
           location: location,
+          attributes: customAttributes,
         );
         then?.call();
         DSAdsManager.instance.emitEvent(const DSAdsRewardedShowErrorEvent._());
@@ -337,11 +354,13 @@ class DSAdsRewarded {
           processed = true;
           _report('$_tag: showing canceled: not ready after ${calcDismissAdAfter().inSeconds}s',
             location: location,
+            attributes: customAttributes,
           );
           then?.call();
         });
         fetchAd(
           location: location,
+          customAttributes: customAttributes,
           then: () async {
             while (_adState == DSAdState.loading || _adState == DSAdState.error) {
               await Future.delayed(const Duration(milliseconds: 100));
@@ -351,6 +370,7 @@ class DSAdsRewarded {
             if (_isDisposed) {
               _report('$_tag: showing canceled: manager disposed',
                 location: location,
+                attributes: customAttributes,
               );
               then?.call();
               DSAdsManager.instance.emitEvent(const DSAdsRewardedShowErrorEvent._());
@@ -362,7 +382,7 @@ class DSAdsRewarded {
               DSAdsManager.instance.emitEvent(const DSAdsRewardedShowErrorEvent._());
               return;
             }
-            await showAd(onAdShow: onAdShow, then: then, location: location);
+            await showAd(onAdShow: onAdShow, then: then, location: location, customAttributes: customAttributes);
           },
         );
       }
@@ -372,6 +392,7 @@ class DSAdsRewarded {
     if (DateTime.now().difference(_lastShowTime) < (DSAdsManager.instance.rewardedShowLock)) {
       _report('$_tag: showing canceled: locked for ${DSAdsManager.instance.rewardedShowLock.inSeconds}s',
         location: location,
+        attributes: customAttributes,
       );
       then?.call();
       return;
@@ -380,7 +401,7 @@ class DSAdsRewarded {
     final ad = _ad;
     if (ad == null) {
       Fimber.e('ad $adUnitId is null but state: $_adState', stacktrace: StackTrace.current);
-      _report('$_tag: showing canceled by error', location: location);
+      _report('$_tag: showing canceled by error', location: location, attributes: customAttributes);
       then?.call();
       cancelCurrentAd(location: location);
       DSAdsManager.instance.emitEvent(const DSAdsRewardedShowErrorEvent._());
@@ -389,14 +410,14 @@ class DSAdsRewarded {
 
     ad.onAdImpression = (ad) {
       try {
-        _report('$_tag: impression', location: location);
+        _report('$_tag: impression', location: location, attributes: customAttributes);
       } catch (e, stack) {
         Fimber.e('$e', stacktrace: stack);
       }
     };
     ad.onAdShown = (ad) {
       try {
-        _report('$_tag: showed full screen content', location: location);
+        _report('$_tag: showed full screen content', location: location, attributes: customAttributes);
         if (_isDisposed) {
           Fimber.e('$_tag: showing disposed ad', stacktrace: StackTrace.current);
         }
@@ -410,7 +431,7 @@ class DSAdsRewarded {
     };
     ad.onAdDismissed = (ad) {
       try {
-        _report('$_tag: full screen content dismissed', location: location);
+        _report('$_tag: full screen content dismissed', location: location, attributes: customAttributes);
         ad.dispose();
         _ad = null;
         _adState = DSAdState.none;
@@ -423,7 +444,7 @@ class DSAdsRewarded {
     };
     ad.onAdFailedToShow = (ad, int errCode, String errText) {
       try {
-        _report('$_tag: showing canceled by error', location: location);
+        _report('$_tag: showing canceled by error', location: location, attributes: customAttributes);
         Fimber.e('$errText ($errCode)', stacktrace: StackTrace.current);
         ad.dispose();
         _ad = null;
@@ -437,14 +458,14 @@ class DSAdsRewarded {
     };
     ad.onAdClicked = (ad) {
       try {
-        _report('$_tag: ad clicked', location: location);
+        _report('$_tag: ad clicked', location: location, attributes: customAttributes);
       } catch (e, stack) {
         Fimber.e('$e', stacktrace: stack);
       }
     };
 
     if (_isDisposed) {
-      _report('$_tag: showing canceled: manager disposed', location: location);
+      _report('$_tag: showing canceled: manager disposed', location: location, attributes: customAttributes);
       then?.call();
       DSAdsManager.instance.emitEvent(const DSAdsRewardedShowErrorEvent._());
       return;
@@ -452,7 +473,7 @@ class DSAdsRewarded {
 
     final res = await beforeAdShow?.call() ?? true;
     if (!res) {
-      _report('$_tag: showing canceled by caller', location: location);
+      _report('$_tag: showing canceled by caller', location: location, attributes: customAttributes);
       then?.call();
       return;
     }
@@ -461,7 +482,7 @@ class DSAdsRewarded {
     _lastShowTime = DateTime.now();
     DSAdsManager.instance.emitEvent(DSAdsRewardedPreShowingEvent._(ad: ad));
 
-    _report('$_tag: start showing', location: location);
+    _report('$_tag: start showing', location: location, attributes: customAttributes);
     await ad.show();
   }
 
