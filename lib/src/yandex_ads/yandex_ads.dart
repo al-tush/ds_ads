@@ -61,7 +61,7 @@ class YandexAds {
   Future<void> loadInterstitial({
     required String adUnitId,
     required void Function(DSInterstitialAd ad) onAdLoaded,
-    required OnAdFailedToLoad onAdFailedToLoad,
+    required DSOnAdFailedToLoad onAdFailedToLoad,
   }) async {
     assert(adUnitId.startsWith('R-M-'));
     final prevState = _interstitials[adUnitId]?.state;
@@ -97,7 +97,7 @@ class YandexAds {
           onAdLoaded(ad);
         }
       },
-      onAdFailedToLoad: (DSInterstitialAd ad, int errCode, String errDescription) {
+      onAdFailedToLoad: (DSAd ad, int errCode, String errDescription) {
         if (validateId()) {
           _interstitials.remove(ad.adUnitId);
           onAdFailedToLoad(ad, errCode, errDescription);

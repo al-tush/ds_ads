@@ -12,7 +12,7 @@ class DSAppLovinInterstitialAd extends DSInterstitialAd {
 
   Future<void> load({
     required void Function(DSInterstitialAd ad) onAdLoaded,
-    required OnAdFailedToLoad onAdFailedToLoad,
+    required DSOnAdFailedToLoad onAdFailedToLoad,
   }) async {
     AppLovinMAX.setInterstitialListener(InterstitialListener(
       onAdLoadedCallback: (ad) {
@@ -45,7 +45,6 @@ class DSAppLovinInterstitialAd extends DSInterstitialAd {
       },
     ));
 
-    // Load the first interstitial
     AppLovinMAX.loadInterstitial(adUnitId);
   }
 
@@ -76,6 +75,90 @@ class DSAppLovinInterstitialAd extends DSInterstitialAd {
   void Function(DSInterstitialAd ad)? onAdClicked;
   @override
   void Function(DSInterstitialAd ad)? onAdImpression;
+
+  @override
+  String get mediationAdapterClassName => _ad!.networkName;
+
+}
+
+class DSAppLovinRewardedAd extends DSRewardedAd {
+  MaxAd? _ad;
+
+  DSAppLovinRewardedAd({
+    required super.adUnitId,
+  });
+
+  Future<void> load({
+    required void Function(DSRewardedAd ad) onAdLoaded,
+    required DSOnAdFailedToLoad onAdFailedToLoad,
+  }) async {
+    AppLovinMAX.setRewardedAdListener(RewardedAdListener(
+      onAdLoadedCallback: (ad) {
+        _ad = ad;
+        onAdLoaded(this);
+      },
+      onAdLoadFailedCallback: (adUnitId, error) {
+        onAdFailedToLoad(this, error.code, error.message);
+      },
+      onAdDisplayedCallback: (ad) {
+        onAdShown?.call(this);
+      },
+      onAdRevenuePaidCallback: (ad) {
+        onAdImpression?.call(this);
+        final revenue = double.tryParse(ad.revenue);
+        if (revenue == null) {
+          Fimber.e('Failed parsing revenue value: ${ad.revenue}', stacktrace: StackTrace.current);
+          return;
+        }
+        onPaidEvent?.call(this, revenue * 1000000, PrecisionType.unknown, 'USD',  ad.dspName);
+      },
+      onAdDisplayFailedCallback: (ad, error) {
+        onAdFailedToShow?.call(this, error.code, error.message);
+      },
+      onAdClickedCallback: (ad) {
+        onAdClicked?.call(this);
+      },
+      onAdHiddenCallback: (ad) {
+        onAdDismissed?.call(this);
+      },
+      onAdReceivedRewardCallback: (MaxAd ad, MaxReward reward) {
+        assert(ad == _ad);
+        onRewardEvent?.call(this, reward.amount, reward.label);
+      },
+    ));
+
+    AppLovinMAX.loadRewardedAd(adUnitId);
+  }
+
+  @override
+  Future<void> show() async {
+    final isReady = await AppLovinMAX.isRewardedAdReady(adUnitId);
+    if (isReady != true) {
+      Fimber.e('AppLovin rewarded not ready: $adUnitId');
+      return;
+    }
+    AppLovinMAX.showRewardedAd(adUnitId);
+  }
+
+  @override
+  Future<void> dispose() async {
+    _ad = null;
+  }
+
+  @override
+  DSOnPaidEventCallback? onPaidEvent;
+  @override
+  DSOnRewardEventCallback? onRewardEvent;
+  @override
+  void Function(DSRewardedAd ad)? onAdDismissed;
+  @override
+  void Function(DSRewardedAd ad, int errCode, String errText)? onAdFailedToShow;
+  @override
+  void Function(DSRewardedAd ad)? onAdShown;
+  @override
+  void Function(DSRewardedAd ad)? onAdClicked;
+  @override
+  void Function(DSRewardedAd ad)? onAdImpression;
 
   @override
   String get mediationAdapterClassName => _ad!.networkName;

@@ -61,7 +61,7 @@ class AdInterstitialInfo {
   YandexAdState get state => ad.state;
 
   void Function(YandexInterstitialAd ad) onAdLoaded;
-  OnAdFailedToLoad onAdFailedToLoad;
+  DSOnAdFailedToLoad onAdFailedToLoad;
   void Function(YandexInterstitialAd ad)? onAdDismissed;
 
   AdInterstitialInfo({

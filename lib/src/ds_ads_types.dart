@@ -12,7 +12,8 @@ typedef DSIsAdAllowedCallback = bool Function(DSAdSource source, DSAdLocation lo
 
 enum DSAdSource {
   interstitial,
-  native
+  native,
+  rewarded,
 }
 
 enum DSAdMediation {

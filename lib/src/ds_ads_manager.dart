@@ -4,10 +4,8 @@ import 'package:applovin_max/applovin_max.dart';
 import 'package:collection/collection.dart';
 import 'package:ds_ads/src/ds_ads_interstitial.dart';
 import 'package:ds_ads/src/ds_ads_native_loader_mixin.dart';
-import 'package:ds_ads/src/yandex_ads/export.dart';
 import 'package:fimber/fimber.dart';
 import 'package:freezed_annotation/freezed_annotation.dart';
-import 'package:google_mobile_ads/google_mobile_ads.dart';
 
 import 'ds_ads_types.dart';
 
@@ -62,13 +60,17 @@ class DSAdsManager {
   final String? interstitialGoogleUnitId;
   final String? interstitialSplashGoogleUnitId;
   final String? nativeGoogleUnitId;
+  final String? rewardedGoogleUnitId;
   final String? interstitialYandexUnitId;
   final String? interstitialSplashYandexUnitId;
   final String? appLovinSDKKey;
   final String? interstitialAppLovinUnitId;
   final String? interstitialSplashAppLovinUnitId;
+  final String? rewardedAppLovinUnitId;
   final Duration interstitialFetchDelay;
   final Duration interstitialShowLock;
+  final Duration rewardedFetchDelay;
+  final Duration rewardedShowLock;
   final DSNativeAdBannerStyle nativeAdBannerStyle;
   final DSIsAdAllowedCallback? isAdAllowedCallback;
 
@@ -95,16 +97,20 @@ class DSAdsManager {
     this.onReportEvent,
     this.interstitialGoogleUnitId,
     this.interstitialSplashGoogleUnitId,
+    this.rewardedGoogleUnitId,
     this.nativeGoogleUnitId,
     this.interstitialYandexUnitId,
     this.interstitialSplashYandexUnitId,
     this.appLovinSDKKey,
     this.interstitialAppLovinUnitId,
     this.interstitialSplashAppLovinUnitId,
+    this.rewardedAppLovinUnitId,
     this.isAdAllowedCallback,
 
     this.interstitialFetchDelay = const Duration(),
     this.interstitialShowLock = const Duration(),
+    this.rewardedFetchDelay = const Duration(),
+    this.rewardedShowLock = const Duration(),
   }) :
         assert(_instance == null, 'dismiss previous Ads instance before init new'),
         assert(interstitialYandexUnitId == null || interstitialYandexUnitId.startsWith('R-M-'),

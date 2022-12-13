@@ -173,7 +173,7 @@ class DSAdsInterstitial extends Cubit<DSAdsInterstitialState> {
               Fimber.e('$e', stacktrace: stack);
             }
           },
-          onAdFailedToLoad: (DSInterstitialAd ad, int errCode, String errDescription) async {
+          onAdFailedToLoad: (DSAd ad, int errCode, String errDescription) async {
             try {
               final duration = DateTime.now().difference(startTime);
               await state.ad?.dispose();
@@ -251,7 +251,7 @@ class DSAdsInterstitial extends Cubit<DSAdsInterstitialState> {
               Fimber.e('$e', stacktrace: stack);
             }
           },
-          onAdFailedToLoad: (DSInterstitialAd ad, int errCode, String errDescription) async {
+          onAdFailedToLoad: (DSAd ad, int errCode, String errDescription) async {
             try {
               final duration = DateTime.now().difference(startTime);
               emit(state.copyWith(
@@ -327,7 +327,7 @@ class DSAdsInterstitial extends Cubit<DSAdsInterstitialState> {
               Fimber.e('$e', stacktrace: stack);
             }
           },
-          onAdFailedToLoad: (DSInterstitialAd ad, int errCode, String errDescription) async {
+          onAdFailedToLoad: (DSAd ad, int errCode, String errDescription) async {
             try {
               final duration = DateTime.now().difference(startTime);
               await state.ad?.dispose();
