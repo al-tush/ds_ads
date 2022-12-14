@@ -2,6 +2,7 @@ import 'dart:async';
 
 import 'package:applovin_max/applovin_max.dart';
 import 'package:collection/collection.dart';
+import 'package:ds_ads/ds_ads.dart';
 import 'package:ds_ads/src/ds_ads_interstitial.dart';
 import 'package:ds_ads/src/ds_ads_native_loader_mixin.dart';
 import 'package:fimber/fimber.dart';
@@ -18,7 +19,8 @@ class DSAdsManager {
 
   final _nextMediationWait = const Duration(minutes: 1);
 
-  final _adsInterstitialCubit = DSAdsInterstitial(type: DSAdsInterstitialType.def);
+  final _adsInterstitial = DSAdsInterstitial(type: DSAdsInterstitialType.def);
+  final _adsRewarded = DSAdsRewarded();
   DSAdsInterstitial? _splashInterstitial;
 
   @protected
@@ -26,7 +28,7 @@ class DSAdsManager {
 
   static bool get isInitialized => _instance != null;
 
-  static DSAdsInterstitial get interstitial => instance._adsInterstitialCubit;
+  static DSAdsInterstitial get interstitial => instance._adsInterstitial;
   static DSAdsInterstitial get splashInterstitial {
     if (instance._splashInterstitial == null) {
       Fimber.i('splash interstitial created');
@@ -34,6 +36,8 @@ class DSAdsManager {
     }
     return instance._splashInterstitial!;
   }
+
+  static DSAdsRewarded get rewarded => instance._adsRewarded;
 
   void disposeSplashInterstitial() {
     _splashInterstitial?.dispose();

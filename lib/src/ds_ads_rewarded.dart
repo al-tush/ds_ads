@@ -302,6 +302,7 @@ class DSAdsRewarded {
     final Duration Function()? dismissAdAfterCallback,
     final Future<bool> Function()? beforeAdShow,
     final Function()? onAdShow,
+    final DSOnRewardEventCallback? onReward,
     final Function()? then,
     Map<String, Object>? customAttributes,
   }) async {
@@ -463,6 +464,7 @@ class DSAdsRewarded {
         Fimber.e('$e', stacktrace: stack);
       }
     };
+    ad.onRewardEvent = onReward;
 
     if (_isDisposed) {
       _report('$_tag: showing canceled: manager disposed', location: location, attributes: customAttributes);
