@@ -27,12 +27,7 @@ class DSAppLovinInterstitialAd extends DSInterstitialAd {
       },
       onAdRevenuePaidCallback: (ad) {
         onAdImpression?.call(this);
-        final revenue = double.tryParse(ad.revenue);
-        if (revenue == null) {
-          Fimber.e('Failed parsing revenue value: ${ad.revenue}', stacktrace: StackTrace.current);
-          return;
-        }
-        onPaidEvent?.call(this, revenue * 1000000, PrecisionType.unknown, 'USD',  ad.dspName);
+        onPaidEvent?.call(this, ad.revenue * 1000000, PrecisionType.unknown, 'USD',  ad.dspName);
       },
       onAdDisplayFailedCallback: (ad, error) {
         onAdFailedToShow?.call(this, error.code, error.message);
@@ -105,12 +100,7 @@ class DSAppLovinRewardedAd extends DSRewardedAd {
       },
       onAdRevenuePaidCallback: (ad) {
         onAdImpression?.call(this);
-        final revenue = double.tryParse(ad.revenue);
-        if (revenue == null) {
-          Fimber.e('Failed parsing revenue value: ${ad.revenue}', stacktrace: StackTrace.current);
-          return;
-        }
-        onPaidEvent?.call(this, revenue * 1000000, PrecisionType.unknown, 'USD',  ad.dspName);
+        onPaidEvent?.call(this, ad.revenue * 1000000, PrecisionType.unknown, 'USD',  ad.dspName);
       },
       onAdDisplayFailedCallback: (ad, error) {
         onAdFailedToShow?.call(this, error.code, error.message);
