@@ -136,6 +136,7 @@ class DSGoogleRewardedAd extends DSRewardedAd {
 
   @override
   Future<void> show() async {
+    await _ad!.setImmersiveMode(true);
     await _ad!.show(
         onUserEarnedReward: (ad, reward) {
           assert(ad == _ad);
