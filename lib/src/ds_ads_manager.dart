@@ -2,9 +2,9 @@ import 'dart:async';
 
 import 'package:applovin_max/applovin_max.dart';
 import 'package:collection/collection.dart';
-import 'package:ds_ads/ds_ads.dart';
 import 'package:ds_ads/src/ds_ads_interstitial.dart';
 import 'package:ds_ads/src/ds_ads_native_loader_mixin.dart';
+import 'package:ds_ads/src/ds_ads_rewarded.dart';
 import 'package:fimber/fimber.dart';
 import 'package:freezed_annotation/freezed_annotation.dart';
 
