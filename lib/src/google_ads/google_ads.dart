@@ -1,4 +1,5 @@
 import 'package:ds_ads/src/generic_ads/export.dart';
+import 'package:fimber/fimber.dart';
 import 'package:google_mobile_ads/google_mobile_ads.dart';
 
 class DSGoogleInterstitialAd extends DSInterstitialAd {
@@ -105,23 +106,23 @@ class DSGoogleRewardedAd extends DSRewardedAd {
           };
           ad.fullScreenContentCallback = FullScreenContentCallback(
             onAdImpression: (ad) {
-              assert(_ad == ad);
+              if (ad != _ad) Fimber.e('ds_ads: assert error', stacktrace: StackTrace.current);
               onAdImpression?.call(this);
             },
             onAdShowedFullScreenContent: (ad) {
-              assert(_ad == ad);
+              if (ad != _ad) Fimber.e('ds_ads: assert error', stacktrace: StackTrace.current);
               onAdShown?.call(this);
             },
             onAdDismissedFullScreenContent: (RewardedAd ad) {
-              assert(_ad == ad);
+              if (ad != _ad) Fimber.e('ds_ads: assert error', stacktrace: StackTrace.current);
               onAdDismissed?.call(this);
             },
             onAdFailedToShowFullScreenContent: (ad, error) {
-              assert(_ad == ad);
+              if (ad != _ad) Fimber.e('ds_ads: assert error', stacktrace: StackTrace.current);
               onAdFailedToShow?.call(this, error.code, error.message);
             },
             onAdClicked: (ad) {
-              assert(_ad == ad);
+              if (ad != _ad) Fimber.e('ds_ads: assert error', stacktrace: StackTrace.current);
               onAdClicked?.call(this);
             },
           );
@@ -139,7 +140,7 @@ class DSGoogleRewardedAd extends DSRewardedAd {
     await _ad!.setImmersiveMode(true);
     await _ad!.show(
         onUserEarnedReward: (ad, reward) {
-          assert(ad == _ad);
+          if (ad != _ad) Fimber.e('ds_ads: assert error', stacktrace: StackTrace.current);
           onRewardEvent?.call(this, reward.amount, reward.type);
         }
     );

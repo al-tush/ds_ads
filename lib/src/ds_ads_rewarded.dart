@@ -477,7 +477,13 @@ class DSAdsRewarded {
         Fimber.e('$e', stacktrace: stack);
       }
     };
-    ad.onRewardEvent = onRewarded;
+    ad.onRewardEvent = (DSAd ad, num amount, String type) {
+      try {
+        onRewarded?.call(ad, amount, type);
+      } catch (e, stack) {
+        Fimber.e('$e', stacktrace: stack);
+      }
+    };
 
     if (_isDisposed) {
       _report('$_tag: showing canceled: manager disposed', location: location, attributes: customAttributes);

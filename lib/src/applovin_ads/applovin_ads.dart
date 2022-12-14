@@ -112,7 +112,6 @@ class DSAppLovinRewardedAd extends DSRewardedAd {
         onAdDismissed?.call(this);
       },
       onAdReceivedRewardCallback: (MaxAd ad, MaxReward reward) {
-        assert(ad == _ad);
         onRewardEvent?.call(this, reward.amount, reward.label);
       },
     ));
