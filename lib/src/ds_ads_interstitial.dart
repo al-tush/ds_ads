@@ -422,6 +422,8 @@ class DSAdsInterstitial extends Cubit<DSAdsInterstitialState> {
     final Duration Function()? dismissAdAfterCallback,
     final Future<bool> Function()? beforeAdShow,
     final Function()? onAdShow,
+    final Function(int errCode, String errText)? onFailedToShow,
+    final Function()? onAdClosed,
     final Function()? then,
     Map<String, Object>? customAttributes,
   }) async {
@@ -502,7 +504,15 @@ class DSAdsInterstitial extends Cubit<DSAdsInterstitialState> {
               DSAdsManager.instance.emitEvent(const DSAdsInterstitialShowErrorEvent._());
               return;
             }
-            await showAd(onAdShow: onAdShow, then: then, location: location, customAttributes: customAttributes);
+            await showAd(
+              location: location,
+              beforeAdShow: beforeAdShow,
+              onAdShow: onAdShow,
+              onFailedToShow: onFailedToShow,
+              onAdClosed: onAdClosed,
+              then: then,
+              customAttributes: customAttributes,
+            );
           },
         );
       }
@@ -562,6 +572,7 @@ class DSAdsInterstitial extends Cubit<DSAdsInterstitialState> {
         ));
         // если перенести then?.call() сюда, возникает краткий показ предыдущего экрана при закрытии интерстишла
         DSAdsManager.instance.emitEvent(DSAdsInterstitialShowDismissedEvent._(ad: ad));
+        onAdClosed?.call();
       } catch (e, stack) {
         Fimber.e('$e', stacktrace: stack);
       }
@@ -576,6 +587,7 @@ class DSAdsInterstitial extends Cubit<DSAdsInterstitialState> {
           ad: null,
           adState: DSAdState.none,
         ));
+        onFailedToShow?.call(errCode, errText);
         then?.call();
         DSAdsManager.instance.emitEvent(const DSAdsInterstitialShowErrorEvent._());
       } catch (e, stack) {

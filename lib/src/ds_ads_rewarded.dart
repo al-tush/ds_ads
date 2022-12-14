@@ -302,7 +302,9 @@ class DSAdsRewarded {
     final Duration Function()? dismissAdAfterCallback,
     final Future<bool> Function()? beforeAdShow,
     final Function()? onAdShow,
-    final DSOnRewardEventCallback? onReward,
+    final DSOnRewardEventCallback? onRewarded,
+    final Function(int errCode, String errText)? onFailedToShow,
+    final Function()? onAdClosed,
     final Function()? then,
     Map<String, Object>? customAttributes,
   }) async {
@@ -383,7 +385,16 @@ class DSAdsRewarded {
               DSAdsManager.instance.emitEvent(const DSAdsRewardedShowErrorEvent._());
               return;
             }
-            await showAd(onAdShow: onAdShow, then: then, location: location, customAttributes: customAttributes);
+            await showAd(
+              location: location,
+              beforeAdShow: beforeAdShow,
+              onAdShow: onAdShow,
+              onRewarded: onRewarded,
+              onFailedToShow: onFailedToShow,
+              onAdClosed: onAdClosed,
+              then: then,
+              customAttributes: customAttributes,
+            );
           },
         );
       }
@@ -439,6 +450,7 @@ class DSAdsRewarded {
         _lastShowTime = DateTime.now();
         // если перенести then?.call() сюда, возникает краткий показ предыдущего экрана при закрытии интерстишла
         DSAdsManager.instance.emitEvent(DSAdsRewardedShowDismissedEvent._(ad: ad));
+        onAdClosed?.call();
       } catch (e, stack) {
         Fimber.e('$e', stacktrace: stack);
       }
@@ -451,6 +463,7 @@ class DSAdsRewarded {
         _ad = null;
         _adState = DSAdState.none;
         _lastShowTime = DateTime.now();
+        onFailedToShow?.call(errCode, errText);
         then?.call();
         DSAdsManager.instance.emitEvent(const DSAdsRewardedShowErrorEvent._());
       } catch (e, stack) {
@@ -464,7 +477,7 @@ class DSAdsRewarded {
         Fimber.e('$e', stacktrace: stack);
       }
     };
-    ad.onRewardEvent = onReward;
+    ad.onRewardEvent = onRewarded;
 
     if (_isDisposed) {
       _report('$_tag: showing canceled: manager disposed', location: location, attributes: customAttributes);
