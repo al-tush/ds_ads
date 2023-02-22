@@ -139,11 +139,12 @@ class DSAdsInterstitial extends Cubit<DSAdsInterstitialState> {
     }
 
 
-    if (DateTime.now().difference(_lastShowTime) < (DSAdsManager.instance.interstitialFetchDelay)) {
+    final interstitialFetchDelay = DSAdsManager.instance.interstitialFetchDelayCallback?.call() ?? const Duration();
+    if (DateTime.now().difference(_lastShowTime) < interstitialFetchDelay) {
       then?.call();
       unawaited(() async {
         final spent = DateTime.now().difference(_lastShowTime);
-        final delay = DSAdsManager.instance.interstitialFetchDelay - spent;
+        final delay = interstitialFetchDelay - spent;
         await Future.delayed(delay);
         fetchAd(location: const DSAdLocation('internal_fetch_delayed'), customAttributes: customAttributes);
       }());
@@ -463,7 +464,7 @@ class DSAdsInterstitial extends Cubit<DSAdsInterstitialState> {
 
     if ([DSAdState.none, DSAdState.loading, DSAdState.error].contains(state.adState)) {
       if (calcDismissAdAfter().inSeconds <= 0) {
-        _report('ads_interstitial: showing canceled: not ready immediately (dismiss ad after ${calcDismissAdAfter().inSeconds}s)',
+        _report('ads_interstitial: showing canceled: not ready immediately (dismiss ad after ${calcDismissAdAfter().inSeconds}s, state: ${state.adState})',
           location: location,
           attributes: customAttributes,
         );
@@ -474,7 +475,7 @@ class DSAdsInterstitial extends Cubit<DSAdsInterstitialState> {
         Timer(calcDismissAdAfter(), () {
           if (processed) return;
           processed = true;
-          _report('ads_interstitial: showing canceled: not ready after ${calcDismissAdAfter().inSeconds}s',
+          _report('ads_interstitial: showing canceled: not ready after ${calcDismissAdAfter().inSeconds}s, state: ${state.adState}',
             location: location,
             attributes: customAttributes,
           );
@@ -519,8 +520,9 @@ class DSAdsInterstitial extends Cubit<DSAdsInterstitialState> {
       return;
     }
 
-    if (DateTime.now().difference(_lastShowTime) < (DSAdsManager.instance.interstitialShowLock)) {
-      _report('ads_interstitial: showing canceled: locked for ${DSAdsManager.instance.interstitialShowLock.inSeconds}s',
+    final interstitialShowLock = DSAdsManager.instance.interstitialShowLockCallback?.call() ?? const Duration();
+    if (DateTime.now().difference(_lastShowTime) < interstitialShowLock) {
+      _report('ads_interstitial: showing canceled: locked for ${interstitialShowLock.inSeconds}s',
         location: location,
         attributes: customAttributes,
       );

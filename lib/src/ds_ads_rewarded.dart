@@ -120,12 +120,12 @@ class DSAdsRewarded {
       return;
     }
 
-
-    if (DateTime.now().difference(_lastShowTime) < (DSAdsManager.instance.rewardedFetchDelay)) {
+    final rewardedFetchDelay = DSAdsManager.instance.rewardedFetchDelayCallback?.call() ?? const Duration();
+    if (DateTime.now().difference(_lastShowTime) < (rewardedFetchDelay)) {
       then?.call();
       unawaited(() async {
         final spent = DateTime.now().difference(_lastShowTime);
-        final delay = DSAdsManager.instance.rewardedFetchDelay - spent;
+        final delay = rewardedFetchDelay - spent;
         await Future.delayed(delay);
         fetchAd(location: const DSAdLocation('internal_fetch_delayed'), customAttributes: customAttributes);
       }());
@@ -401,8 +401,9 @@ class DSAdsRewarded {
       return;
     }
 
-    if (DateTime.now().difference(_lastShowTime) < (DSAdsManager.instance.rewardedShowLock)) {
-      _report('$_tag: showing canceled: locked for ${DSAdsManager.instance.rewardedShowLock.inSeconds}s',
+    final rewardedShowLock = DSAdsManager.instance.rewardedShowLockCallback?.call() ?? const Duration();
+    if (DateTime.now().difference(_lastShowTime) < (rewardedShowLock)) {
+      _report('$_tag: showing canceled: locked for ${rewardedShowLock.inSeconds}s',
         location: location,
         attributes: customAttributes,
       );

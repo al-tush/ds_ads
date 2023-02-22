@@ -71,10 +71,10 @@ class DSAdsManager {
   final String? interstitialAppLovinUnitId;
   final String? interstitialSplashAppLovinUnitId;
   final String? rewardedAppLovinUnitId;
-  final Duration interstitialFetchDelay;
-  final Duration interstitialShowLock;
-  final Duration rewardedFetchDelay;
-  final Duration rewardedShowLock;
+  final DSDurationCallback? interstitialFetchDelayCallback;
+  final DSDurationCallback? interstitialShowLockCallback;
+  final DSDurationCallback? rewardedFetchDelayCallback;
+  final DSDurationCallback? rewardedShowLockCallback;
   final DSNativeAdBannerStyle nativeAdBannerStyle;
   final DSIsAdAllowedCallback? isAdAllowedCallback;
 
@@ -111,10 +111,10 @@ class DSAdsManager {
     this.rewardedAppLovinUnitId,
     this.isAdAllowedCallback,
 
-    this.interstitialFetchDelay = const Duration(),
-    this.interstitialShowLock = const Duration(),
-    this.rewardedFetchDelay = const Duration(),
-    this.rewardedShowLock = const Duration(),
+    this.interstitialFetchDelayCallback,
+    this.interstitialShowLockCallback,
+    this.rewardedFetchDelayCallback,
+    this.rewardedShowLockCallback,
   }) :
         assert(_instance == null, 'dismiss previous Ads instance before init new'),
         assert(interstitialYandexUnitId == null || interstitialYandexUnitId.startsWith('R-M-'),

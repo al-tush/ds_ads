@@ -10,6 +10,8 @@ typedef OnPaidEvent = void Function(DSAd ad, DSAdMediation mediation, double val
 
 typedef DSIsAdAllowedCallback = bool Function(DSAdSource source, DSAdLocation location);
 
+typedef DSDurationCallback = Duration Function();
+
 enum DSAdSource {
   interstitial,
   native,
