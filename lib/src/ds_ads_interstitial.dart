@@ -16,7 +16,7 @@ part 'ds_ads_interstitial_types.dart';
 
 class DSAdsInterstitial extends Cubit<DSAdsInterstitialState> {
   static var _lastShowTime = DateTime(0);
-
+  
   String get adUnitId {
     final mediation = DSAdsManager.instance.currentMediation;
     if (mediation == null) {
@@ -567,7 +567,7 @@ class DSAdsInterstitial extends Cubit<DSAdsInterstitialState> {
       try {
         _report('ads_interstitial: full screen content dismissed', location: location, attributes: customAttributes);
         ad.dispose();
-        _lastShowTime = DateTime.now();
+        updateLastShowTime();
         emit(state.copyWith(
           ad: null,
           adState: DSAdState.none,
@@ -584,7 +584,7 @@ class DSAdsInterstitial extends Cubit<DSAdsInterstitialState> {
         _report('ads_interstitial: showing canceled by error', location: location, attributes: customAttributes);
         Fimber.e('$errText ($errCode)', stacktrace: StackTrace.current);
         ad.dispose();
-        _lastShowTime = DateTime.now();
+        updateLastShowTime();
         emit(state.copyWith(
           ad: null,
           adState: DSAdState.none,
@@ -618,7 +618,7 @@ class DSAdsInterstitial extends Cubit<DSAdsInterstitialState> {
       return;
     }
 
-    _lastShowTime = DateTime.now();
+    updateLastShowTime();
     emit(state.copyWith(
       adState: DSAdState.preShowing,
     ));
@@ -632,6 +632,8 @@ class DSAdsInterstitial extends Cubit<DSAdsInterstitialState> {
   void updateLastShowedTime() {
     updateLastShowTime();
   }
+
+  DateTime getLastShowTime() => _lastShowTime;
 
   void updateLastShowTime() {
     _lastShowTime = DateTime.now();
