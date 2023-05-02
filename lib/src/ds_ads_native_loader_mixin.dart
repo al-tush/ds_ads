@@ -26,6 +26,9 @@ mixin DSAdsNativeLoaderMixin<T extends StatefulWidget> on State<T> {
         return 260;
       case DSNativeAdBannerStyle.style2:
         return 280;
+      default:
+        assert(DSAdsManager.instance.nativeAdHeight != null, 'nativeAdHeight should be set up for custom styles');
+        return DSAdsManager.instance.nativeAdHeight!;
     }
   }
 
@@ -85,15 +88,7 @@ mixin DSAdsNativeLoaderMixin<T extends StatefulWidget> on State<T> {
   }
 
   static String _getFactoryId() {
-    final String group;
-    switch (DSAdsManager.instance.nativeAdBannerStyle) {
-      case DSNativeAdBannerStyle.style1:
-        group = 'adFactory1';
-        break;
-      case DSNativeAdBannerStyle.style2:
-        group = 'adFactory2';
-        break;
-    }
+    final group = DSAdsManager.instance.nativeAdBannerStyle;
     switch (DSAdsManager.instance.appState.brightness) {
       case Brightness.light:
         return '${group}Light';

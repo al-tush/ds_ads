@@ -41,9 +41,9 @@ class DSAdLocation {
   String toString() => val;
 }
 
-enum DSNativeAdBannerStyle {
-  style1, // top margin 16dp
-  style2, // no margins
+abstract class DSNativeAdBannerStyle {
+  static const style1 = 'adFactory1'; // top margin 16dp
+  static const style2 = 'adFactory2'; // no margins
 }
 
 abstract class DSAppAdsState {

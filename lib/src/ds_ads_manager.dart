@@ -75,7 +75,8 @@ class DSAdsManager {
   final DSDurationCallback? interstitialShowLockCallback;
   final DSDurationCallback? rewardedFetchDelayCallback;
   final DSDurationCallback? rewardedShowLockCallback;
-  final DSNativeAdBannerStyle nativeAdBannerStyle;
+  final String nativeAdBannerStyle;
+  final double? nativeAdHeight;
   final DSIsAdAllowedCallback? isAdAllowedCallback;
 
   /// Initializes ads in the app
@@ -89,6 +90,7 @@ class DSAdsManager {
   /// [onReportEvent] is an event handler for the ability to send events to analytics.
   /// [interstitialUnitId] is the default unitId for the interstitial.
   /// [nativeUnitId] unitId for native block.
+  /// [nativeAdHeight] height of custom native ad blocks (not in [DSNativeAdBannerStyle])
   /// [isAdAllowedCallback] allows you to dynamically determine whether an ad can be displayed.
   /// [interstitialFetchDelay] sets the minimum time after displaying an interstitial before the next interstitial is started to load.
   /// [interstitialShowLock] the time from the moment the user closes the interstitial for which the interstitials show are blocked.
@@ -110,6 +112,7 @@ class DSAdsManager {
     this.interstitialSplashAppLovinUnitId,
     this.rewardedAppLovinUnitId,
     this.isAdAllowedCallback,
+    this.nativeAdHeight,
 
     this.interstitialFetchDelayCallback,
     this.interstitialShowLockCallback,
