@@ -2,6 +2,7 @@ import 'dart:async';
 
 import 'package:applovin_max/applovin_max.dart';
 import 'package:collection/collection.dart';
+import 'package:ds_ads/src/ds_ads_app_open.dart';
 import 'package:ds_ads/src/ds_ads_interstitial.dart';
 import 'package:ds_ads/src/ds_ads_native_loader_mixin.dart';
 import 'package:ds_ads/src/ds_ads_rewarded.dart';
@@ -21,6 +22,7 @@ class DSAdsManager {
 
   final _adsInterstitial = DSAdsInterstitial(type: DSAdsInterstitialType.def);
   final _adsRewarded = DSAdsRewarded();
+  final _adsAppOpen = DSAdsAppOpen();
   DSAdsInterstitial? _splashInterstitial;
 
   @protected
@@ -38,6 +40,8 @@ class DSAdsManager {
   }
 
   static DSAdsRewarded get rewarded => instance._adsRewarded;
+
+  static DSAdsAppOpen get appOpen => instance._adsAppOpen;
 
   void disposeSplashInterstitial() {
     _splashInterstitial?.dispose();
@@ -64,6 +68,7 @@ class DSAdsManager {
   final String? interstitialGoogleUnitId;
   final String? interstitialSplashGoogleUnitId;
   final String? nativeGoogleUnitId;
+  final String? appOpenGoogleUnitId;
   final String? rewardedGoogleUnitId;
   final String? interstitialYandexUnitId;
   final String? interstitialSplashYandexUnitId;
@@ -105,6 +110,7 @@ class DSAdsManager {
     this.interstitialSplashGoogleUnitId,
     this.rewardedGoogleUnitId,
     this.nativeGoogleUnitId,
+    this.appOpenGoogleUnitId,
     this.interstitialYandexUnitId,
     this.interstitialSplashYandexUnitId,
     this.appLovinSDKKey,

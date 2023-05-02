@@ -55,3 +55,23 @@ abstract class DSRewardedAd extends DSAd {
   set onAdClicked(void Function(DSRewardedAd ad)? value);
   set onAdImpression(void Function(DSRewardedAd ad)? value);
 }
+
+abstract class DSAppOpenAd extends DSAd {
+  const DSAppOpenAd({
+    required super.adUnitId,
+  });
+
+  Future<void> show();
+
+  Future<void> dispose();
+
+  set onPaidEvent(DSOnPaidEventCallback? value);
+
+//  set onAdLoaded(void Function(DSAppOpenAd ad) value);
+//  set onAdFailedToLoad(void Function(DSAppOpenAd ad, int errCode, String errText) value);
+  set onAdDismissed(void Function(DSAppOpenAd ad)? value);
+  set onAdFailedToShow(void Function(DSAppOpenAd ad, int errCode, String errText) value);
+  set onAdShown(void Function(DSAppOpenAd ad)? value);
+  set onAdClicked(void Function(DSAppOpenAd ad)? value);
+  set onAdImpression(void Function(DSAppOpenAd ad)? value);
+}

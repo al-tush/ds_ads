@@ -184,3 +184,87 @@ class DSNativeAd extends DSAd {
   String get mediationAdapterClassName => '${ad.responseInfo?.mediationAdapterClassName}';
 
 }
+
+class DSGoogleAppOpenAd extends DSAppOpenAd
+{
+  AppOpenAd? _ad;
+
+  DSGoogleAppOpenAd({
+    required super.adUnitId,
+  });
+
+  Future<void> load({
+    required int orientation,
+    required void Function(DSGoogleAppOpenAd ad) onAdLoaded,
+    required DSOnAdFailedToLoad onAdFailedToLoad,
+  }) async {
+    await AppOpenAd.load(
+      adUnitId: adUnitId,
+      orientation: orientation,
+      request: const AdRequest(),
+      adLoadCallback: AppOpenAdLoadCallback(
+        onAdLoaded: (ad) async {
+          _ad = ad;
+          ad.onPaidEvent = (Ad ad, double valueMicros, PrecisionType precision, String currencyCode) {
+            assert(_ad == ad);
+            onPaidEvent?.call(this, valueMicros, precision, currencyCode, null);
+          };
+          ad.fullScreenContentCallback = FullScreenContentCallback(
+            onAdImpression: (ad) {
+              assert(_ad == ad);
+              onAdImpression?.call(this);
+            },
+            onAdShowedFullScreenContent: (ad) {
+              assert(_ad == ad);
+              onAdShown?.call(this);
+            },
+            onAdDismissedFullScreenContent: (AppOpenAd ad) {
+              assert(_ad == ad);
+              onAdDismissed?.call(this);
+            },
+            onAdFailedToShowFullScreenContent: (ad, error) {
+              assert(_ad == ad);
+              onAdFailedToShow?.call(this, error.code, error.message);
+            },
+            onAdClicked: (ad) {
+              assert(_ad == ad);
+              onAdClicked?.call(this);
+            },
+          );
+          onAdLoaded(this);
+        },
+        onAdFailedToLoad: (LoadAdError error) {
+          onAdFailedToLoad(this, error.code, error.message);
+        },
+      ),
+    );
+  }
+
+  @override
+  Future<void> show() async {
+    await _ad!.show();
+  }
+
+  @override
+  Future<void> dispose() async {
+    await _ad?.dispose();
+    _ad = null;
+  }
+
+  @override
+  DSOnPaidEventCallback? onPaidEvent;
+  @override
+  void Function(DSAppOpenAd ad)? onAdDismissed;
+  @override
+  void Function(DSAppOpenAd ad, int errCode, String errText)? onAdFailedToShow;
+  @override
+  void Function(DSAppOpenAd ad)? onAdShown;
+  @override
+  void Function(DSAppOpenAd ad)? onAdClicked;
+  @override
+  void Function(DSAppOpenAd ad)? onAdImpression;
+
+  @override
+  String get mediationAdapterClassName => '${_ad!.responseInfo?.mediationAdapterClassName}';
+
+}

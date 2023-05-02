@@ -16,6 +16,7 @@ enum DSAdSource {
   interstitial,
   native,
   rewarded,
+  appOpen,
 }
 
 enum DSAdMediation {
