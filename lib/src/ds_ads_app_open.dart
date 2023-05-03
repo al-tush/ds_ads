@@ -13,7 +13,7 @@ part 'ds_ads_app_open_types.dart';
 
 class DSAdsAppOpen {
   /// Maximum duration allowed between loading and showing the ad.
-  final maxCacheDuration = const Duration(minutes: 1); //hours: 4);
+  final maxCacheDuration = const Duration(hours: 4);
 
   var _lastLoadTime = DateTime(0);
   
