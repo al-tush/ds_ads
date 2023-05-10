@@ -9,6 +9,7 @@ import 'package:fimber/fimber.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:freezed_annotation/freezed_annotation.dart';
 
+import 'ds_ads_app_open.dart';
 import 'ds_ads_interstitial_state.dart';
 import 'ds_ads_types.dart';
 
@@ -565,6 +566,7 @@ class DSAdsInterstitial extends Cubit<DSAdsInterstitialState> {
     };
     ad.onAdDismissed = (ad) {
       try {
+        DSAdsAppOpen.lockShowFor(const Duration(seconds: 5));
         _report('ads_interstitial: full screen content dismissed', location: location, attributes: customAttributes);
         ad.dispose();
         updateLastShowTime();
@@ -581,6 +583,7 @@ class DSAdsInterstitial extends Cubit<DSAdsInterstitialState> {
     };
     ad.onAdFailedToShow = (ad, int errCode, String errText) {
       try {
+        DSAdsAppOpen.lockShowFor(const Duration(seconds: 5));
         _report('ads_interstitial: showing canceled by error', location: location, attributes: customAttributes);
         Fimber.e('$errText ($errCode)', stacktrace: StackTrace.current);
         ad.dispose();

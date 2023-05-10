@@ -12,11 +12,13 @@ import 'ds_ads_types.dart';
 part 'ds_ads_app_open_types.dart';
 
 class DSAdsAppOpen {
+  static var _showLockedUntil = DateTime(0);
+
   /// Maximum duration allowed between loading and showing the ad.
   final maxCacheDuration = const Duration(hours: 4);
 
   var _lastLoadTime = DateTime(0);
-  
+
   final int loadRetryMaxCount;
   final Duration loadRetryDelay;
   DateTime get lastLoadTime => _lastLoadTime;
@@ -240,6 +242,12 @@ class DSAdsAppOpen {
       return;
     }
 
+    if (DateTime.now().compareTo(_showLockedUntil) < 0) {
+      then?.call();
+      _report('ads_app_open: showing locked', location: location, attributes: customAttributes);
+      return;
+    }
+
     if (!DSAdsManager.instance.appState.isInForeground) {
       then?.call();
       // https://support.google.com/admob/answer/6201362#zippy=%2Cdisallowed-example-user-launches-app
@@ -354,6 +362,10 @@ class DSAdsAppOpen {
 
     _report('ads_app_open: start showing', location: location, attributes: customAttributes);
     await ad.show();
+  }
+
+  static void lockShowFor(Duration duration) {
+    _showLockedUntil = DateTime.now().add(duration);
   }
 
 }
