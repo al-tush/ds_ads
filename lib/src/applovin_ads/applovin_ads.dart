@@ -27,6 +27,11 @@ class DSAppLovinInterstitialAd extends DSInterstitialAd {
       },
       onAdRevenuePaidCallback: (ad) {
         onAdImpression?.call(this);
+        // https://dash.applovin.com/documentation/mediation/android/getting-started/advanced-settings#impression-level-user-revenue-api
+        if (ad.revenue < 0) {
+          Fimber.w('AppLovin revenue error');
+          return;
+        }
         onPaidEvent?.call(this, ad.revenue * 1000000, PrecisionType.unknown, 'USD',  ad.dspName);
       },
       onAdDisplayFailedCallback: (ad, error) {
