@@ -42,9 +42,24 @@ class DSAdLocation {
   String toString() => val;
 }
 
+typedef DSNativeStyle = String;
+
+class NativeAdBanner {
+  final DSAdLocation location;
+  final DSNativeStyle style;
+  final double height;
+
+  NativeAdBanner({
+    required this.location,
+    required this.style,
+    required this.height,
+  });
+}
+
 abstract class DSNativeAdBannerStyle {
-  static const style1 = 'adFactory1'; // top margin 16dp
-  static const style2 = 'adFactory2'; // no margins
+  static const DSNativeStyle notDefined = '';
+  static const DSNativeStyle style1 = 'adFactory1'; // top margin 16dp
+  static const DSNativeStyle style2 = 'adFactory2'; // no margins
 }
 
 abstract class DSAppAdsState {

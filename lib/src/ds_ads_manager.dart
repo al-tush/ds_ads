@@ -80,8 +80,8 @@ class DSAdsManager {
   final DSDurationCallback? interstitialShowLockCallback;
   final DSDurationCallback? rewardedFetchDelayCallback;
   final DSDurationCallback? rewardedShowLockCallback;
-  final String nativeAdBannerStyle;
-  final double? nativeAdHeight;
+  final DSNativeStyle nativeAdBannerDefStyle;
+  final List<NativeAdBanner> nativeAdCustomBanners;
   final DSIsAdAllowedCallback? isAdAllowedCallback;
 
   /// Initializes ads in the app
@@ -103,7 +103,7 @@ class DSAdsManager {
     required this.mediationPrioritiesCallback,
     required this.onPaidEvent,
     required this.appState,
-    required this.nativeAdBannerStyle,
+    this.nativeAdBannerDefStyle = DSNativeAdBannerStyle.notDefined,
     this.locations,
     this.onReportEvent,
     this.interstitialGoogleUnitId,
@@ -118,7 +118,7 @@ class DSAdsManager {
     this.interstitialSplashAppLovinUnitId,
     this.rewardedAppLovinUnitId,
     this.isAdAllowedCallback,
-    this.nativeAdHeight,
+    this.nativeAdCustomBanners = const [],
 
     this.interstitialFetchDelayCallback,
     this.interstitialShowLockCallback,

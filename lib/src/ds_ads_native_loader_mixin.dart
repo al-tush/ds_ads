@@ -1,5 +1,6 @@
 import 'dart:async';
 
+import 'package:collection/collection.dart';
 import 'package:ds_ads/ds_ads.dart';
 import 'package:fimber/fimber.dart';
 import 'package:flutter/material.dart';
@@ -10,25 +11,34 @@ import 'google_ads/export.dart';
 
 part 'ds_ads_native_loader_types.dart';
 
+
 mixin DSAdsNativeLoaderMixin<T extends StatefulWidget> on State<T> {
   final _adKey = GlobalKey();
-  bool get isLoaded => _loadedAds[this] != null;
+  bool get isShowed => _showedAds[this] != null;
 
   DSAdLocation get nativeAdLocation;
 
-  static final _loadedAds = <DSAdsNativeLoaderMixin?, NativeAd>{};
-  static bool get hasPreloadedAd => _loadedAds[null] != null;
+  static final _loadingAds = <DSNativeStyle, NativeAd?>{};
+  static final _showedAds = <DSAdsNativeLoaderMixin, NativeAd>{};
 
-  static double get nativeAdHeight {
+  /// Реклама уже предзагружена или сейчас загружается
+  static bool hasPreloadedAd(DSAdLocation location) {
+    final style = _getStyleByLocation(location);
+    return _loadingAds.containsKey(style);
+  }
+
+  double get nativeAdHeight {
+    var height = DSAdsManager.instance.nativeAdCustomBanners.firstWhereOrNull((e) => e.location == nativeAdLocation)?.height;
+    if (height != null) return height;
     // the same as in res/layout/native_ad_X_light.xml and res/layout/native_ad_X_dark.xml
-    switch (DSAdsManager.instance.nativeAdBannerStyle) {
+    switch (DSAdsManager.instance.nativeAdBannerDefStyle) {
       case DSNativeAdBannerStyle.style1:
         return 260;
       case DSNativeAdBannerStyle.style2:
         return 280;
       default:
-        assert(DSAdsManager.instance.nativeAdHeight != null, 'nativeAdHeight should be set up for custom styles');
-        return DSAdsManager.instance.nativeAdHeight!;
+        assert(false, 'nativeAdBannerDefStyle or nativeAdCustomBanners should be defined');
+        return 0;
     }
   }
 
@@ -53,8 +63,8 @@ mixin DSAdsNativeLoaderMixin<T extends StatefulWidget> on State<T> {
 
   @override
   void dispose() {
-    final ad = _loadedAds.remove(this);
-    _report('ads_native: dispose (isLoaded: ${ad != null})', location: nativeAdLocation);
+    final ad = _showedAds[this];
+    _report('ads_native: dispose (isShowed: ${ad != null})', location: nativeAdLocation);
     ad?.dispose();
     unawaited(fetchAd(location: const DSAdLocation('internal_dispose')));
     super.dispose();
@@ -62,8 +72,8 @@ mixin DSAdsNativeLoaderMixin<T extends StatefulWidget> on State<T> {
 
   @internal
   static Future<void> disposeClass() async {
-    while (_loadedAds.isNotEmpty) {
-      await _loadedAds.remove(_loadedAds.keys.first)?.dispose();
+    while (_loadingAds.isNotEmpty) {
+      await _loadingAds.remove(_loadingAds.keys.first)?.dispose();
     }
   }
 
@@ -83,17 +93,28 @@ mixin DSAdsNativeLoaderMixin<T extends StatefulWidget> on State<T> {
   }
 
   static DSAdLocation _getLocationByAd(Ad ad) {
-    final obj = _loadedAds.entries.firstWhere((e) => e.value == ad).key;
+    final obj = _showedAds.entries.firstWhereOrNull((e) => e.value == ad)?.key;
     return obj?.nativeAdLocation ?? const DSAdLocation('internal_unassigned');
   }
 
-  static String _getFactoryId() {
-    final group = DSAdsManager.instance.nativeAdBannerStyle;
+  static DSNativeStyle _getStyleByLocation(DSAdLocation location) {
+    String? style;
+    if (!location.isInternal) {
+      style = DSAdsManager.instance.nativeAdCustomBanners.firstWhereOrNull((e) => e.location == location)?.style;
+    }
+    style ??= DSAdsManager.instance.nativeAdBannerDefStyle;
+    return style;
+  }
+
+  static String _getFactoryId({
+    required final DSAdLocation location,
+  }) {
+    final style = _getStyleByLocation(location);
     switch (DSAdsManager.instance.appState.brightness) {
       case Brightness.light:
-        return '${group}Light';
+        return '${style}Light';
       case Brightness.dark:
-        return '${group}Dark';
+        return '${style}Dark';
     }
   }
 
@@ -119,8 +140,6 @@ mixin DSAdsNativeLoaderMixin<T extends StatefulWidget> on State<T> {
     return false;
   }
 
-  static var _isBannerLoading = false;
-
   static Future<void> fetchAd({
     required final DSAdLocation location,
   }) async {
@@ -130,19 +149,27 @@ mixin DSAdsNativeLoaderMixin<T extends StatefulWidget> on State<T> {
 
     final adUnitId = DSAdsManager.instance.nativeGoogleUnitId;
     assert(adUnitId != null, 'Pass nativeUnitId to DSAdsManager(...) on app start');
-    if (hasPreloadedAd) {
+
+    final style = _getStyleByLocation(location);
+    if (_loadingAds[style] != null) {
       Fimber.i('ads_native: banner already loaded (location: $location)');
       return;
     }
-    if (_isBannerLoading) {
+    if (_loadingAds.containsKey(style)) {
       Fimber.i('ads_native: banner is already loading (location: $location)');
       return;
     }
+    final factoryId = _getFactoryId(location: location);
+    if (style.isEmpty) {
+      assert(location.isInternal, 'DSAdsManager.instance.nativeAd... should be defined');
+      return;
+    }
+
+    _loadingAds[style] = null;
     _report('ads_native: start loading', location: location);
     final mediation = DSAdsManager.instance.currentMediation!;
-    _isBannerLoading = true;
     await NativeAd(
-      factoryId: _getFactoryId(),
+      factoryId: factoryId,
       adUnitId: adUnitId!,
       listener: NativeAdListener(
         onAdImpression: (ad) async {
@@ -154,8 +181,7 @@ mixin DSAdsNativeLoaderMixin<T extends StatefulWidget> on State<T> {
         },
         onAdLoaded: (ad) async {
           try {
-            _isBannerLoading = false;
-            _loadedAds[null] = ad as NativeAd;
+            _loadingAds[style] = ad as NativeAd;
             _report('ads_native: loaded', location: location);
             DSAdsManager.instance.emitEvent(DSAdsNativeLoadedEvent._(ad: ad));
           } catch (e, stack) {
@@ -164,7 +190,7 @@ mixin DSAdsNativeLoaderMixin<T extends StatefulWidget> on State<T> {
         },
         onAdFailedToLoad: (ad, err) async {
           try {
-            _isBannerLoading = false;
+            _loadingAds.remove(style);
             _report('ads_native: failed to load', location: location, attributes: {
               'error_text': err.message,
               'error_code': '${err.code} ($mediation)',
@@ -210,11 +236,12 @@ mixin DSAdsNativeLoaderMixin<T extends StatefulWidget> on State<T> {
   }
 
   bool _assignAdToMe() {
-    final readyAd = _loadedAds[null];
-    if (readyAd == null) return false; // No ads ready
-    if (isLoaded) return false; // Already assigned
-    _loadedAds[this] = readyAd;
-    _loadedAds.remove(null);
+    if (isShowed) return false;
+    final style = _getStyleByLocation(nativeAdLocation);
+    final readyAd = _loadingAds[style];
+    if (readyAd == null) return false;
+    _showedAds[this] = readyAd;
+    _loadingAds.remove(style);
     return true;
   }
 
@@ -228,12 +255,12 @@ mixin DSAdsNativeLoaderMixin<T extends StatefulWidget> on State<T> {
 
     final child = SizedBox(
       height: nativeAdHeight,
-      child: isLoaded
-          ? AdWidget(key: _adKey, ad: _loadedAds[this]!)
+      child: isShowed
+          ? AdWidget(key: _adKey, ad: _showedAds[this]!)
           : const Center(child: CircularProgressIndicator()),
     );
     if (builder != null) {
-      return builder(context, isLoaded, child);
+      return builder(context, isShowed, child);
     } else {
       return child;
     }
