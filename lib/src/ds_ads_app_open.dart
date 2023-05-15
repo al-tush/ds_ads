@@ -146,7 +146,7 @@ class DSAdsAppOpen {
                 ...?customAttributes,
               });
               ad.onPaidEvent = (ad, valueMicros, precision, currencyCode, appLovinDspName) {
-                DSAdsManager.instance.onPaidEvent(ad, mediation, location, valueMicros, precision, currencyCode, DSAdSource.interstitial, appLovinDspName);
+                DSAdsManager.instance.onPaidEvent(ad, mediation, location, valueMicros, precision, currencyCode, DSAdSource.appOpen, appLovinDspName);
               };
 
               await _ad?.dispose();
@@ -178,7 +178,7 @@ class DSAdsAppOpen {
                 ...?customAttributes,
               });
               final oldMediation = DSAdsManager.instance.currentMediation;
-              await DSAdsManager.instance.onLoadAdError(errCode, errDescription, mediation, DSAdSource.interstitial);
+              await DSAdsManager.instance.onLoadAdError(errCode, errDescription, mediation, DSAdSource.appOpen);
               if (DSAdsManager.instance.currentMediation != oldMediation) {
                 _loadRetryCount = 0;
               }
