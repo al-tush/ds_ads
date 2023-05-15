@@ -148,7 +148,7 @@ class DSAdsRewarded {
                 ...?customAttributes,
               });
               ad.onPaidEvent = (ad, valueMicros, precision, currencyCode, appLovinDspName) {
-                DSAdsManager.instance.onPaidEvent(ad, mediation, valueMicros, precision, currencyCode, DSAdSource.rewarded, appLovinDspName);
+                DSAdsManager.instance.onPaidEvent(ad, mediation, location, valueMicros, precision, currencyCode, DSAdSource.rewarded, appLovinDspName);
               };
 
               await _ad?.dispose();
@@ -220,7 +220,7 @@ class DSAdsRewarded {
                 ...?customAttributes,
               });
               ad.onPaidEvent = (ad, valueMicros, precision, currencyCode, appLovinDspName) {
-                DSAdsManager.instance.onPaidEvent(ad, mediation, valueMicros, precision, currencyCode, DSAdSource.rewarded, appLovinDspName);
+                DSAdsManager.instance.onPaidEvent(ad, mediation, location, valueMicros, precision, currencyCode, DSAdSource.rewarded, appLovinDspName);
               };
               await _ad?.dispose();
               _ad = ad;

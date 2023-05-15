@@ -5,7 +5,7 @@ import 'package:google_mobile_ads/google_mobile_ads.dart';
 import 'generic_ads/export.dart';
 
 typedef OnReportEvent = void Function(String eventName, Map<String, Object> attributes);
-typedef OnPaidEvent = void Function(DSAd ad, DSAdMediation mediation, double valueMicros, PrecisionType precision,
+typedef OnPaidEvent = void Function(DSAd ad, DSAdMediation mediation, DSAdLocation location, double valueMicros, PrecisionType precision,
     String currencyCode, DSAdSource source, String? appLovinDspName);
 
 typedef DSIsAdAllowedCallback = bool Function(DSAdSource source, DSAdLocation location);

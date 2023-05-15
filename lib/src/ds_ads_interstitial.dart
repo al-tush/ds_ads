@@ -168,7 +168,7 @@ class DSAdsInterstitial extends Cubit<DSAdsInterstitialState> {
                 ...?customAttributes,
               });
               ad.onPaidEvent = (ad, valueMicros, precision, currencyCode, appLovinDspName) {
-                DSAdsManager.instance.onPaidEvent(ad, mediation, valueMicros, precision, currencyCode, DSAdSource.interstitial, appLovinDspName);
+                DSAdsManager.instance.onPaidEvent(ad, mediation, location, valueMicros, precision, currencyCode, DSAdSource.interstitial, appLovinDspName);
               };
 
               await state.ad?.dispose();
@@ -328,7 +328,7 @@ class DSAdsInterstitial extends Cubit<DSAdsInterstitialState> {
                 ...?customAttributes,
               });
               ad.onPaidEvent = (ad, valueMicros, precision, currencyCode, appLovinDspName) {
-                DSAdsManager.instance.onPaidEvent(ad, mediation, valueMicros, precision, currencyCode, DSAdSource.interstitial, appLovinDspName);
+                DSAdsManager.instance.onPaidEvent(ad, mediation, location, valueMicros, precision, currencyCode, DSAdSource.interstitial, appLovinDspName);
               };
 
               await state.ad?.dispose();

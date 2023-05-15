@@ -146,7 +146,7 @@ class DSAdsAppOpen {
                 ...?customAttributes,
               });
               ad.onPaidEvent = (ad, valueMicros, precision, currencyCode, appLovinDspName) {
-                DSAdsManager.instance.onPaidEvent(ad, mediation, valueMicros, precision, currencyCode, DSAdSource.interstitial, appLovinDspName);
+                DSAdsManager.instance.onPaidEvent(ad, mediation, location, valueMicros, precision, currencyCode, DSAdSource.interstitial, appLovinDspName);
               };
 
               await _ad?.dispose();
