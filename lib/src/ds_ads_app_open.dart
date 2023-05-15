@@ -29,6 +29,8 @@ class DSAdsAppOpen {
 
   var _isDisposed = false;
 
+  DSAdState get adState => _adState;
+
   DSAdsAppOpen({
     this.loadRetryMaxCount = 3,
     this.loadRetryDelay = const Duration(seconds: 1),
