@@ -7,7 +7,7 @@ abstract class DSAdsNativeEvent extends DSAdsEvent {
 }
 
 class DSAdsNativeLoadedEvent extends DSAdsNativeEvent {
-  final Ad ad;
+  final DSNativeAd ad;
 
   const DSAdsNativeLoadedEvent._({
     required this.ad,

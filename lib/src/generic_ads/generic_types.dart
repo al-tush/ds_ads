@@ -5,6 +5,8 @@ typedef DSOnPaidEventCallback = void Function(
 typedef DSOnAdFailedToLoad = void Function(DSAd ad, int errCode, String errDescription);
 typedef DSOnRewardEventCallback = void Function(DSAd ad, num amount, String type);
 
+typedef DSPrecisionType = PrecisionType;
+
 abstract class DSAd {
   final String adUnitId;
 
@@ -33,6 +35,30 @@ abstract class DSInterstitialAd extends DSAd {
   set onAdShown(void Function(DSInterstitialAd ad)? value);
   set onAdClicked(void Function(DSInterstitialAd ad)? value);
   set onAdImpression(void Function(DSInterstitialAd ad)? value);
+}
+
+abstract class DSNativeAd  extends DSAd {
+  final String factoryId;
+
+  final void Function(DSNativeAd ad)? onAdLoaded;
+  final void Function(DSNativeAd ad, int errCode, String errDescription)? onAdFailedToLoad;
+  final void Function(DSNativeAd ad)? onAdClicked;
+  final void Function(DSNativeAd ad, double valueMicros, DSPrecisionType precision, String currencyCode) onPaidEvent;
+
+  DSNativeAd({
+    required super.adUnitId,
+    required this.factoryId,
+    required this.onPaidEvent,
+    this.onAdLoaded,
+    this.onAdFailedToLoad,
+    this.onAdClicked,
+  });
+
+  bool get isLoaded;
+
+  Future<void> load();
+
+  Future<void> dispose();
 }
 
 abstract class DSRewardedAd extends DSAd {

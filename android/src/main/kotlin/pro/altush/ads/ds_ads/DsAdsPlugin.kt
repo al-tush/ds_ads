@@ -1,7 +1,14 @@
 package pro.altush.ads.ds_ads
 
 import android.os.Looper
-import androidx.annotation.NonNull
+import android.util.Log
+import com.applovin.mediation.MaxAd
+import com.applovin.mediation.MaxAdRevenueListener
+import com.applovin.mediation.MaxError
+import com.applovin.mediation.nativeAds.MaxNativeAdListener
+import com.applovin.mediation.nativeAds.MaxNativeAdLoader
+import com.applovin.mediation.nativeAds.MaxNativeAdView
+import com.applovin.mediation.nativeAds.MaxNativeAdViewBinder
 import com.yandex.mobile.ads.common.AdRequest
 import com.yandex.mobile.ads.common.AdRequestError
 import com.yandex.mobile.ads.common.ImpressionData
@@ -23,13 +30,19 @@ class DsAdsPlugin: FlutterPlugin, ActivityAware {
   private val channelYandexName = "pro.altush.ds_ads/yandex_native"
   private lateinit var channel: MethodChannel
 
-  private val interstitials = mutableMapOf<String, InterstitialAd>()
+  private val yaInterstitials = mutableMapOf<String, InterstitialAd>()
 
-  override fun onAttachedToEngine(@NonNull flutterPluginBinding: FlutterPlugin.FlutterPluginBinding) {
+  private var alInstanceManager: ALInstanceManager? = null
+
+  override fun onAttachedToEngine(flutterPluginBinding: FlutterPlugin.FlutterPluginBinding) {
     flutterEngine = flutterPluginBinding.flutterEngine
     if (!flutterEngine!!.plugins.has(GoogleMobileAdsPlugin::class.java)) {
       Timber.i("Recommended to reorder plugging: GoogleMobileAdsPlugin should be registered before DsAdsPlugin")
       flutterEngine!!.plugins.add(GoogleMobileAdsPlugin())
+    }
+    if (!flutterEngine!!.plugins.has(com.applovin.applovin_max.AppLovinMAX::class.java)) {
+      Timber.i("Recommended to reorder plugging: AppLovinMAX should be registered before DsAdsPlugin")
+      flutterEngine!!.plugins.add(com.applovin.applovin_max.AppLovinMAX())
     }
     channel = MethodChannel(flutterPluginBinding.binaryMessenger, channelYandexName)
     channel.setMethodCallHandler {
@@ -49,7 +62,7 @@ class DsAdsPlugin: FlutterPlugin, ActivityAware {
             val params = call.arguments as List<*>
             val unitId = params[0] as String
             assert(unitId.startsWith("R-M-"))
-            if (interstitials.containsKey(unitId)) {
+            if (yaInterstitials.containsKey(unitId)) {
               result.error("", "$unitId is already loaded", null)
               return@setMethodCallHandler
             }
@@ -66,7 +79,7 @@ class DsAdsPlugin: FlutterPlugin, ActivityAware {
               }
 
               override fun onAdFailedToLoad(error: AdRequestError) {
-                interstitials.remove(unitId)
+                yaInterstitials.remove(unitId)
                 invokeEvent("onAdFailedToLoad", mapOf(
                         "unitId" to unitId,
                         "errorCode" to error.code,
@@ -81,7 +94,7 @@ class DsAdsPlugin: FlutterPlugin, ActivityAware {
               }
 
               override fun onAdDismissed() {
-                interstitials.remove(unitId)
+                yaInterstitials.remove(unitId)
                 invokeEvent("onAdDismissed", mapOf(
                         "unitId" to unitId,
                 ))
@@ -108,14 +121,14 @@ class DsAdsPlugin: FlutterPlugin, ActivityAware {
                 ))
               }
           })
-            interstitials[unitId] = inter
+            yaInterstitials[unitId] = inter
             inter.loadAd(adRequest)
             result.success(null)
           }
           "showInterstitial" -> {
             val params = call.arguments as List<*>
             val unitId = params[0] as String
-            val inter = interstitials.remove(unitId)!!
+            val inter = yaInterstitials.remove(unitId)!!
             inter.show()
             result.success(null)
           }
@@ -125,6 +138,8 @@ class DsAdsPlugin: FlutterPlugin, ActivityAware {
         result.error("", "$e", null)
       }
     }
+
+    alInstanceManager = ALInstanceManager(flutterPluginBinding)
   }
 
   private fun invokeEvent(eventName: String, arguments: Map<String, Any?>) {
@@ -134,6 +149,8 @@ class DsAdsPlugin: FlutterPlugin, ActivityAware {
   }
 
   override fun onAttachedToActivity(binding: ActivityPluginBinding) {
+    alInstanceManager!!.setActivity(binding.activity)
+
     GoogleMobileAdsPlugin.registerNativeAdFactory(
             flutterEngine!!,
             "adFactory1Light",
@@ -161,6 +178,7 @@ class DsAdsPlugin: FlutterPlugin, ActivityAware {
     GoogleMobileAdsPlugin.unregisterNativeAdFactory(flutterEngine!!, "adFactory1Dark")
     GoogleMobileAdsPlugin.unregisterNativeAdFactory(flutterEngine!!, "adFactory2Light")
     GoogleMobileAdsPlugin.unregisterNativeAdFactory(flutterEngine!!, "adFactory2Dark")
+    alInstanceManager?.setActivity(null)
   }
 
   override fun onReattachedToActivityForConfigChanges(binding: ActivityPluginBinding) {
@@ -171,7 +189,7 @@ class DsAdsPlugin: FlutterPlugin, ActivityAware {
     onDetachedFromActivity()
   }
 
-  override fun onDetachedFromEngine(@NonNull binding: FlutterPlugin.FlutterPluginBinding) {
+  override fun onDetachedFromEngine(binding: FlutterPlugin.FlutterPluginBinding) {
     flutterEngine = null
   }
 }
