@@ -209,6 +209,7 @@ class DSAdsManager {
     
     onReportEvent?.call('ads_manager: select mediation', {
       'mediation': '$next',
+      'mediation_type': '$type',
     });
     _currentMediation[type] = next;
     if (!_mediationInitialized.contains(next)) {

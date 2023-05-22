@@ -39,6 +39,7 @@ abstract class DSInterstitialAd extends DSAd {
 
 abstract class DSNativeAd  extends DSAd {
   final String factoryId;
+  final created = DateTime.now();
 
   final void Function(DSNativeAd ad)? onAdLoaded;
   final void Function(DSNativeAd ad, int errCode, String errDescription)? onAdFailedToLoad;

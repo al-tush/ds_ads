@@ -61,7 +61,7 @@ class DSAdsAppOpen {
     DSAdsManager.instance.onReportEvent?.call(eventName, {
       'adUnitId': adUnitId ?? 'unknown',
       'location': location.val,
-      'mediation': '${DSAdsManager.instance.currentMediation}',
+      'mediation': '${DSAdsManager.instance.currentMediation(DSMediationType.main)}',
       ...?attributes,
     });
   }

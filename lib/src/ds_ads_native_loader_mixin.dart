@@ -22,6 +22,9 @@ mixin DSAdsNativeLoaderMixin<T extends StatefulWidget> on State<T> {
   static final _loadingAds = <DSNativeStyle, DSNativeAd>{};
   static final _showedAds = <DSAdsNativeLoaderMixin, DSNativeAd>{};
 
+  static const _loadingTimeout = Duration(minutes: 1);
+  static const _loadedTimeout = Duration(hours: 4);
+
   /// Реклама уже предзагружена или сейчас загружается
   static bool hasPreloadedAd(DSAdLocation location) {
     final style = _getStyleByLocation(location);
@@ -73,13 +76,15 @@ mixin DSAdsNativeLoaderMixin<T extends StatefulWidget> on State<T> {
       }
     } ());
     _isDisabled(nativeAdLocation);
-    unawaited(fetchAd(location: nativeAdLocation));
-    _assignAdToMe();
+    unawaited(() async {
+      await fetchAd(location: nativeAdLocation);
+      _assignAdToMe();
+    } ());
   }
 
   @override
   void dispose() {
-    final ad = _showedAds[this];
+    final ad = _showedAds.remove(this);
     _report('ads_native: dispose (isShowed: ${ad != null})', location: nativeAdLocation);
     ad?.dispose();
     unawaited(fetchAd(location: const DSAdLocation('internal_dispose')));
@@ -130,7 +135,7 @@ mixin DSAdsNativeLoaderMixin<T extends StatefulWidget> on State<T> {
     DSAdsManager.instance.onReportEvent?.call(eventName, {
       'location': location.val,
       'adUnitId': adUnitId,
-      'mediation': '${DSAdsManager.instance.currentMediation}',
+      'mediation': '${DSAdsManager.instance.currentMediation(DSMediationType.main)}',
       ...?attributes,
     });
   }
@@ -193,13 +198,20 @@ mixin DSAdsNativeLoaderMixin<T extends StatefulWidget> on State<T> {
     await _disposeOtherMediation();
 
     final style = _getStyleByLocation(location);
-    if (_loadingAds[style] != null) {
-      Fimber.i('ads_native: banner already loaded (location: $location)');
-      return;
-    }
     if (_loadingAds.containsKey(style)) {
-      Fimber.i('ads_native: banner is already loading (location: $location)');
-      return;
+      if (_loadingAds[style]?.isLoaded == true) {
+        if (_loadingAds[style]!.created.add(_loadedTimeout).isAfter(DateTime.now())) {
+          Fimber.i('ads_native: banner already loaded (location: $location)');
+          return;
+        }
+      } else {
+        if (_loadingAds[style]?.created.add(_loadingTimeout).isAfter(DateTime.now()) == true) {
+          Fimber.i('ads_native: banner is already loading (location: $location)');
+          return;
+        }
+      }
+      await _loadingAds[style]?.dispose();
+      _loadingAds.remove(style);
     }
     final factoryId = _getFactoryId(location: location);
     if (style.isEmpty) {
@@ -235,6 +247,10 @@ mixin DSAdsNativeLoaderMixin<T extends StatefulWidget> on State<T> {
         DSAdsManager.instance.emitEvent(const DSAdsNativeLoadFailed._());
         await ad.dispose();
         await DSAdsManager.instance.onLoadAdError(code, message, mediation, DSAdSource.native);
+        final newMediation = DSAdsManager.instance.currentMediation(DSMediationType.native)!;
+        if (newMediation != mediation) {
+          await fetchAd(location: location);
+        }
       } catch (e, stack) {
         Fimber.e('$e', stacktrace: stack);
       }

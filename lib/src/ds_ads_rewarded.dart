@@ -55,7 +55,7 @@ class DSAdsRewarded {
     DSAdsManager.instance.onReportEvent?.call(eventName, {
       'adUnitId': customAdId ?? adUnitId,
       'location': location.val,
-      'mediation': '${DSAdsManager.instance.currentMediation}',
+      'mediation': '${DSAdsManager.instance.currentMediation(DSMediationType.main)}',
       ...?attributes,
     });
   }
