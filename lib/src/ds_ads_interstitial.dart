@@ -4,7 +4,6 @@ import 'package:ds_ads/src/applovin_ads/applovin_ads.dart';
 import 'package:ds_ads/src/ds_ads_manager.dart';
 import 'package:ds_ads/src/generic_ads/export.dart';
 import 'package:ds_ads/src/google_ads/export.dart';
-import 'package:ds_ads/src/yandex_ads/export.dart';
 import 'package:fimber/fimber.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:freezed_annotation/freezed_annotation.dart';
@@ -28,8 +27,6 @@ class DSAdsInterstitial extends Cubit<DSAdsInterstitialState> {
         switch (mediation) {
           case DSAdMediation.google:
             return DSAdsManager.instance.interstitialGoogleUnitId!;
-          case DSAdMediation.yandex:
-            return DSAdsManager.instance.interstitialYandexUnitId!;
           case DSAdMediation.appLovin:
             return DSAdsManager.instance.interstitialAppLovinUnitId!;
         }
@@ -37,8 +34,6 @@ class DSAdsInterstitial extends Cubit<DSAdsInterstitialState> {
         switch (mediation) {
           case DSAdMediation.google:
             return DSAdsManager.instance.interstitialSplashGoogleUnitId!;
-          case DSAdMediation.yandex:
-            return DSAdsManager.instance.interstitialSplashYandexUnitId!;
           case DSAdMediation.appLovin:
             return DSAdsManager.instance.interstitialSplashAppLovinUnitId!;
         }
@@ -199,86 +194,6 @@ class DSAdsInterstitial extends Cubit<DSAdsInterstitialState> {
                 'mediation': '$mediation', // override
                 'google_ads_load_error_seconds': duration.inSeconds,
                 'google_ads_load_error_milliseconds': duration.inMilliseconds,
-                ...?customAttributes,
-              });
-              final oldMediation = DSAdsManager.instance.currentMediation(DSMediationType.main);
-              await DSAdsManager.instance.onLoadAdError(errCode, errDescription, mediation, DSAdSource.interstitial);
-              if (DSAdsManager.instance.currentMediation(DSMediationType.main) != oldMediation) {
-                emit(state.copyWith(
-                  loadRetryCount: 0,
-                ));
-              }
-              if (state.loadRetryCount < loadRetryMaxCount) {
-                await Future.delayed(loadRetryDelay);
-                if ({DSAdState.none, DSAdState.error}.contains(state.adState) && !_isDisposed) {
-                  _report('ads_interstitial: retry loading', location: location, attributes: {
-                    'mediation': '$mediation', // override
-                    ...?customAttributes,
-                  });
-                  fetchAd(location: location, then: then, customAttributes: customAttributes);
-                }
-              } else {
-                Fimber.w('$errDescription ($errCode)', stacktrace: StackTrace.current);
-                emit(state.copyWith(
-                  ad: null,
-                  adState: DSAdState.none,
-                ));
-                then?.call();
-                DSAdsManager.instance.emitEvent(DSAdsInterstitialLoadFailedEvent._(
-                  errCode: errCode,
-                  errText: errDescription,
-                ));
-              }
-            } catch (e, stack) {
-              Fimber.e('$e', stacktrace: stack);
-            }
-          },
-        );
-        break;
-      case DSAdMediation.yandex:
-      // ToDo: deduplicate with DSAdMediation.google case
-        YandexAds.instance.loadInterstitial(
-          adUnitId: adUnitId,
-          onAdLoaded: (DSInterstitialAd ad) async {
-            try {
-              final duration = DateTime.now().difference(startTime);
-              _report('ads_interstitial: loaded', location: location, customAdId: ad.adUnitId, attributes: {
-                'mediation': '$mediation', // override
-                'yandex_ads_loaded_seconds': duration.inSeconds,
-                'yandex_ads_loaded_milliseconds': duration.inMilliseconds,
-                ...?customAttributes,
-              });
-              // ToDo: implement
-              // ad.onPaidEvent = (ad, valueMicros, precision, currencyCode, appLovinDspName) {
-              //   DSAdsManager.instance.onPaidEvent(ad, mediation, valueMicros, precision, currencyCode, DSAdSource.interstitial, appLovinDspName);
-              // };
-
-              emit(state.copyWith(
-                ad: ad,
-                adState: DSAdState.loaded,
-                loadRetryCount: 0,
-              ));
-
-              then?.call();
-              DSAdsManager.instance.emitEvent(DSAdsInterstitialLoadedEvent._(ad: ad));
-            } catch (e, stack) {
-              Fimber.e('$e', stacktrace: stack);
-            }
-          },
-          onAdFailedToLoad: (DSAd ad, int errCode, String errDescription) async {
-            try {
-              final duration = DateTime.now().difference(startTime);
-              emit(state.copyWith(
-                ad: null,
-                adState: DSAdState.error,
-                loadRetryCount: state.loadRetryCount + 1,
-              ));
-              _report('ads_interstitial: failed to load', location: location, attributes: {
-                'error_text': errDescription,
-                'error_code': '$errCode ($mediation)',
-                'mediation': '$mediation', // override
-                'yandex_ads_load_error_seconds': duration.inSeconds,
-                'yandex_ads_load_error_milliseconds': duration.inMilliseconds,
                 ...?customAttributes,
               });
               final oldMediation = DSAdsManager.instance.currentMediation(DSMediationType.main);

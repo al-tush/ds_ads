@@ -39,8 +39,6 @@ mixin DSAdsNativeLoaderMixin<T extends StatefulWidget> on State<T> {
     switch (mediation) {
       case DSAdMediation.google:
         return DSAdsManager.instance.nativeGoogleUnitId!;
-      case DSAdMediation.yandex:
-        throw UnimplementedError();
       case DSAdMediation.appLovin:
         return DSAdsManager.instance.nativeAppLovinUnitId!;
     }
@@ -104,8 +102,6 @@ mixin DSAdsNativeLoaderMixin<T extends StatefulWidget> on State<T> {
       case DSAdMediation.google:
         currentClass = DSGoogleNativeAd;
         break;
-      case DSAdMediation.yandex:
-        throw UnimplementedError();
       case DSAdMediation.appLovin:
         currentClass = DSAppLovinNativeAd;
         break;
@@ -179,10 +175,6 @@ mixin DSAdsNativeLoaderMixin<T extends StatefulWidget> on State<T> {
     }
     if (DSAdsManager.instance.isAdAllowedCallback?.call(DSAdSource.native, location) == false) {
       Fimber.i('ads_native: disabled (location: $location)');
-      return true;
-    }
-    if (DSAdsManager.instance.currentMediation(DSMediationType.native) == DSAdMediation.yandex) {
-      Fimber.i('ads_native: disabled (no mediation)');
       return true;
     }
     return false;
@@ -306,8 +298,6 @@ mixin DSAdsNativeLoaderMixin<T extends StatefulWidget> on State<T> {
           onAdFailedToLoad: onAdFailedToLoad,
         );
         break;
-      case DSAdMediation.yandex:
-        throw UnimplementedError();
       case DSAdMediation.appLovin:
         nativeAd = DSAppLovinNativeAd(
           adUnitId: adUnitId,

@@ -70,8 +70,6 @@ class DSAdsManager {
   final String? nativeGoogleUnitId;
   final String? appOpenGoogleUnitId;
   final String? rewardedGoogleUnitId;
-  final String? interstitialYandexUnitId;
-  final String? interstitialSplashYandexUnitId;
   final String? appLovinSDKKey;
   final String? interstitialAppLovinUnitId;
   final String? interstitialSplashAppLovinUnitId;
@@ -112,8 +110,6 @@ class DSAdsManager {
     this.rewardedGoogleUnitId,
     this.nativeGoogleUnitId,
     this.appOpenGoogleUnitId,
-    this.interstitialYandexUnitId,
-    this.interstitialSplashYandexUnitId,
     this.appLovinSDKKey,
     this.interstitialAppLovinUnitId,
     this.interstitialSplashAppLovinUnitId,
@@ -127,9 +123,7 @@ class DSAdsManager {
     this.rewardedFetchDelayCallback,
     this.rewardedShowLockCallback,
   }) :
-        assert(_instance == null, 'dismiss previous Ads instance before init new'),
-        assert(interstitialYandexUnitId == null || interstitialYandexUnitId.startsWith('R-M-'),
-        'interstitialYandexUnitId must begin with R-M-')
+        assert(_instance == null, 'dismiss previous Ads instance before init new')
   {
     _instance = this;
     for (final t in DSMediationType.values) {
@@ -164,12 +158,6 @@ class DSAdsManager {
       if (interstitialGoogleUnitId?.isNotEmpty != true) {
         mediationPriorities.remove(DSAdMediation.google);
         assert(false, 'setup interstitialGoogleUnitId or remove DSAdMediation.google from mediationPrioritiesCallack');
-      }
-    }
-    if (mediationPriorities.contains(DSAdMediation.yandex)) {
-      if (interstitialYandexUnitId?.isNotEmpty != true) {
-        mediationPriorities.remove(DSAdMediation.yandex);
-        assert(false, 'setup interstitialYandexUnitId or remove DSAdMediation.yandex from mediationPrioritiesCallack');
       }
     }
     if (mediationPriorities.contains(DSAdMediation.appLovin)) {
@@ -219,10 +207,6 @@ class DSAdsManager {
           // It seems that init just creates competition for other mediations
           //await MobileAds.instance.initialize();
           break;
-        case DSAdMediation.yandex:
-          // It seems that init just creates competition for other mediations
-          // await YandexAds.instance.initialize();
-          break;
         case DSAdMediation.appLovin:
           appLovinSDKConfiguration.clear();
           final config = await AppLovinMAX.initialize(appLovinSDKKey!);
@@ -269,12 +253,6 @@ class DSAdsManager {
       case DSAdMediation.google:
       // https://support.google.com/admob/thread/3494603/admob-error-codes-logs?hl=en
         if (errCode == 3) {
-          await _tryNextMediation(type);
-        }
-        break;
-      case DSAdMediation.yandex:
-      // https://yandex.com/dev/mobile-ads/doc/android/ref/constant-values.html#com.yandex.mobile.ads.common.AdRequestError.Code.NO_FILL
-        if (errCode == 4) {
           await _tryNextMediation(type);
         }
         break;

@@ -22,7 +22,6 @@ enum DSAdSource {
 
 enum DSAdMediation {
   google,
-  yandex,
   appLovin,
 }
 

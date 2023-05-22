@@ -208,9 +208,6 @@ class DSAdsAppOpen {
           },
         );
         break;
-      case DSAdMediation.yandex:
-        assert(false);
-        break;
       case DSAdMediation.appLovin:
         assert(false);
         break;

@@ -1,22 +1,10 @@
 package pro.altush.ads.ds_ads
 
-import android.os.Looper
-import android.util.Log
-import com.applovin.applovin_max.AppLovinMAX
-import com.applovin.mediation.MaxAd
 import com.applovin.mediation.nativeAds.MaxNativeAdView
-import com.yandex.mobile.ads.common.AdRequest
-import com.yandex.mobile.ads.common.AdRequestError
-import com.yandex.mobile.ads.common.ImpressionData
-import com.yandex.mobile.ads.common.MobileAds
-import com.yandex.mobile.ads.interstitial.InterstitialAd
-import com.yandex.mobile.ads.interstitial.InterstitialAdEventListener
-import io.flutter.BuildConfig
 import io.flutter.embedding.engine.FlutterEngine
 import io.flutter.embedding.engine.plugins.FlutterPlugin
 import io.flutter.embedding.engine.plugins.activity.ActivityAware
 import io.flutter.embedding.engine.plugins.activity.ActivityPluginBinding
-import io.flutter.plugin.common.MethodChannel
 import io.flutter.plugins.googlemobileads.GoogleMobileAdsPlugin
 import timber.log.Timber
 
@@ -60,10 +48,10 @@ class DsAdsPlugin: FlutterPlugin, ActivityAware {
   }
 
   private var flutterEngine: FlutterEngine? = null
-  private val channelYandexName = "pro.altush.ds_ads/yandex_native"
-  private lateinit var channel: MethodChannel
+//  private val channelYandexName = "pro.altush.ds_ads/yandex_native"
+//  private lateinit var channel: MethodChannel
 
-  private val yaInterstitials = mutableMapOf<String, InterstitialAd>()
+//  private val yaInterstitials = mutableMapOf<String, InterstitialAd>()
 
   private var alInstanceManager: ALInstanceManager? = null
 
@@ -77,7 +65,7 @@ class DsAdsPlugin: FlutterPlugin, ActivityAware {
       Timber.i("Recommended to reorder plugging: AppLovinMAX should be registered before DsAdsPlugin")
       flutterEngine!!.plugins.add(com.applovin.applovin_max.AppLovinMAX())
     }
-
+/*
     channel = MethodChannel(flutterPluginBinding.binaryMessenger, channelYandexName)
     channel.setMethodCallHandler {
       // This method is invoked on the main thread.
@@ -172,15 +160,16 @@ class DsAdsPlugin: FlutterPlugin, ActivityAware {
         result.error("", "$e", null)
       }
     }
+ */
 
     alInstanceManager = ALInstanceManager(flutterPluginBinding)
   }
 
-  private fun invokeEvent(eventName: String, arguments: Map<String, Any?>) {
-    android.os.Handler(Looper.getMainLooper()).post {
-      channel.invokeMethod(eventName, arguments)
-    }
-  }
+//  private fun invokeEvent(eventName: String, arguments: Map<String, Any?>) {
+//    android.os.Handler(Looper.getMainLooper()).post {
+//      channel.invokeMethod(eventName, arguments)
+//    }
+//  }
 
   interface ALNativeAdFactory {
     fun createNativeAd(): MaxNativeAdView

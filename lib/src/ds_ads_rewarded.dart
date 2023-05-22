@@ -23,8 +23,6 @@ class DSAdsRewarded {
     switch (mediation) {
       case DSAdMediation.google:
         return DSAdsManager.instance.rewardedGoogleUnitId!;
-      case DSAdMediation.yandex:
-        throw UnimplementedError();
       case DSAdMediation.appLovin:
         return DSAdsManager.instance.rewardedAppLovinUnitId!;
     }
@@ -205,8 +203,6 @@ class DSAdsRewarded {
           },
         );
         break;
-      case DSAdMediation.yandex:
-        throw UnimplementedError();
       case DSAdMediation.appLovin:
       // ToDo: deduplicate with DSAdMediation.google case
         DSAppLovinRewardedAd(adUnitId: adUnitId).load(
