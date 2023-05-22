@@ -50,11 +50,11 @@ class DSAdsManager {
   }
 
   var _isAdAvailable = false;
-  DSAdMediation? _currentMediation;
+  final _currentMediation = <DSMediationType, DSAdMediation?>{};
   final _mediationInitialized = <DSAdMediation>{};
   /// Was the ad successfully loaded at least once in this session
   bool get isAdAvailable => _isAdAvailable;
-  DSAdMediation? get currentMediation => _currentMediation;
+  DSAdMediation? currentMediation(DSMediationType type) => _currentMediation[type];
 
   final _eventController = StreamController<DSAdsEvent>.broadcast();
 
@@ -132,7 +132,9 @@ class DSAdsManager {
         'interstitialYandexUnitId must begin with R-M-')
   {
     _instance = this;
-    unawaited(_tryNextMediation());
+    for (final t in DSMediationType.values) {
+      unawaited(_tryNextMediation(t));
+    }
 
     unawaited(() async {
       await for (final event in eventStream) {
@@ -155,10 +157,9 @@ class DSAdsManager {
   
   var _lockMediationTill = DateTime(0);
   
-  Future<void> _tryNextMediation() async {
+  Future<void> _tryNextMediation(DSMediationType type) async {
     final mediationPriorities = mediationPrioritiesCallback();
-    _prevMediationPriorities.clear();
-    _prevMediationPriorities.addAll(mediationPriorities);
+    _prevMediationPriorities[type] = mediationPriorities.toSet();
     if (mediationPriorities.contains(DSAdMediation.google)) {
       if (interstitialGoogleUnitId?.isNotEmpty != true) {
         mediationPriorities.remove(DSAdMediation.google);
@@ -187,29 +188,29 @@ class DSAdsManager {
     }
 
     final DSAdMediation next;
-    if (_currentMediation == null) {
+    if (_currentMediation[type] == null) {
       if (_lockMediationTill.isAfter(DateTime.now())) return;
       next = mediationPriorities.first;
     } else {
-      if (_currentMediation == mediationPriorities.last) {
+      if (_currentMediation[type] == mediationPriorities.last) {
         _lockMediationTill = DateTime.now().add(_nextMediationWait);
-        _currentMediation = null;
+        _currentMediation[type] = null;
         onReportEvent?.call('ads_manager: no next mediation, waiting ${_nextMediationWait.inSeconds}s', {});
         Timer(_nextMediationWait, () async {
-          if (currentMediation == null) {
-            await _tryNextMediation();
+          if (currentMediation(type) == null) {
+            await _tryNextMediation(type);
           }
         });
         return;
       }
-      final curr = mediationPriorities.indexOf(_currentMediation!);
+      final curr = mediationPriorities.indexOf(_currentMediation[type]!);
       next = mediationPriorities[curr + 1];
     }
     
     onReportEvent?.call('ads_manager: select mediation', {
       'mediation': '$next',
     });
-    _currentMediation = next;
+    _currentMediation[type] = next;
     if (!_mediationInitialized.contains(next)) {
       _mediationInitialized.add(next);
       switch (next) {
@@ -230,55 +231,56 @@ class DSAdsManager {
       }
       onReportEvent?.call('ads_manager: mediation initialized', {
         'mediation': '$next',
+        'mediation_type': '$type',
       });
     }
   }
 
-  final _prevMediationPriorities = <DSAdMediation>{};
+  final _prevMediationPriorities = <DSMediationType, Set<DSAdMediation>>{};
 
   @internal
-  Future<void> checkMediation() async {
-    if (currentMediation == null) return;
+  Future<void> checkMediation(DSMediationType type) async {
+    if (currentMediation(type) == null) return;
     final mediationPriorities = mediationPrioritiesCallback();
     try {
-      if (!mediationPriorities.contains(currentMediation)) {
-        await _tryNextMediation();
+      if (!mediationPriorities.contains(currentMediation(type))) {
+        await _tryNextMediation(type);
         return;
       }
-      final isSame = const IterableEquality().equals(mediationPriorities, _prevMediationPriorities);
+      final isSame = const IterableEquality().equals(mediationPriorities, _prevMediationPriorities[type]);
       if (!isSame) {
-        if (mediationPriorities.first != currentMediation) {
-          _currentMediation = null;
-          await _tryNextMediation();
+        if (mediationPriorities.first != currentMediation(type)) {
+          _currentMediation[type] = null;
+          await _tryNextMediation(type);
         }
       }
     } catch (e, stack) {
       Fimber.e('$e', stacktrace: stack);
-      _prevMediationPriorities.clear();
-      _prevMediationPriorities.addAll(mediationPriorities);
+      _prevMediationPriorities[type] = mediationPriorities.toSet();
     }
   }
 
   @internal
   Future<void> onLoadAdError(int errCode, String errText, DSAdMediation mediation, DSAdSource source) async {
     if (mediationPrioritiesCallback().length <= 1) return;
+    final type = source == DSAdSource.native ? DSMediationType.native : DSMediationType.main;
     switch (mediation) {
       case DSAdMediation.google:
       // https://support.google.com/admob/thread/3494603/admob-error-codes-logs?hl=en
         if (errCode == 3) {
-          await _tryNextMediation();
+          await _tryNextMediation(type);
         }
         break;
       case DSAdMediation.yandex:
       // https://yandex.com/dev/mobile-ads/doc/android/ref/constant-values.html#com.yandex.mobile.ads.common.AdRequestError.Code.NO_FILL
         if (errCode == 4) {
-          await _tryNextMediation();
+          await _tryNextMediation(type);
         }
         break;
       case DSAdMediation.appLovin:
       // https://dash.applovin.com/documentation/mediation/flutter/getting-started/errorcodes
         if (errCode == 204 || errCode == -5001) {
-          await _tryNextMediation();
+          await _tryNextMediation(type);
         }
         break;
     }

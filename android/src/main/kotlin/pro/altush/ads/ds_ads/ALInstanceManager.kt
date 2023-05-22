@@ -20,7 +20,7 @@ class ALInstanceManager(binding: FlutterPlugin.FlutterPluginBinding) {
     private val channelAppLovinName = "pro.altush.ds_ads/app_lovin_ads"
     private var channel: MethodChannel
 
-    //  private val alFactories = mutableMapOf<String, ...>()
+    val alFactories = mutableMapOf<String, DsAdsPlugin.ALNativeAdFactory>()
     private val alNatives = mutableMapOf<Int, ALNativeAd>()
 
     var activity: Activity? = null
@@ -35,7 +35,6 @@ class ALInstanceManager(binding: FlutterPlugin.FlutterPluginBinding) {
             // This method is invoked on the main thread.
                 call, result ->
             try {
-                val context = binding.applicationContext
                 when (call.method) {
                     "loadNativeAd" -> {
                         val args = call.arguments as Map<*, *>

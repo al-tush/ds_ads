@@ -1,7 +1,6 @@
 package pro.altush.ads.ds_ads
 
 import android.content.Context
-import android.util.Log
 import android.view.View
 import com.applovin.mediation.MaxAd
 import com.applovin.mediation.MaxAdRevenueListener
@@ -9,9 +8,7 @@ import com.applovin.mediation.MaxError
 import com.applovin.mediation.nativeAds.MaxNativeAdListener
 import com.applovin.mediation.nativeAds.MaxNativeAdLoader
 import com.applovin.mediation.nativeAds.MaxNativeAdView
-import com.applovin.mediation.nativeAds.MaxNativeAdViewBinder
 import io.flutter.plugin.platform.PlatformView
-import timber.log.Timber
 
 class ALNativeAd(
     val id: Int,
@@ -30,17 +27,8 @@ class ALNativeAd(
     }
 
     fun load(context: Context) {
-        val binder: MaxNativeAdViewBinder = MaxNativeAdViewBinder.Builder(R.layout.al_native_ad_view)
-            .setTitleTextViewId(R.id.title_text_view)
-            .setBodyTextViewId(R.id.body_text_view)
-            .setAdvertiserTextViewId(R.id.advertiser_text_view)
-            .setIconImageViewId(R.id.icon_image_view)
-            .setMediaContentViewGroupId(R.id.media_view_container)
-            .setOptionsContentViewGroupId(R.id.options_view)
-            //.setStarRatingContentViewGroupId(R.id.star_rating_view)
-            .setCallToActionButtonId(R.id.cta_button)
-            .build()
-        nativeAdView = MaxNativeAdView(binder, context)
+        val factory = manager.alFactories[factoryId]
+            ?: throw Exception("Can't find NativeAdFactory with id: $factoryId")
 
         nativeAdLoader = MaxNativeAdLoader(adUnitId, context)
         nativeAdLoader!!.setRevenueListener(object : MaxAdRevenueListener {
@@ -54,9 +42,11 @@ class ALNativeAd(
             }
         })
         nativeAdLoader!!.setNativeAdListener(object : MaxNativeAdListener() {
-            override fun onNativeAdLoaded(nativeAdView: MaxNativeAdView?, ad: MaxAd) {
+            override fun onNativeAdLoaded(view: MaxNativeAdView?, ad: MaxAd) {
                 nativeAd = ad
+                nativeAdView = factory.createNativeAd()
                 manager.invokeMethod("onAdLoaded", mapOf("adId" to id))
+                nativeAdLoader!!.render(nativeAdView!!, ad)
             }
 
             override fun onNativeAdLoadFailed(adUnitId: String, error: MaxError) {
@@ -73,7 +63,7 @@ class ALNativeAd(
             }
         })
 
-        nativeAdLoader!!.loadAd(nativeAdView)
+        nativeAdLoader!!.loadAd()
     }
 
     fun dispose() {

@@ -7,7 +7,6 @@ import 'package:ds_ads/src/applovin_ads/ds_applovin_native_ad.dart';
 import 'package:fimber/fimber.dart';
 import 'package:flutter/material.dart';
 import 'package:freezed_annotation/freezed_annotation.dart';
-import 'package:google_mobile_ads/google_mobile_ads.dart';
 
 import 'google_ads/export.dart';
 
@@ -30,7 +29,7 @@ mixin DSAdsNativeLoaderMixin<T extends StatefulWidget> on State<T> {
   }
 
   static String get adUnitId {
-    final mediation = DSAdsManager.instance.currentMediation;
+    final mediation = DSAdsManager.instance.currentMediation(DSMediationType.native);
     if (mediation == null) {
       return 'noMediation';
     }
@@ -96,7 +95,7 @@ mixin DSAdsNativeLoaderMixin<T extends StatefulWidget> on State<T> {
 
   static Future<void> _disposeOtherMediation() async {
     final Type currentClass;
-    switch (DSAdsManager.instance.currentMediation) {
+    switch (DSAdsManager.instance.currentMediation(DSMediationType.native)) {
       case DSAdMediation.google:
         currentClass = DSGoogleNativeAd;
         break;
@@ -177,7 +176,7 @@ mixin DSAdsNativeLoaderMixin<T extends StatefulWidget> on State<T> {
       Fimber.i('ads_native: disabled (location: $location)');
       return true;
     }
-    if (DSAdsManager.instance.currentMediation == DSAdMediation.yandex) {
+    if (DSAdsManager.instance.currentMediation(DSMediationType.native) == DSAdMediation.yandex) {
       Fimber.i('ads_native: disabled (no mediation)');
       return true;
     }
@@ -187,7 +186,7 @@ mixin DSAdsNativeLoaderMixin<T extends StatefulWidget> on State<T> {
   static Future<void> fetchAd({
     required final DSAdLocation location,
   }) async {
-    await DSAdsManager.instance.checkMediation();
+    await DSAdsManager.instance.checkMediation(DSMediationType.native);
 
     if (_isDisabled(location)) return;
 
@@ -208,7 +207,7 @@ mixin DSAdsNativeLoaderMixin<T extends StatefulWidget> on State<T> {
       return;
     }
 
-    final mediation = DSAdsManager.instance.currentMediation!;
+    final mediation = DSAdsManager.instance.currentMediation(DSMediationType.native)!;
 
     Future<void> onAdImpression(DSNativeAd ad) async {
       try {
@@ -216,7 +215,7 @@ mixin DSAdsNativeLoaderMixin<T extends StatefulWidget> on State<T> {
       } catch (e, stack) {
         Fimber.e('$e', stacktrace: stack);
       }
-    };
+    }
     Future<void> onAdLoaded(DSNativeAd ad) async {
       try {
         _loadingAds[style] = ad;
@@ -225,7 +224,7 @@ mixin DSAdsNativeLoaderMixin<T extends StatefulWidget> on State<T> {
       } catch (e, stack) {
         Fimber.e('$e', stacktrace: stack);
       }
-    };
+    }
     Future<void> onAdFailedToLoad(DSNativeAd ad, int code, String message) async {
       try {
         _loadingAds.remove(style);
@@ -235,46 +234,46 @@ mixin DSAdsNativeLoaderMixin<T extends StatefulWidget> on State<T> {
         });
         DSAdsManager.instance.emitEvent(const DSAdsNativeLoadFailed._());
         await ad.dispose();
-        await DSAdsManager.instance.onLoadAdError.call(code, message, mediation, DSAdSource.native);
+        await DSAdsManager.instance.onLoadAdError(code, message, mediation, DSAdSource.native);
       } catch (e, stack) {
         Fimber.e('$e', stacktrace: stack);
       }
-    };
+    }
     Future<void> onPaidEvent(DSNativeAd ad, double valueMicros, DSPrecisionType precision, String currencyCode) async {
       try {
         DSAdsManager.instance.onPaidEvent(ad, mediation, location, valueMicros, precision, currencyCode, DSAdSource.native, null);
       } catch (e, stack) {
         Fimber.e('$e', stacktrace: stack);
       }
-    };
+    }
     Future<void> onAdOpened(DSNativeAd ad) async {
       try {
         _report('ads_native: ad opened', location: _getLocationByAd(ad));
       } catch (e, stack) {
         Fimber.e('$e', stacktrace: stack);
       }
-    };
+    }
     Future<void> onAdClicked(DSNativeAd ad) async {
       try {
         _report('ads_native: ad clicked', location: _getLocationByAd(ad));
       } catch (e, stack) {
         Fimber.e('$e', stacktrace: stack);
       }
-    };
+    }
     Future<void> onAdClosed(DSNativeAd ad) async {
       try {
         _report('ads_native: ad closed', location: _getLocationByAd(ad));
       } catch (e, stack) {
         Fimber.e('$e', stacktrace: stack);
       }
-    };
+    }
     Future<void> onAdExpired(DSNativeAd ad) async {
       try {
         _report('ads_native: ad expired', location: _getLocationByAd(ad));
       } catch (e, stack) {
         Fimber.e('$e', stacktrace: stack);
       }
-    };
+    }
 
     final DSNativeAd nativeAd;
     switch (mediation) {

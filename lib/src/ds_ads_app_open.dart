@@ -55,7 +55,7 @@ class DSAdsAppOpen {
     required DSAdLocation location,
     Map<String, Object>? attributes,
   }) {
-    final adUnitId = DSAdsManager.instance.currentMediation == DSAdMediation.google
+    final adUnitId = DSAdsManager.instance.currentMediation(DSMediationType.main) == DSAdMediation.google
         ? DSAdsManager.instance.appOpenGoogleUnitId
         : null;
     DSAdsManager.instance.onReportEvent?.call(eventName, {
@@ -81,7 +81,7 @@ class DSAdsAppOpen {
       Fimber.i('ads_app_open: disabled (location: $location)');
       return true;
     }
-    if (DSAdsManager.instance.currentMediation != DSAdMediation.google) {
+    if (DSAdsManager.instance.currentMediation(DSMediationType.main) != DSAdMediation.google) {
       Fimber.i('ads_app_open: disabled (no mediation)');
       return true;
     }
@@ -107,7 +107,7 @@ class DSAdsAppOpen {
       return;
     }
 
-    unawaited(DSAdsManager.instance.checkMediation()); // ToDo: fix to await?
+    unawaited(DSAdsManager.instance.checkMediation(DSMediationType.main)); // ToDo: fix to await?
 
     if (_isDisabled(location)) {
       then?.call();
@@ -133,7 +133,7 @@ class DSAdsAppOpen {
 
     final startTime = DateTime.now();
     _report('ads_app_open: start loading', location: location, attributes: customAttributes);
-    final mediation = DSAdsManager.instance.currentMediation!;
+    final mediation = DSAdsManager.instance.currentMediation(DSMediationType.main)!;
     switch (mediation) {
       case DSAdMediation.google:
         DSGoogleAppOpenAd(adUnitId: DSAdsManager.instance.appOpenGoogleUnitId!).load(
@@ -179,9 +179,9 @@ class DSAdsAppOpen {
                 'google_ads_load_error_milliseconds': duration.inMilliseconds,
                 ...?customAttributes,
               });
-              final oldMediation = DSAdsManager.instance.currentMediation;
+              final oldMediation = DSAdsManager.instance.currentMediation(DSMediationType.main);
               await DSAdsManager.instance.onLoadAdError(errCode, errDescription, mediation, DSAdSource.appOpen);
-              if (DSAdsManager.instance.currentMediation != oldMediation) {
+              if (DSAdsManager.instance.currentMediation(DSMediationType.main) != oldMediation) {
                 _loadRetryCount = 0;
               }
               if (_loadRetryCount < loadRetryMaxCount) {

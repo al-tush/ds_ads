@@ -16,7 +16,7 @@ class DSAdsRewarded {
   static const _tag = 'ads_rewarded';
 
   String get adUnitId {
-    final mediation = DSAdsManager.instance.currentMediation;
+    final mediation = DSAdsManager.instance.currentMediation(DSMediationType.main);
     if (mediation == null) {
       return 'noMediation';
     }
@@ -75,7 +75,7 @@ class DSAdsRewarded {
       Fimber.i('$_tag: disabled (location: $location)');
       return true;
     }
-    if (DSAdsManager.instance.currentMediation == null) {
+    if (DSAdsManager.instance.currentMediation(DSMediationType.main) == null) {
       Fimber.i('$_tag: disabled (no mediation)');
       return true;
     }
@@ -101,7 +101,7 @@ class DSAdsRewarded {
       return;
     }
 
-    unawaited(DSAdsManager.instance.checkMediation()); // ToDo: fix to await?
+    unawaited(DSAdsManager.instance.checkMediation(DSMediationType.main)); // ToDo: fix to await?
 
     if (_isDisabled(location)) {
       then?.call();
@@ -134,7 +134,7 @@ class DSAdsRewarded {
 
     final startTime = DateTime.now();
     _report('$_tag: start loading', location: location, attributes: customAttributes);
-    final mediation = DSAdsManager.instance.currentMediation!;
+    final mediation = DSAdsManager.instance.currentMediation(DSMediationType.main)!;
     switch (mediation) {
       case DSAdMediation.google:
         DSGoogleRewardedAd(adUnitId: adUnitId).load(
@@ -176,9 +176,9 @@ class DSAdsRewarded {
                 'google_ads_load_error_milliseconds': duration.inMilliseconds,
                 ...?customAttributes,
               });
-              final oldMediation = DSAdsManager.instance.currentMediation;
+              final oldMediation = DSAdsManager.instance.currentMediation(DSMediationType.main);
               await DSAdsManager.instance.onLoadAdError(errCode, errDescription, mediation, DSAdSource.rewarded);
-              if (DSAdsManager.instance.currentMediation != oldMediation) {
+              if (DSAdsManager.instance.currentMediation(DSMediationType.main) != oldMediation) {
                 _loadRetryCount = 0;
               }
               if (_loadRetryCount < loadRetryMaxCount) {
@@ -248,9 +248,9 @@ class DSAdsRewarded {
                 'applovin_ads_load_error_milliseconds': duration.inMilliseconds,
                 ...?customAttributes,
               });
-              final oldMediation = DSAdsManager.instance.currentMediation;
+              final oldMediation = DSAdsManager.instance.currentMediation(DSMediationType.main);
               await DSAdsManager.instance.onLoadAdError(errCode, errDescription, mediation, DSAdSource.rewarded);
-              if (DSAdsManager.instance.currentMediation != oldMediation) {
+              if (DSAdsManager.instance.currentMediation(DSMediationType.main) != oldMediation) {
                 _loadRetryCount = 0;
               }
               if (_loadRetryCount < loadRetryMaxCount) {

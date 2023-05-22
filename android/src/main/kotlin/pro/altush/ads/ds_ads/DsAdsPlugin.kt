@@ -2,13 +2,9 @@ package pro.altush.ads.ds_ads
 
 import android.os.Looper
 import android.util.Log
+import com.applovin.applovin_max.AppLovinMAX
 import com.applovin.mediation.MaxAd
-import com.applovin.mediation.MaxAdRevenueListener
-import com.applovin.mediation.MaxError
-import com.applovin.mediation.nativeAds.MaxNativeAdListener
-import com.applovin.mediation.nativeAds.MaxNativeAdLoader
 import com.applovin.mediation.nativeAds.MaxNativeAdView
-import com.applovin.mediation.nativeAds.MaxNativeAdViewBinder
 import com.yandex.mobile.ads.common.AdRequest
 import com.yandex.mobile.ads.common.AdRequestError
 import com.yandex.mobile.ads.common.ImpressionData
@@ -26,6 +22,43 @@ import timber.log.Timber
 
 /** DsAdsPlugin */
 class DsAdsPlugin: FlutterPlugin, ActivityAware {
+
+  companion object {
+    fun registerALNativeAdFactory(engine: FlutterEngine, factoryId: String,
+                                  nativeAdFactory: ALNativeAdFactory): Boolean {
+      val plugin = engine.plugins[DsAdsPlugin::class.java] as DsAdsPlugin?
+      if (plugin == null) {
+        val message = String.format(
+          "Could not find a %s instance. The plugin may have not been registered.",
+          DsAdsPlugin::class.java.simpleName
+        )
+        throw IllegalStateException(message)
+      }
+      if (plugin.alInstanceManager!!.alFactories.containsKey(factoryId)) {
+        val errorMessage = String.format(
+          "A ALNativeAdFactory with the following factoryId already exists: %s", factoryId
+        )
+        Timber.e(errorMessage)
+        return false
+      }
+
+      plugin.alInstanceManager!!.alFactories[factoryId] = nativeAdFactory
+      return true
+    }
+
+    fun unregisterALNativeAdFactory(engine: FlutterEngine, factoryId: String) {
+      val plugin = engine.plugins[DsAdsPlugin::class.java] as DsAdsPlugin?
+      if (plugin == null) {
+        val message = String.format(
+          "Could not find a %s instance. The plugin may have not been registered.",
+          DsAdsPlugin::class.java.simpleName
+        )
+        throw IllegalStateException(message)
+      }
+      plugin.alInstanceManager!!.alFactories.remove(factoryId)
+    }
+  }
+
   private var flutterEngine: FlutterEngine? = null
   private val channelYandexName = "pro.altush.ds_ads/yandex_native"
   private lateinit var channel: MethodChannel
@@ -44,6 +77,7 @@ class DsAdsPlugin: FlutterPlugin, ActivityAware {
       Timber.i("Recommended to reorder plugging: AppLovinMAX should be registered before DsAdsPlugin")
       flutterEngine!!.plugins.add(com.applovin.applovin_max.AppLovinMAX())
     }
+
     channel = MethodChannel(flutterPluginBinding.binaryMessenger, channelYandexName)
     channel.setMethodCallHandler {
       // This method is invoked on the main thread.
@@ -148,36 +182,69 @@ class DsAdsPlugin: FlutterPlugin, ActivityAware {
     }
   }
 
+  interface ALNativeAdFactory {
+    fun createNativeAd(): MaxNativeAdView
+  }
+
   override fun onAttachedToActivity(binding: ActivityPluginBinding) {
     alInstanceManager!!.setActivity(binding.activity)
 
+    val engine = flutterEngine!!
     GoogleMobileAdsPlugin.registerNativeAdFactory(
-            flutterEngine!!,
-            "adFactory1Light",
-            NativeAdFactory1(binding.activity.layoutInflater, R.layout.native_ad_1_light),
+      engine,
+      "adFactory1Light",
+      NativeAdFactory1(binding.activity.layoutInflater, R.layout.g_native_ad_1_light),
     )
     GoogleMobileAdsPlugin.registerNativeAdFactory(
-            flutterEngine!!,
-            "adFactory1Dark",
-            NativeAdFactory1(binding.activity.layoutInflater, R.layout.native_ad_1_dark),
+      engine,
+      "adFactory1Dark",
+      NativeAdFactory1(binding.activity.layoutInflater, R.layout.g_native_ad_1_dark),
     )
     GoogleMobileAdsPlugin.registerNativeAdFactory(
-            flutterEngine!!,
-            "adFactory2Light",
-            NativeAdFactory1(binding.activity.layoutInflater, R.layout.native_ad_2_light),
+      engine,
+      "adFactory2Light",
+      NativeAdFactory1(binding.activity.layoutInflater, R.layout.g_native_ad_2_light),
     )
     GoogleMobileAdsPlugin.registerNativeAdFactory(
-            flutterEngine!!,
-            "adFactory2Dark",
-            NativeAdFactory1(binding.activity.layoutInflater, R.layout.native_ad_2_dark),
+      engine,
+      "adFactory2Dark",
+      NativeAdFactory1(binding.activity.layoutInflater, R.layout.g_native_ad_2_dark),
+    )
+
+    registerALNativeAdFactory(
+      engine,
+      "adFactory1Light",
+      ALNativeAdFactory1(binding.activity, R.layout.al_native_ad_1_light),
+    )
+    registerALNativeAdFactory(
+      engine,
+      "adFactory1Dark",
+      ALNativeAdFactory1(binding.activity, R.layout.al_native_ad_1_dark),
+    )
+    registerALNativeAdFactory(
+      engine,
+      "adFactory2Light",
+      ALNativeAdFactory1(binding.activity, R.layout.al_native_ad_2_light),
+    )
+    registerALNativeAdFactory(
+      engine,
+      "adFactory2Dark",
+      ALNativeAdFactory1(binding.activity, R.layout.al_native_ad_2_dark),
     )
   }
 
   override fun onDetachedFromActivity() {
-    GoogleMobileAdsPlugin.unregisterNativeAdFactory(flutterEngine!!, "adFactory1Light")
-    GoogleMobileAdsPlugin.unregisterNativeAdFactory(flutterEngine!!, "adFactory1Dark")
-    GoogleMobileAdsPlugin.unregisterNativeAdFactory(flutterEngine!!, "adFactory2Light")
-    GoogleMobileAdsPlugin.unregisterNativeAdFactory(flutterEngine!!, "adFactory2Dark")
+    val engine = flutterEngine!!
+    GoogleMobileAdsPlugin.unregisterNativeAdFactory(engine, "adFactory1Light")
+    GoogleMobileAdsPlugin.unregisterNativeAdFactory(engine, "adFactory1Dark")
+    GoogleMobileAdsPlugin.unregisterNativeAdFactory(engine, "adFactory2Light")
+    GoogleMobileAdsPlugin.unregisterNativeAdFactory(engine, "adFactory2Dark")
+
+    unregisterALNativeAdFactory(engine, "adFactory1Light")
+    unregisterALNativeAdFactory(engine, "adFactory1Dark")
+    unregisterALNativeAdFactory(engine, "adFactory2Light")
+    unregisterALNativeAdFactory(engine, "adFactory2Dark")
+
     alInstanceManager?.setActivity(null)
   }
 
