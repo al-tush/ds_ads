@@ -29,7 +29,6 @@ class ALNativeAd(
     fun load(context: Context) {
         val factory = manager.alFactories[factoryId]
             ?: throw Exception("Can't find NativeAdFactory with id: $factoryId")
-        nativeAdView = factory.createNativeAd()
 
         nativeAdLoader = MaxNativeAdLoader(adUnitId, context)
         nativeAdLoader!!.setRevenueListener(object : MaxAdRevenueListener {
@@ -45,7 +44,9 @@ class ALNativeAd(
         nativeAdLoader!!.setNativeAdListener(object : MaxNativeAdListener() {
             override fun onNativeAdLoaded(view: MaxNativeAdView?, ad: MaxAd) {
                 nativeAd = ad
+                nativeAdView = factory.createNativeAd()
                 manager.invokeMethod("onAdLoaded", mapOf("adId" to id))
+                nativeAdLoader!!.render(nativeAdView!!, ad)
             }
 
             override fun onNativeAdLoadFailed(adUnitId: String, error: MaxError) {
@@ -62,7 +63,7 @@ class ALNativeAd(
             }
         })
 
-        nativeAdLoader!!.loadAd(nativeAdView)
+        nativeAdLoader!!.loadAd()
     }
 
     fun dispose() {
