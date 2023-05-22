@@ -75,7 +75,7 @@ class ALInstanceManager {
         ad._isLoaded = true;
         ad.onAdLoaded?.call(ad);
         break;
-      case 'onAdFailedToLoad':
+      case 'onAdLoadFailed':
         final code = arguments['error_code'];
         final message = arguments['error_message'];
         ad.onAdFailedToLoad?.call(ad, code, message);
