@@ -6,6 +6,7 @@ import 'package:google_mobile_ads/google_mobile_ads.dart';
 
 class DSAppLovinNativeAd  extends DSNativeAd {
   var _isLoaded = false;
+  var _networkName = '';
 
   final void Function(DSNativeAd ad)? onAdExpired;
 
@@ -20,8 +21,7 @@ class DSAppLovinNativeAd  extends DSNativeAd {
   });
 
   @override
-  // TODO: implement mediationAdapterClassName
-  String get mediationAdapterClassName => '';
+  String get mediationAdapterClassName => _networkName;
 
 
   @override
@@ -73,6 +73,7 @@ class ALInstanceManager {
     switch (eventName) {
       case 'onAdLoaded':
         ad._isLoaded = true;
+        ad._networkName = arguments['networkName'] as String;
         ad.onAdLoaded?.call(ad);
         break;
       case 'onAdLoadFailed':

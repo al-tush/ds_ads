@@ -45,7 +45,10 @@ class ALNativeAd(
             override fun onNativeAdLoaded(view: MaxNativeAdView?, ad: MaxAd) {
                 nativeAd = ad
                 nativeAdView = factory.createNativeAd()
-                manager.invokeMethod("onAdLoaded", mapOf("adId" to id))
+                manager.invokeMethod("onAdLoaded", mapOf(
+                    "adId" to id,
+                    "networkName" to ad.networkName,
+                ))
                 nativeAdLoader!!.render(nativeAdView!!, ad)
             }
 
