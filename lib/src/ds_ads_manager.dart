@@ -60,7 +60,7 @@ class DSAdsManager {
 
   Stream<DSAdsEvent> get eventStream => _eventController.stream;
   
-  final List<DSAdMediation> Function() mediationPrioritiesCallback;
+  final List<DSAdMediation> Function(DSMediationType type) mediationPrioritiesCallback;
   final OnPaidEvent onPaidEvent;
   final DSAppAdsState appState;
   final OnReportEvent? onReportEvent;
@@ -152,7 +152,7 @@ class DSAdsManager {
   var _lockMediationTill = DateTime(0);
   
   Future<void> _tryNextMediation(DSMediationType type) async {
-    final mediationPriorities = mediationPrioritiesCallback();
+    final mediationPriorities = mediationPrioritiesCallback(type);
     _prevMediationPriorities[type] = mediationPriorities.toSet();
     if (mediationPriorities.contains(DSAdMediation.google)) {
       if (interstitialGoogleUnitId?.isNotEmpty != true) {
@@ -226,7 +226,7 @@ class DSAdsManager {
   @internal
   Future<void> checkMediation(DSMediationType type) async {
     if (currentMediation(type) == null) return;
-    final mediationPriorities = mediationPrioritiesCallback();
+    final mediationPriorities = mediationPrioritiesCallback(type);
     try {
       if (!mediationPriorities.contains(currentMediation(type))) {
         await _tryNextMediation(type);
@@ -247,8 +247,8 @@ class DSAdsManager {
 
   @internal
   Future<void> onLoadAdError(int errCode, String errText, DSAdMediation mediation, DSAdSource source) async {
-    if (mediationPrioritiesCallback().length <= 1) return;
     final type = source == DSAdSource.native ? DSMediationType.native : DSMediationType.main;
+    if (mediationPrioritiesCallback(type).length <= 1) return;
     switch (mediation) {
       case DSAdMediation.google:
       // https://support.google.com/admob/thread/3494603/admob-error-codes-logs?hl=en
