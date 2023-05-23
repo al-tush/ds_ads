@@ -66,18 +66,14 @@ mixin DSAdsNativeLoaderMixin<T extends StatefulWidget> on State<T> {
       await for (final event in DSAdsManager.instance.eventStream) {
         if (!mounted) return;
         if (event is DSAdsNativeLoadedEvent) {
-          final res = _assignAdToMe();
-          if (res) {
-            setState(() {});
-          }
+          _assignAdToMe();
+          break;
         }
       }
     } ());
     _isDisabled(nativeAdLocation);
-    unawaited(() async {
-      await fetchAd(location: nativeAdLocation);
-      _assignAdToMe();
-    } ());
+    _assignAdToMe();
+    unawaited(fetchAd(location: nativeAdLocation));
   }
 
   @override
@@ -131,7 +127,7 @@ mixin DSAdsNativeLoaderMixin<T extends StatefulWidget> on State<T> {
     DSAdsManager.instance.onReportEvent?.call(eventName, {
       'location': location.val,
       'adUnitId': adUnitId,
-      'mediation': '${DSAdsManager.instance.currentMediation(DSMediationType.main)}',
+      'mediation': '${DSAdsManager.instance.currentMediation(DSMediationType.native)}',
       ...?attributes,
     });
   }
@@ -215,7 +211,7 @@ mixin DSAdsNativeLoaderMixin<T extends StatefulWidget> on State<T> {
 
     Future<void> onAdImpression(DSNativeAd ad) async {
       try {
-        _report('ads_native: impression', location: location);
+        _report('ads_native: impression', location: _getLocationByAd(ad));
       } catch (e, stack) {
         Fimber.e('$e', stacktrace: stack);
       }
@@ -249,7 +245,7 @@ mixin DSAdsNativeLoaderMixin<T extends StatefulWidget> on State<T> {
     }
     Future<void> onPaidEvent(DSNativeAd ad, double valueMicros, DSPrecisionType precision, String currencyCode) async {
       try {
-        DSAdsManager.instance.onPaidEvent(ad, mediation, location, valueMicros, precision, currencyCode, DSAdSource.native, null);
+        DSAdsManager.instance.onPaidEvent(ad, mediation, _getLocationByAd(ad), valueMicros, precision, currencyCode, DSAdSource.native, null);
       } catch (e, stack) {
         Fimber.e('$e', stacktrace: stack);
       }
@@ -322,6 +318,12 @@ mixin DSAdsNativeLoaderMixin<T extends StatefulWidget> on State<T> {
     if (readyAd == null || !readyAd.isLoaded) return false;
     _showedAds[this] = readyAd;
     _loadingAds.remove(style);
+    Fimber.i('ads_native: assigned (location: $nativeAdLocation)');
+    unawaited(() async {
+      // to prevent empty transparent rect instead banner
+      await Future.delayed(const Duration(milliseconds: 500));
+      setState(() {});
+    } ());
     return true;
   }
 
