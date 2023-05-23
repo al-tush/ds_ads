@@ -1,7 +1,6 @@
 import 'package:applovin_max/applovin_max.dart';
 import 'package:ds_ads/src/generic_ads/export.dart';
 import 'package:fimber/fimber.dart';
-import 'package:google_mobile_ads/google_mobile_ads.dart';
 
 class DSAppLovinInterstitialAd extends DSInterstitialAd {
   MaxAd? _ad;
@@ -29,10 +28,10 @@ class DSAppLovinInterstitialAd extends DSInterstitialAd {
         onAdImpression?.call(this);
         // https://dash.applovin.com/documentation/mediation/android/getting-started/advanced-settings#impression-level-user-revenue-api
         if (ad.revenue < 0) {
-          Fimber.w('AppLovin revenue error');
+          Fimber.w('AppLovin revenue error', stacktrace: StackTrace.current);
           return;
         }
-        onPaidEvent?.call(this, ad.revenue * 1000000, PrecisionType.unknown, 'USD',  ad.dspName);
+        onPaidEvent?.call(this, ad.revenue * 1000000, DSPrecisionType.unknown, 'USD',  ad.dspName);
       },
       onAdDisplayFailedCallback: (ad, error) {
         onAdFailedToShow?.call(this, error.code, error.message);
@@ -52,7 +51,7 @@ class DSAppLovinInterstitialAd extends DSInterstitialAd {
   Future<void> show() async {
     final isReady = await AppLovinMAX.isInterstitialReady(adUnitId);
     if (isReady != true) {
-      Fimber.e('AppLovin interstitial not ready: $adUnitId');
+      Fimber.e('AppLovin interstitial not ready: $adUnitId', stacktrace: StackTrace.current);
       return;
     }
     AppLovinMAX.showInterstitial(adUnitId);
@@ -105,7 +104,7 @@ class DSAppLovinRewardedAd extends DSRewardedAd {
       },
       onAdRevenuePaidCallback: (ad) {
         onAdImpression?.call(this);
-        onPaidEvent?.call(this, ad.revenue * 1000000, PrecisionType.unknown, 'USD',  ad.dspName);
+        onPaidEvent?.call(this, ad.revenue * 1000000, DSPrecisionType.unknown, 'USD',  ad.dspName);
       },
       onAdDisplayFailedCallback: (ad, error) {
         onAdFailedToShow?.call(this, error.code, error.message);
@@ -128,7 +127,7 @@ class DSAppLovinRewardedAd extends DSRewardedAd {
   Future<void> show() async {
     final isReady = await AppLovinMAX.isRewardedAdReady(adUnitId);
     if (isReady != true) {
-      Fimber.e('AppLovin rewarded not ready: $adUnitId');
+      Fimber.e('AppLovin rewarded not ready: $adUnitId', stacktrace: StackTrace.current);
       return;
     }
     AppLovinMAX.showRewardedAd(adUnitId);
@@ -153,6 +152,83 @@ class DSAppLovinRewardedAd extends DSRewardedAd {
   void Function(DSRewardedAd ad)? onAdClicked;
   @override
   void Function(DSRewardedAd ad)? onAdImpression;
+
+  @override
+  String get mediationAdapterClassName => _ad!.networkName;
+
+}
+
+class DSAppLovinAppOpenAd extends DSAppOpenAd {
+  MaxAd? _ad;
+
+  DSAppLovinAppOpenAd({
+    required super.adUnitId,
+  });
+
+  Future<void> load({
+    required void Function(DSAppOpenAd ad) onAdLoaded,
+    required DSOnAdFailedToLoad onAdFailedToLoad,
+  }) async {
+    AppLovinMAX.setAppOpenAdListener(AppOpenAdListener(
+      onAdLoadedCallback: (ad) {
+        _ad = ad;
+        onAdLoaded(this);
+      },
+      onAdLoadFailedCallback: (adUnitId, error) {
+        onAdFailedToLoad(this, error.code, error.message);
+      },
+      onAdDisplayedCallback: (ad) {
+        onAdShown?.call(this);
+      },
+      onAdDisplayFailedCallback: (ad, error) {
+        onAdFailedToShow?.call(this, error.code, error.message);
+      },
+      onAdClickedCallback: (ad) {
+        onAdClicked?.call(this);
+      },
+      onAdHiddenCallback: (ad) {
+        onAdDismissed?.call(this);
+      },
+      onAdRevenuePaidCallback: (ad) {
+        onAdImpression?.call(this);
+        // https://dash.applovin.com/documentation/mediation/android/getting-started/advanced-settings#impression-level-user-revenue-api
+        if (ad.revenue < 0) {
+          Fimber.w('AppLovin revenue error', stacktrace: StackTrace.current);
+          return;
+        }
+        onPaidEvent?.call(this, ad.revenue * 1000000, DSPrecisionType.unknown, 'USD',  ad.dspName);
+      },
+    ));
+    AppLovinMAX.loadAppOpenAd(adUnitId);
+  }
+
+  @override
+  Future<void> show() async {
+    final isReady = await AppLovinMAX.isAppOpenAdReady(adUnitId);
+    if (isReady != true) {
+      Fimber.e('AppLovin app open not ready: $adUnitId', stacktrace: StackTrace.current);
+      return;
+    }
+    AppLovinMAX.showAppOpenAd(adUnitId);
+  }
+
+  @override
+  Future<void> dispose() async {
+    _ad = null;
+  }
+
+  @override
+  DSOnPaidEventCallback? onPaidEvent;
+  @override
+  void Function(DSAppOpenAd ad)? onAdDismissed;
+  @override
+  void Function(DSAppOpenAd ad, int errCode, String errText)? onAdFailedToShow;
+  @override
+  void Function(DSAppOpenAd ad)? onAdShown;
+  @override
+  void Function(DSAppOpenAd ad)? onAdClicked;
+  @override
+  void Function(DSAppOpenAd ad)? onAdImpression;
 
   @override
   String get mediationAdapterClassName => _ad!.networkName;

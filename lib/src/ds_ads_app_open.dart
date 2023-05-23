@@ -7,6 +7,7 @@ import 'package:fimber/fimber.dart';
 import 'package:freezed_annotation/freezed_annotation.dart';
 import 'package:google_mobile_ads/google_mobile_ads.dart';
 
+import 'applovin_ads/applovin_ads.dart';
 import 'ds_ads_types.dart';
 
 part 'ds_ads_app_open_types.dart';
@@ -51,15 +52,25 @@ class DSAdsAppOpen {
     _adState == DSAdState.none;
   }
 
+  static String get adUnitId {
+    final mediation = DSAdsManager.instance.currentMediation(DSMediationType.main);
+    if (mediation == null) {
+      return 'noMediation';
+    }
+    switch (mediation) {
+      case DSAdMediation.google:
+        return DSAdsManager.instance.appOpenGoogleUnitId!;
+      case DSAdMediation.appLovin:
+        return DSAdsManager.instance.appOpenAppLovinUnitId!;
+    }
+  }
+
   void _report(String eventName, {
     required DSAdLocation location,
     Map<String, Object>? attributes,
   }) {
-    final adUnitId = DSAdsManager.instance.currentMediation(DSMediationType.main) == DSAdMediation.google
-        ? DSAdsManager.instance.appOpenGoogleUnitId
-        : null;
     DSAdsManager.instance.onReportEvent?.call(eventName, {
-      'adUnitId': adUnitId ?? 'unknown',
+      'adUnitId': adUnitId,
       'location': location.val,
       'mediation': '${DSAdsManager.instance.currentMediation(DSMediationType.main)}',
       ...?attributes,
@@ -79,10 +90,6 @@ class DSAdsAppOpen {
     }
     if (DSAdsManager.instance.isAdAllowedCallback?.call(DSAdSource.appOpen, location) == false) {
       Fimber.i('ads_app_open: disabled (location: $location)');
-      return true;
-    }
-    if (DSAdsManager.instance.currentMediation(DSMediationType.main) != DSAdMediation.google) {
-      Fimber.i('ads_app_open: disabled (no mediation)');
       return true;
     }
     return false;
@@ -134,83 +141,97 @@ class DSAdsAppOpen {
     final startTime = DateTime.now();
     _report('ads_app_open: start loading', location: location, attributes: customAttributes);
     final mediation = DSAdsManager.instance.currentMediation(DSMediationType.main)!;
-    switch (mediation) {
-      case DSAdMediation.google:
-        DSGoogleAppOpenAd(adUnitId: DSAdsManager.instance.appOpenGoogleUnitId!).load(
-          orientation: AppOpenAd.orientationPortrait,
-          onAdLoaded: (ad) async {
-            try {
-              final duration = DateTime.now().difference(startTime);
-              _report('ads_app_open: loaded', location: location, attributes: {
-                'mediation': '$mediation', // override
-                'google_ads_loaded_seconds': duration.inSeconds,
-                'google_ads_loaded_milliseconds': duration.inMilliseconds,
-                ...?customAttributes,
-              });
-              ad.onPaidEvent = (ad, valueMicros, precision, currencyCode, appLovinDspName) {
-                DSAdsManager.instance.onPaidEvent(ad, mediation, location, valueMicros, precision, currencyCode, DSAdSource.appOpen, appLovinDspName);
-              };
 
-              await _ad?.dispose();
-              _ad = ad;
-              _adState = DSAdState.loaded;
-              _lastLoadTime = DateTime.now();
-              _loadRetryCount = 0;
+    Future<void> onAdLoaded(DSAppOpenAd ad) async {
+      try {
+        final duration = DateTime.now().difference(startTime);
+        _report('ads_app_open: loaded', location: location, attributes: {
+          'mediation': '$mediation', // override
+          'google_ads_loaded_seconds': duration.inSeconds,
+          'google_ads_loaded_milliseconds': duration.inMilliseconds,
+          ...?customAttributes,
+        });
+        ad.onPaidEvent = (ad, valueMicros, precision, currencyCode, appLovinDspName) {
+          DSAdsManager.instance.onPaidEvent(ad, mediation, location, valueMicros, precision, currencyCode, DSAdSource.appOpen, appLovinDspName);
+        };
 
-              then?.call();
-              DSAdsManager.instance.emitEvent(DSAdsAppOpenLoadedEvent._(ad: ad));
-            } catch (e, stack) {
-              Fimber.e('$e', stacktrace: stack);
-            }
-          },
-          onAdFailedToLoad: (DSAd ad, int errCode, String errDescription) async {
-            try {
-              final duration = DateTime.now().difference(startTime);
-              unawaited(_ad?.dispose());
-              _ad = null;
-              _lastLoadTime = DateTime(0);
-              _adState = DSAdState.error;
-              _loadRetryCount++;
-              _report('ads_app_open: failed to load', location: location, attributes: {
-                'error_text': errDescription,
-                'error_code': '$errCode ($mediation)',
-                'mediation': '$mediation', // override
-                'google_ads_load_error_seconds': duration.inSeconds,
-                'google_ads_load_error_milliseconds': duration.inMilliseconds,
-                ...?customAttributes,
-              });
-              final oldMediation = DSAdsManager.instance.currentMediation(DSMediationType.main);
-              await DSAdsManager.instance.onLoadAdError(errCode, errDescription, mediation, DSAdSource.appOpen);
-              if (DSAdsManager.instance.currentMediation(DSMediationType.main) != oldMediation) {
-                _loadRetryCount = 0;
-              }
-              if (_loadRetryCount < loadRetryMaxCount) {
-                await Future.delayed(loadRetryDelay);
-                if ({DSAdState.none, DSAdState.error}.contains(_adState) && !_isDisposed) {
-                  _report('ads_app_open: retry loading', location: location, attributes: {
-                    'mediation': '$mediation', // override
-                    ...?customAttributes,
-                  });
-                  fetchAd(location: location, then: then, customAttributes: customAttributes);
-                }
-              } else {
-                Fimber.w('$errDescription ($errCode)', stacktrace: StackTrace.current);
-                _adState = DSAdState.none;
-                then?.call();
-                DSAdsManager.instance.emitEvent(DSAdsAppOpenLoadFailedEvent._(
-                  errCode: errCode,
-                  errText: errDescription,
-                ));
-              }
-            } catch (e, stack) {
-              Fimber.e('$e', stacktrace: stack);
-            }
-          },
-        );
-        break;
-      case DSAdMediation.appLovin:
-        assert(false);
-        break;
+        await _ad?.dispose();
+        _ad = ad;
+        _adState = DSAdState.loaded;
+        _lastLoadTime = DateTime.now();
+        _loadRetryCount = 0;
+
+        then?.call();
+        DSAdsManager.instance.emitEvent(DSAdsAppOpenLoadedEvent._(ad: ad));
+      } catch (e, stack) {
+        then?.call();
+        Fimber.e('$e', stacktrace: stack);
+      }
+    }
+    Future<void> onAdFailedToLoad(DSAd ad, int errCode, String errDescription) async {
+      try {
+        final duration = DateTime.now().difference(startTime);
+        unawaited(_ad?.dispose());
+        _ad = null;
+        _lastLoadTime = DateTime(0);
+        _adState = DSAdState.error;
+        _loadRetryCount++;
+        _report('ads_app_open: failed to load', location: location, attributes: {
+          'error_text': errDescription,
+          'error_code': '$errCode ($mediation)',
+          'mediation': '$mediation', // override
+          'google_ads_load_error_seconds': duration.inSeconds,
+          'google_ads_load_error_milliseconds': duration.inMilliseconds,
+          ...?customAttributes,
+        });
+        final oldMediation = DSAdsManager.instance.currentMediation(DSMediationType.main);
+        await DSAdsManager.instance.onLoadAdError(errCode, errDescription, mediation, DSAdSource.appOpen);
+        if (DSAdsManager.instance.currentMediation(DSMediationType.main) != oldMediation) {
+          _loadRetryCount = 0;
+        }
+        if (_loadRetryCount < loadRetryMaxCount) {
+          await Future.delayed(loadRetryDelay);
+          if ({DSAdState.none, DSAdState.error}.contains(_adState) && !_isDisposed) {
+            _report('ads_app_open: retry loading', location: location, attributes: {
+              'mediation': '$mediation', // override
+              ...?customAttributes,
+            });
+            fetchAd(location: location, then: then, customAttributes: customAttributes);
+          }
+        } else {
+          Fimber.w('$errDescription ($errCode)', stacktrace: StackTrace.current);
+          _adState = DSAdState.none;
+          then?.call();
+          DSAdsManager.instance.emitEvent(DSAdsAppOpenLoadFailedEvent._(
+            errCode: errCode,
+            errText: errDescription,
+          ));
+        }
+      } catch (e, stack) {
+        then?.call();
+        Fimber.e('$e', stacktrace: stack);
+      }
+    }
+
+    try {
+      switch (mediation) {
+        case DSAdMediation.google:
+          DSGoogleAppOpenAd(adUnitId: adUnitId).load(
+            orientation: AppOpenAd.orientationPortrait,
+            onAdLoaded: onAdLoaded,
+            onAdFailedToLoad: onAdFailedToLoad,
+          );
+          break;
+        case DSAdMediation.appLovin:
+          DSAppLovinAppOpenAd(adUnitId: adUnitId).load(
+            onAdLoaded: onAdLoaded,
+            onAdFailedToLoad: onAdFailedToLoad,
+          );
+          break;
+      }
+    } catch (e, stack) {
+      then?.call();
+      Fimber.e('$e', stacktrace: stack);
     }
 
     _adState = DSAdState.loading;

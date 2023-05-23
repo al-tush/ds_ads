@@ -74,6 +74,7 @@ class DSAdsManager {
   final String? interstitialAppLovinUnitId;
   final String? interstitialSplashAppLovinUnitId;
   final String? nativeAppLovinUnitId;
+  final String? appOpenAppLovinUnitId;
   final String? rewardedAppLovinUnitId;
   final DSDurationCallback? interstitialFetchDelayCallback;
   final DSDurationCallback? interstitialShowLockCallback;
@@ -114,6 +115,7 @@ class DSAdsManager {
     this.interstitialAppLovinUnitId,
     this.interstitialSplashAppLovinUnitId,
     this.nativeAppLovinUnitId,
+    this.appOpenAppLovinUnitId,
     this.rewardedAppLovinUnitId,
     this.isAdAllowedCallback,
     this.nativeAdCustomBanners = const [],

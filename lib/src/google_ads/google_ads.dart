@@ -15,43 +15,43 @@ class DSGoogleInterstitialAd extends DSInterstitialAd {
     required DSOnAdFailedToLoad onAdFailedToLoad,
   }) async {
     await InterstitialAd.load(
-        adUnitId: adUnitId,
-        request: const AdRequest(),
-        adLoadCallback: InterstitialAdLoadCallback(
-          onAdLoaded: (ad) async {
-            _ad = ad;
-            ad.onPaidEvent = (Ad ad, double valueMicros, PrecisionType precision, String currencyCode) {
+      adUnitId: adUnitId,
+      request: const AdRequest(),
+      adLoadCallback: InterstitialAdLoadCallback(
+        onAdLoaded: (ad) async {
+          _ad = ad;
+          ad.onPaidEvent = (Ad ad, double valueMicros, PrecisionType precision, String currencyCode) {
+            assert(_ad == ad);
+            onPaidEvent?.call(this, valueMicros, precision, currencyCode, null);
+          };
+          ad.fullScreenContentCallback = FullScreenContentCallback(
+            onAdImpression: (ad) {
               assert(_ad == ad);
-              onPaidEvent?.call(this, valueMicros, precision, currencyCode, null);
-            };
-            ad.fullScreenContentCallback = FullScreenContentCallback(
-              onAdImpression: (ad) {
-                assert(_ad == ad);
-                onAdImpression?.call(this);
-              },
-              onAdShowedFullScreenContent: (ad) {
-                assert(_ad == ad);
-                onAdShown?.call(this);
-              },
-              onAdDismissedFullScreenContent: (InterstitialAd ad) {
-                assert(_ad == ad);
-                onAdDismissed?.call(this);
-              },
-              onAdFailedToShowFullScreenContent: (ad, error) {
-                assert(_ad == ad);
-                onAdFailedToShow?.call(this, error.code, error.message);
-              },
-              onAdClicked: (ad) {
-                assert(_ad == ad);
-                onAdClicked?.call(this);
-              },
-            );
-            onAdLoaded(this);
-          },
-          onAdFailedToLoad: (LoadAdError error) {
-            onAdFailedToLoad(this, error.code, error.message);
-          },
-        ),
+              onAdImpression?.call(this);
+            },
+            onAdShowedFullScreenContent: (ad) {
+              assert(_ad == ad);
+              onAdShown?.call(this);
+            },
+            onAdDismissedFullScreenContent: (InterstitialAd ad) {
+              assert(_ad == ad);
+              onAdDismissed?.call(this);
+            },
+            onAdFailedToShowFullScreenContent: (ad, error) {
+              assert(_ad == ad);
+              onAdFailedToShow?.call(this, error.code, error.message);
+            },
+            onAdClicked: (ad) {
+              assert(_ad == ad);
+              onAdClicked?.call(this);
+            },
+          );
+          onAdLoaded(this);
+        },
+        onAdFailedToLoad: (LoadAdError error) {
+          onAdFailedToLoad(this, error.code, error.message);
+        },
+      ),
     );
   }
 
@@ -256,8 +256,7 @@ class DSGoogleAdWidget extends StatelessWidget {
 
 }
 
-class DSGoogleAppOpenAd extends DSAppOpenAd
-{
+class DSGoogleAppOpenAd extends DSAppOpenAd {
   AppOpenAd? _ad;
 
   DSGoogleAppOpenAd({
