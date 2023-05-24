@@ -102,7 +102,8 @@ mixin DSAdsNativeLoaderMixin<T extends StatefulWidget> on State<T> {
         currentClass = DSAppLovinNativeAd;
         break;
       default:
-        throw UnimplementedError();
+        currentClass = Object;
+        break;
     }
     _loadingAds.removeWhere((key, value) {
       final del = value.runtimeType != currentClass;
@@ -344,7 +345,8 @@ mixin DSAdsNativeLoaderMixin<T extends StatefulWidget> on State<T> {
     } else if (ad is DSAppLovinNativeAd) {
       child = DSAppLovinAdWidget(ad: ad);
     } else {
-      throw UnimplementedError();
+      assert(false, 'No implementation for ${ad.runtimeType}');
+      return const SizedBox();
     }
 
     child = SizedBox(
