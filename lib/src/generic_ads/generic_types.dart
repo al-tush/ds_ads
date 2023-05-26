@@ -1,3 +1,4 @@
+import 'package:ds_ads/ds_ads.dart';
 import 'package:google_mobile_ads/google_mobile_ads.dart';
 
 typedef DSOnPaidEventCallback = void Function(
@@ -56,6 +57,8 @@ abstract class DSNativeAd  extends DSAd {
   });
 
   bool get isLoaded;
+
+  DSAdMediation get mediation;
 
   Future<void> load();
 

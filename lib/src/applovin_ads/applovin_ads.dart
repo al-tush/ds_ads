@@ -1,4 +1,5 @@
 import 'package:applovin_max/applovin_max.dart';
+import 'package:ds_ads/ds_ads.dart';
 import 'package:ds_ads/src/generic_ads/export.dart';
 import 'package:fimber/fimber.dart';
 
@@ -13,6 +14,9 @@ class DSAppLovinInterstitialAd extends DSInterstitialAd {
     required void Function(DSInterstitialAd ad) onAdLoaded,
     required DSOnAdFailedToLoad onAdFailedToLoad,
   }) async {
+    if (!DSAdsManager.instance.isMediationInitialized(DSAdMediation.appLovin)) {
+      Fimber.e('AppLovin was not initialized', stacktrace: StackTrace.current);
+    }
     AppLovinMAX.setInterstitialListener(InterstitialListener(
       onAdLoadedCallback: (ad) {
         _ad = ad;
@@ -91,6 +95,9 @@ class DSAppLovinRewardedAd extends DSRewardedAd {
     required void Function(DSRewardedAd ad) onAdLoaded,
     required DSOnAdFailedToLoad onAdFailedToLoad,
   }) async {
+    if (!DSAdsManager.instance.isMediationInitialized(DSAdMediation.appLovin)) {
+      Fimber.e('AppLovin was not initialized', stacktrace: StackTrace.current);
+    }
     AppLovinMAX.setRewardedAdListener(RewardedAdListener(
       onAdLoadedCallback: (ad) {
         _ad = ad;
@@ -169,6 +176,9 @@ class DSAppLovinAppOpenAd extends DSAppOpenAd {
     required void Function(DSAppOpenAd ad) onAdLoaded,
     required DSOnAdFailedToLoad onAdFailedToLoad,
   }) async {
+    if (!DSAdsManager.instance.isMediationInitialized(DSAdMediation.appLovin)) {
+      Fimber.e('AppLovin was not initialized', stacktrace: StackTrace.current);
+    }
     AppLovinMAX.setAppOpenAdListener(AppOpenAdListener(
       onAdLoadedCallback: (ad) {
         _ad = ad;

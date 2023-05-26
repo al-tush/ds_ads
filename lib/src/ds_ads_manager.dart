@@ -129,7 +129,7 @@ class DSAdsManager {
   {
     _instance = this;
     for (final t in DSMediationType.values) {
-      unawaited(_tryNextMediation(t));
+      _tryNextMediation(t);
     }
 
     unawaited(() async {
@@ -153,7 +153,7 @@ class DSAdsManager {
   
   var _lockMediationTill = DateTime(0);
   
-  Future<void> _tryNextMediation(DSMediationType type) async {
+  void _tryNextMediation(DSMediationType type) {
     final mediationPriorities = mediationPrioritiesCallback(type);
     _prevMediationPriorities[type] = mediationPriorities.toSet();
     if (mediationPriorities.contains(DSAdMediation.google)) {
@@ -188,7 +188,7 @@ class DSAdsManager {
         onReportEvent?.call('ads_manager: no next mediation, waiting ${_nextMediationWait.inSeconds}s', {});
         Timer(_nextMediationWait, () async {
           if (currentMediation(type) == null) {
-            await _tryNextMediation(type);
+            _tryNextMediation(type);
           }
         });
         return;
@@ -203,48 +203,54 @@ class DSAdsManager {
     });
     _currentMediation[type] = next;
     if (!_mediationInitialized.contains(next)) {
-      _mediationInitialized.add(next);
-      switch (next) {
-        case DSAdMediation.google:
+      unawaited(() async {
+        try {
+        switch (next) {
+          case DSAdMediation.google:
           // It seems that init just creates competition for other mediations
           //await MobileAds.instance.initialize();
-          break;
-        case DSAdMediation.appLovin:
-          appLovinSDKConfiguration.clear();
-          final config = await AppLovinMAX.initialize(appLovinSDKKey!);
-          if (config != null) {
-            appLovinSDKConfiguration.addAll(config);
-          }
+            break;
+          case DSAdMediation.appLovin:
+            await initAppLovine();
+            break;
+        }
+        _mediationInitialized.add(next);
+      } catch (e, stack) {
+        Fimber.e('$e', stacktrace: stack);
       }
-      onReportEvent?.call('ads_manager: mediation initialized', {
-        'mediation': '$next',
-        'mediation_type': '$type',
-      });
+      } ());
     }
   }
 
   final _prevMediationPriorities = <DSMediationType, Set<DSAdMediation>>{};
 
   @internal
-  Future<void> checkMediation(DSMediationType type) async {
-    if (currentMediation(type) == null) return;
+  bool updateMediations(DSMediationType type) {
+    if (currentMediation(type) == null) return false;
     final mediationPriorities = mediationPrioritiesCallback(type);
     try {
+      void reloadMediation() {
+        Fimber.i('ads_manager: mediations reloaded');
+        _lockMediationTill = DateTime(0);
+        _currentMediation[type] = null;
+        _tryNextMediation(type);
+      }
       if (!mediationPriorities.contains(currentMediation(type))) {
-        await _tryNextMediation(type);
-        return;
+        reloadMediation();
+        return true;
       }
       final isSame = const IterableEquality().equals(mediationPriorities, _prevMediationPriorities[type]);
       if (!isSame) {
         if (mediationPriorities.first != currentMediation(type)) {
-          _currentMediation[type] = null;
-          await _tryNextMediation(type);
+          reloadMediation();
+          return true;
         }
       }
     } catch (e, stack) {
       Fimber.e('$e', stacktrace: stack);
       _prevMediationPriorities[type] = mediationPriorities.toSet();
     }
+    return false;
   }
 
   @internal
@@ -255,16 +261,32 @@ class DSAdsManager {
       case DSAdMediation.google:
       // https://support.google.com/admob/thread/3494603/admob-error-codes-logs?hl=en
         if (errCode == 3) {
-          await _tryNextMediation(type);
+          if (!updateMediations(type)) {
+            _tryNextMediation(type);
+          }
         }
         break;
       case DSAdMediation.appLovin:
       // https://dash.applovin.com/documentation/mediation/flutter/getting-started/errorcodes
         if (errCode == 204 || errCode == -5001) {
-          await _tryNextMediation(type);
+          if (!updateMediations(type)) {
+            _tryNextMediation(type);
+          }
         }
         break;
     }
+  }
+
+  bool isMediationInitialized(DSAdMediation mediation) => _mediationInitialized.contains(mediation);
+
+  Future<void> initAppLovine() async {
+    appLovinSDKConfiguration.clear();
+    final config = await AppLovinMAX.initialize(appLovinSDKKey!);
+    if (config != null) {
+      appLovinSDKConfiguration.addAll(config);
+    }
+    _mediationInitialized.add(DSAdMediation.appLovin);
+    onReportEvent?.call('ads_manager: AppLovin initialized', {});
   }
 
 }

@@ -3,6 +3,8 @@ import 'package:fimber/fimber.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:google_mobile_ads/google_mobile_ads.dart';
 
+import '../ds_ads_types.dart';
+
 class DSGoogleInterstitialAd extends DSInterstitialAd {
   InterstitialAd? _ad;
 
@@ -225,6 +227,9 @@ class DSGoogleNativeAd extends DSNativeAd {
 
   @override
   String get mediationAdapterClassName => '${_ad?.responseInfo?.mediationAdapterClassName}';
+
+  @override
+  DSAdMediation get mediation => DSAdMediation.google;
 
   @override
   bool get isLoaded => _isLoaded;

@@ -1,6 +1,5 @@
 import 'package:fimber/fimber.dart';
 import 'package:flutter/foundation.dart';
-import 'package:freezed_annotation/freezed_annotation.dart';
 import 'package:google_mobile_ads/google_mobile_ads.dart';
 
 import 'generic_ads/export.dart';

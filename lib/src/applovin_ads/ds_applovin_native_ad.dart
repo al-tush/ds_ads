@@ -1,5 +1,4 @@
-import 'package:ds_ads/src/ds_ads_manager.dart';
-import 'package:ds_ads/src/generic_ads/export.dart';
+import 'package:ds_ads/ds_ads.dart';
 import 'package:fimber/fimber.dart';
 import 'package:flutter/services.dart';
 import 'package:google_mobile_ads/google_mobile_ads.dart';
@@ -23,12 +22,17 @@ class DSAppLovinNativeAd  extends DSNativeAd {
   @override
   String get mediationAdapterClassName => _networkName;
 
+  @override
+  DSAdMediation get mediation => DSAdMediation.appLovin;
 
   @override
   bool get isLoaded => _isLoaded;
 
   @override
   Future<void> load() {
+    if (!DSAdsManager.instance.isMediationInitialized(DSAdMediation.appLovin)) {
+      Fimber.e('AppLovin was not initialized', stacktrace: StackTrace.current);
+    }
     return ALInstanceManager.instance.loadNativeAd(this);
   }
 
