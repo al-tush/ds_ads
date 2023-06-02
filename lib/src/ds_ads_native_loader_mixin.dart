@@ -92,7 +92,7 @@ mixin DSAdsNativeLoaderMixin<T extends StatefulWidget> on State<T> {
 
   static Future<void> _disposeOtherMediation() async {
     final Type currentClass;
-    switch (DSAdsManager.instance.currentMediation(DSMediationType.native)) {
+    switch (DSAdsManager.instance.currentMediation(DSAdSource.native)) {
       case DSAdMediation.google:
         currentClass = DSGoogleNativeAd;
         break;
@@ -174,7 +174,7 @@ mixin DSAdsNativeLoaderMixin<T extends StatefulWidget> on State<T> {
       Fimber.i('$_tag: disabled (location: $location)');
       return true;
     }
-    if (DSAdsManager.instance.currentMediation(DSMediationType.native) == null) {
+    if (DSAdsManager.instance.currentMediation(DSAdSource.native) == null) {
       Fimber.i('$_tag: disabled (no mediation)');
       return true;
     }
@@ -184,7 +184,7 @@ mixin DSAdsNativeLoaderMixin<T extends StatefulWidget> on State<T> {
   static Future<void> fetchAd({
     required final DSAdLocation location,
   }) async {
-    DSAdsManager.instance.updateMediations(DSMediationType.native);
+    DSAdsManager.instance.updateMediations(DSAdSource.native);
 
     if (_isDisabled(location)) return;
 
@@ -212,7 +212,7 @@ mixin DSAdsNativeLoaderMixin<T extends StatefulWidget> on State<T> {
       return;
     }
 
-    final mediation = DSAdsManager.instance.currentMediation(DSMediationType.native);
+    final mediation = DSAdsManager.instance.currentMediation(DSAdSource.native);
     if (mediation == null) {
       _report('$_tag: no mediation', location: location, mediation: mediation);
       return;
@@ -244,7 +244,7 @@ mixin DSAdsNativeLoaderMixin<T extends StatefulWidget> on State<T> {
         DSAdsManager.instance.emitEvent(const DSAdsNativeLoadFailed._());
         await ad.dispose();
         await DSAdsManager.instance.onLoadAdError(code, message, mediation, DSAdSource.native);
-        final newMediation = DSAdsManager.instance.currentMediation(DSMediationType.native);
+        final newMediation = DSAdsManager.instance.currentMediation(DSAdSource.native);
         if (newMediation != mediation) {
           await fetchAd(location: location);
         }

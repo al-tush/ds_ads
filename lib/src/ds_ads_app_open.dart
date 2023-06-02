@@ -117,7 +117,7 @@ class DSAdsAppOpen {
       return;
     }
 
-    DSAdsManager.instance.updateMediations(DSMediationType.main);
+    DSAdsManager.instance.updateMediations(DSAdSource.appOpen);
 
     if (_isDisabled(location)) {
       then?.call();
@@ -142,7 +142,7 @@ class DSAdsAppOpen {
     }
 
     final startTime = DateTime.now();
-    final mediation = DSAdsManager.instance.currentMediation(DSMediationType.main);
+    final mediation = DSAdsManager.instance.currentMediation(DSAdSource.appOpen);
     _mediation = mediation;
     if (mediation == null) {
       _report('$_tag: no mediation', location: location, mediation: mediation, attributes: customAttributes);
@@ -187,9 +187,9 @@ class DSAdsAppOpen {
           'google_ads_load_error_milliseconds': duration.inMilliseconds,
           ...?customAttributes,
         });
-        final oldMediation = DSAdsManager.instance.currentMediation(DSMediationType.main);
+        final oldMediation = DSAdsManager.instance.currentMediation(DSAdSource.appOpen);
         await DSAdsManager.instance.onLoadAdError(errCode, errDescription, mediation, DSAdSource.appOpen);
-        if (DSAdsManager.instance.currentMediation(DSMediationType.main) != oldMediation) {
+        if (DSAdsManager.instance.currentMediation(DSAdSource.appOpen) != oldMediation) {
           _loadRetryCount = 0;
         }
         if (_loadRetryCount < loadRetryMaxCount) {

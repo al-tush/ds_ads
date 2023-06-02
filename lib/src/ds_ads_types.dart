@@ -24,11 +24,6 @@ enum DSAdMediation {
   appLovin,
 }
 
-enum DSMediationType {
-  main,
-  native,
-}
-
 @immutable
 class DSAdLocation {
   final String val;

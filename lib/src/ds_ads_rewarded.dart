@@ -74,7 +74,7 @@ class DSAdsRewarded {
       Fimber.i('$_tag: disabled (location: $location)');
       return true;
     }
-    if (DSAdsManager.instance.currentMediation(DSMediationType.main) == null) {
+    if (DSAdsManager.instance.currentMediation(DSAdSource.rewarded) == null) {
       Fimber.i('$_tag: disabled (no mediation)');
       return true;
     }
@@ -100,7 +100,7 @@ class DSAdsRewarded {
       return;
     }
 
-    DSAdsManager.instance.updateMediations(DSMediationType.main);
+    DSAdsManager.instance.updateMediations(DSAdSource.rewarded);
 
     if (_isDisabled(location)) {
       then?.call();
@@ -132,7 +132,7 @@ class DSAdsRewarded {
     }
 
     final startTime = DateTime.now();
-    final mediation = DSAdsManager.instance.currentMediation(DSMediationType.main);
+    final mediation = DSAdsManager.instance.currentMediation(DSAdSource.rewarded);
     _mediation = mediation;
     if (mediation == null) {
       _report('$_tag: no mediation', location: location, mediation: mediation, attributes: customAttributes);
@@ -176,9 +176,9 @@ class DSAdsRewarded {
                 'google_ads_load_error_milliseconds': duration.inMilliseconds,
                 ...?customAttributes,
               });
-              final oldMediation = DSAdsManager.instance.currentMediation(DSMediationType.main);
+              final oldMediation = DSAdsManager.instance.currentMediation(DSAdSource.rewarded);
               await DSAdsManager.instance.onLoadAdError(errCode, errDescription, mediation, DSAdSource.rewarded);
-              if (DSAdsManager.instance.currentMediation(DSMediationType.main) != oldMediation) {
+              if (DSAdsManager.instance.currentMediation(DSAdSource.rewarded) != oldMediation) {
                 _loadRetryCount = 0;
               }
               if (_loadRetryCount < loadRetryMaxCount) {
@@ -239,9 +239,9 @@ class DSAdsRewarded {
                 'applovin_ads_load_error_milliseconds': duration.inMilliseconds,
                 ...?customAttributes,
               });
-              final oldMediation = DSAdsManager.instance.currentMediation(DSMediationType.main);
+              final oldMediation = DSAdsManager.instance.currentMediation(DSAdSource.rewarded);
               await DSAdsManager.instance.onLoadAdError(errCode, errDescription, mediation, DSAdSource.rewarded);
-              if (DSAdsManager.instance.currentMediation(DSMediationType.main) != oldMediation) {
+              if (DSAdsManager.instance.currentMediation(DSAdSource.rewarded) != oldMediation) {
                 _loadRetryCount = 0;
               }
               if (_loadRetryCount < loadRetryMaxCount) {

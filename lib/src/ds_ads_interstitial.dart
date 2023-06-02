@@ -91,7 +91,7 @@ class DSAdsInterstitial extends Cubit<DSAdsInterstitialState> {
       Fimber.i('$_tag: disabled (location: $location)');
       return true;
     }
-    if (DSAdsManager.instance.currentMediation(DSMediationType.main) == null) {
+    if (DSAdsManager.instance.currentMediation(DSAdSource.interstitial) == null) {
       Fimber.i('$_tag: disabled (no mediation)');
       return true;
     }
@@ -117,7 +117,7 @@ class DSAdsInterstitial extends Cubit<DSAdsInterstitialState> {
       return;
     }
 
-    DSAdsManager.instance.updateMediations(DSMediationType.main);
+    DSAdsManager.instance.updateMediations(DSAdSource.interstitial);
 
     if (_isDisabled(location)) {
       then?.call();
@@ -149,7 +149,7 @@ class DSAdsInterstitial extends Cubit<DSAdsInterstitialState> {
     }
 
     final startTime = DateTime.now();
-    final mediation = DSAdsManager.instance.currentMediation(DSMediationType.main);
+    final mediation = DSAdsManager.instance.currentMediation(DSAdSource.interstitial);
     _mediation = mediation;
     if (mediation == null) {
       _report('$_tag: no mediation', location: location, mediation: mediation, attributes: customAttributes);
@@ -197,7 +197,7 @@ class DSAdsInterstitial extends Cubit<DSAdsInterstitialState> {
                 ...?customAttributes,
               });
               await DSAdsManager.instance.onLoadAdError(errCode, errDescription, mediation, DSAdSource.interstitial);
-              if (DSAdsManager.instance.currentMediation(DSMediationType.main) != _mediation) {
+              if (DSAdsManager.instance.currentMediation(DSAdSource.interstitial) != _mediation) {
                 emit(state.copyWith(
                   loadRetryCount: 0,
                 ));
@@ -267,9 +267,9 @@ class DSAdsInterstitial extends Cubit<DSAdsInterstitialState> {
                 'applovin_ads_load_error_milliseconds': duration.inMilliseconds,
                 ...?customAttributes,
               });
-              final oldMediation = DSAdsManager.instance.currentMediation(DSMediationType.main);
+              final oldMediation = DSAdsManager.instance.currentMediation(DSAdSource.interstitial);
               await DSAdsManager.instance.onLoadAdError(errCode, errDescription, mediation, DSAdSource.interstitial);
-              if (DSAdsManager.instance.currentMediation(DSMediationType.main) != oldMediation) {
+              if (DSAdsManager.instance.currentMediation(DSAdSource.interstitial) != oldMediation) {
                 emit(state.copyWith(
                   loadRetryCount: 0,
                 ));
