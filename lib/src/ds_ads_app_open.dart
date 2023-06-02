@@ -16,6 +16,8 @@ class DSAdsAppOpen {
   static var _showLockedUntil = DateTime(0);
   static const _tag = 'ads_app_open';
 
+  static var _showNum = 0;
+
   /// Maximum duration allowed between loading and showing the ad.
   final maxCacheDuration = const Duration(hours: 4);
 
@@ -157,10 +159,6 @@ class DSAdsAppOpen {
           'google_ads_loaded_milliseconds': duration.inMilliseconds,
           ...?customAttributes,
         });
-        ad.onPaidEvent = (ad, valueMicros, precision, currencyCode, appLovinDspName) {
-          DSAdsManager.instance.onPaidEvent(ad, mediation, location, valueMicros, precision, currencyCode, DSAdSource.appOpen, appLovinDspName);
-        };
-
         await _ad?.dispose();
         _ad = ad;
         _adState = DSAdState.loaded;
@@ -316,16 +314,26 @@ class DSAdsAppOpen {
       return;
     }
 
+    final attrs = customAttributes ?? {};
+
     ad.onAdImpression = (ad) {
       try {
-        _report('$_tag: impression', location: location, mediation: _mediation, attributes: customAttributes);
+        _report('$_tag: impression', location: location, mediation: _mediation, attributes: attrs);
+      } catch (e, stack) {
+        Fimber.e('$e', stacktrace: stack);
+      }
+    };
+    ad.onPaidEvent = (ad, valueMicros, precision, currencyCode, appLovinDspName) {
+      try {
+        DSAdsManager.instance.onPaidEvent(ad, _mediation!, location, valueMicros, precision, currencyCode,
+            DSAdSource.appOpen, appLovinDspName, attrs);
       } catch (e, stack) {
         Fimber.e('$e', stacktrace: stack);
       }
     };
     ad.onAdShown = (ad) {
       try {
-        _report('$_tag: showed full screen content', location: location, mediation: _mediation, attributes: customAttributes);
+        _report('$_tag: showed full screen content', location: location, mediation: _mediation, attributes: attrs);
         if (_isDisposed) {
           Fimber.e('showing disposed ad', stacktrace: StackTrace.current);
         }
@@ -339,7 +347,7 @@ class DSAdsAppOpen {
     };
     ad.onAdDismissed = (ad) {
       try {
-        _report('$_tag: full screen content dismissed', location: location, mediation: _mediation, attributes: customAttributes);
+        _report('$_tag: full screen content dismissed', location: location, mediation: _mediation, attributes: attrs);
         ad.dispose();
         _ad = null;
         _mediation = null;
@@ -352,7 +360,7 @@ class DSAdsAppOpen {
     };
     ad.onAdFailedToShow = (ad, int errCode, String errText) {
       try {
-        _report('$_tag: showing canceled by error', location: location, mediation: _mediation, attributes: customAttributes);
+        _report('$_tag: showing canceled by error', location: location, mediation: _mediation, attributes: attrs);
         Fimber.e('$errText ($errCode)', stacktrace: StackTrace.current);
         ad.dispose();
         _ad = null;
@@ -366,28 +374,31 @@ class DSAdsAppOpen {
     };
     ad.onAdClicked = (ad) {
       try {
-        _report('$_tag: ad clicked', location: location, mediation: _mediation, attributes: customAttributes);
+        _report('$_tag: ad clicked', location: location, mediation: _mediation, attributes: attrs);
       } catch (e, stack) {
         Fimber.e('$e', stacktrace: stack);
       }
     };
 
     if (_isDisposed) {
-      _report('$_tag: showing canceled: manager disposed', location: location, mediation: _mediation, attributes: customAttributes);
+      _report('$_tag: showing canceled: manager disposed', location: location, mediation: _mediation, attributes: attrs);
       then?.call();
       return;
     }
 
     final res = await beforeAdShow?.call() ?? true;
     if (!res) {
-      _report('$_tag: showing canceled by caller', location: location, mediation: _mediation, attributes: customAttributes);
+      _report('$_tag: showing canceled by caller', location: location, mediation: _mediation, attributes: attrs);
       then?.call();
       return;
     }
 
     _adState = DSAdState.preShowing;
 
-    _report('$_tag: start showing', location: location, mediation: _mediation, attributes: customAttributes);
+    _showNum++;
+    attrs['app_open_show_num'] = _showNum;
+
+    _report('$_tag: start showing', location: location, mediation: _mediation, attributes: attrs);
     await ad.show();
   }
 

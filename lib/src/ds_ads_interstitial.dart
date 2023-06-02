@@ -18,6 +18,8 @@ class DSAdsInterstitial extends Cubit<DSAdsInterstitialState> {
   static var _lastShowTime = DateTime(0);
   static const _tag = 'ads_interstitial';
 
+  static var _showNum = 0;
+
   String _adUnitId(DSAdMediation mediation) {
     switch (type) {
       case DSAdsInterstitialType.def:
@@ -165,10 +167,6 @@ class DSAdsInterstitial extends Cubit<DSAdsInterstitialState> {
                 'google_ads_loaded_milliseconds': duration.inMilliseconds,
                 ...?customAttributes,
               });
-              ad.onPaidEvent = (ad, valueMicros, precision, currencyCode, appLovinDspName) {
-                DSAdsManager.instance.onPaidEvent(ad, mediation, location, valueMicros, precision, currencyCode, DSAdSource.interstitial, appLovinDspName);
-              };
-
               await state.ad?.dispose();
               emit(state.copyWith(
                 ad: ad,
@@ -240,10 +238,6 @@ class DSAdsInterstitial extends Cubit<DSAdsInterstitialState> {
                 'applovin_ads_loaded_milliseconds': duration.inMilliseconds,
                 ...?customAttributes,
               });
-              ad.onPaidEvent = (ad, valueMicros, precision, currencyCode, appLovinDspName) {
-                DSAdsManager.instance.onPaidEvent(ad, mediation, location, valueMicros, precision, currencyCode, DSAdSource.interstitial, appLovinDspName);
-              };
-
               await state.ad?.dispose();
               emit(state.copyWith(
                 ad: ad,
@@ -455,16 +449,26 @@ class DSAdsInterstitial extends Cubit<DSAdsInterstitialState> {
       return;
     }
 
+    final attrs = customAttributes ?? {};
+
     ad.onAdImpression = (ad) {
       try {
-        _report('$_tag: impression', location: location, mediation: _mediation, attributes: customAttributes);
+        _report('$_tag: impression', location: location, mediation: _mediation, attributes: attrs);
+      } catch (e, stack) {
+        Fimber.e('$e', stacktrace: stack);
+      }
+    };
+    ad.onPaidEvent = (ad, valueMicros, precision, currencyCode, appLovinDspName) {
+      try {
+        DSAdsManager.instance.onPaidEvent(ad, _mediation!, location, valueMicros, precision, currencyCode,
+            DSAdSource.interstitial, appLovinDspName, attrs);
       } catch (e, stack) {
         Fimber.e('$e', stacktrace: stack);
       }
     };
     ad.onAdShown = (ad) {
       try {
-        _report('$_tag: showed full screen content', location: location, mediation: _mediation, attributes: customAttributes);
+        _report('$_tag: showed full screen content', location: location, mediation: _mediation, attributes: attrs);
         if (_isDisposed) {
           Fimber.e('$_tag: showing disposed ad', stacktrace: StackTrace.current);
         }
@@ -481,7 +485,7 @@ class DSAdsInterstitial extends Cubit<DSAdsInterstitialState> {
     ad.onAdDismissed = (ad) {
       try {
         DSAdsAppOpen.lockShowFor(const Duration(seconds: 5));
-        _report('$_tag: full screen content dismissed', location: location, mediation: _mediation, attributes: customAttributes);
+        _report('$_tag: full screen content dismissed', location: location, mediation: _mediation, attributes: attrs);
         ad.dispose();
         updateLastShowTime();
         _mediation = null;
@@ -499,7 +503,7 @@ class DSAdsInterstitial extends Cubit<DSAdsInterstitialState> {
     ad.onAdFailedToShow = (ad, int errCode, String errText) {
       try {
         DSAdsAppOpen.lockShowFor(const Duration(seconds: 5));
-        _report('$_tag: showing canceled by error', location: location, mediation: _mediation, attributes: customAttributes);
+        _report('$_tag: showing canceled by error', location: location, mediation: _mediation, attributes: attrs);
         Fimber.e('$errText ($errCode)', stacktrace: StackTrace.current);
         ad.dispose();
         updateLastShowTime();
@@ -517,14 +521,14 @@ class DSAdsInterstitial extends Cubit<DSAdsInterstitialState> {
     };
     ad.onAdClicked = (ad) {
       try {
-        _report('$_tag: ad clicked', location: location, mediation: _mediation, attributes: customAttributes);
+        _report('$_tag: ad clicked', location: location, mediation: _mediation, attributes: attrs);
       } catch (e, stack) {
         Fimber.e('$e', stacktrace: stack);
       }
     };
 
     if (_isDisposed) {
-      _report('$_tag: showing canceled: manager disposed', location: location, mediation: _mediation, attributes: customAttributes);
+      _report('$_tag: showing canceled: manager disposed', location: location, mediation: _mediation, attributes: attrs);
       then?.call();
       DSAdsManager.instance.emitEvent(const DSAdsInterstitialShowErrorEvent._());
       return;
@@ -532,7 +536,7 @@ class DSAdsInterstitial extends Cubit<DSAdsInterstitialState> {
 
     final res = await beforeAdShow?.call() ?? true;
     if (!res) {
-      _report('$_tag: showing canceled by caller', location: location, mediation: _mediation, attributes: customAttributes);
+      _report('$_tag: showing canceled by caller', location: location, mediation: _mediation, attributes: attrs);
       then?.call();
       return;
     }
@@ -543,7 +547,10 @@ class DSAdsInterstitial extends Cubit<DSAdsInterstitialState> {
     ));
     DSAdsManager.instance.emitEvent(DSAdsInterstitialPreShowingEvent._(ad: ad));
 
-    _report('$_tag: start showing', location: location, mediation: _mediation, attributes: customAttributes);
+    _showNum++;
+    attrs['interstitial_show_num'] = _showNum;
+
+    _report('$_tag: start showing', location: location, mediation: _mediation, attributes: attrs);
     await ad.show();
   }
 

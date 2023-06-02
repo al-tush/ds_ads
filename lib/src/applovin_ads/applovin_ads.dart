@@ -1,6 +1,5 @@
 import 'package:applovin_max/applovin_max.dart';
 import 'package:ds_ads/ds_ads.dart';
-import 'package:ds_ads/src/generic_ads/export.dart';
 import 'package:fimber/fimber.dart';
 
 class DSAppLovinInterstitialAd extends DSInterstitialAd {
