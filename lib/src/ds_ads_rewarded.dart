@@ -312,14 +312,15 @@ class DSAdsRewarded {
       return;
     }
 
-    if (!DSAdsManager.instance.appState.isInForeground) {
+    final mediation = _mediation;
+
+    if (!DSAdsManager.instance.isInForeground) {
+      _report('$_tag: app in background', location: location, mediation: mediation, attributes: customAttributes);
       then?.call();
       fetchAd(location: location, customAttributes: customAttributes);
       // https://support.google.com/admob/answer/6201362#zippy=%2Cdisallowed-example-user-launches-app
       return;
     }
-
-    final mediation = _mediation;
 
     if ([DSAdState.preShowing, DSAdState.showing].contains(_adState)) {
       Fimber.e('showAd recall (state: $_adState)', stacktrace: StackTrace.current);
@@ -526,11 +527,6 @@ class DSAdsRewarded {
 
     _report('$_tag: start showing', location: location, mediation: _mediation, attributes: customAttributes);
     await ad.show();
-  }
-
-  @Deprecated('use updateLastShowTime() instead')
-  void updateLastShowedTime() {
-    updateLastShowTime();
   }
 
   void updateLastShowTime() {

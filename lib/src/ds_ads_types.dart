@@ -64,8 +64,6 @@ abstract class DSNativeAdBannerStyle {
 abstract class DSAppAdsState {
   /// App is in premium mode (no any ads shows)
   bool get isPremium;
-  /// App is in foreground (interstitial ads cannot be shown)
-  bool get isInForeground;
   // Current brightness for native banners style
   Brightness get brightness;
 }

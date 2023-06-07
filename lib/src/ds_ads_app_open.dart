@@ -1,4 +1,5 @@
 import 'dart:async';
+import 'dart:ui';
 
 import 'package:ds_ads/src/ds_ads_manager.dart';
 import 'package:ds_ads/src/generic_ads/export.dart';
@@ -14,6 +15,7 @@ part 'ds_ads_app_open_types.dart';
 
 class DSAdsAppOpen {
   static var _showLockedUntil = DateTime(0);
+  static var _showLockedUntilAppResumed = false;
   static const _tag = 'ads_app_open';
 
   static var _showNum = 0;
@@ -55,6 +57,16 @@ class DSAdsAppOpen {
     _ad = null;
     _mediation = null;
     _adState == DSAdState.none;
+  }
+
+  @internal
+  void appLifecycleChanged(AppLifecycleState? oldState, AppLifecycleState state) {
+    if (state == AppLifecycleState.resumed) {
+      if (_showLockedUntilAppResumed) {
+        _showLockedUntilAppResumed = false;
+        lockShowFor(const Duration(seconds: 1));
+      }
+    }
   }
 
   static String _adUnitId(DSAdMediation mediation) {
@@ -262,13 +274,14 @@ class DSAdsAppOpen {
       return;
     }
 
-    if (DateTime.now().compareTo(_showLockedUntil) < 0) {
+    if (_showLockedUntilAppResumed || DateTime.now().compareTo(_showLockedUntil) < 0) {
       then?.call();
       _report('$_tag: showing locked', location: location, mediation: _mediation, attributes: customAttributes);
       return;
     }
 
-    if (!DSAdsManager.instance.appState.isInForeground) {
+    if (!DSAdsManager.instance.isInForeground) {
+      _report('$_tag: app in background', location: location, mediation: _mediation, attributes: customAttributes);
       then?.call();
       // https://support.google.com/admob/answer/6201362#zippy=%2Cdisallowed-example-user-launches-app
       return;
@@ -360,7 +373,11 @@ class DSAdsAppOpen {
     };
     ad.onAdFailedToShow = (ad, int errCode, String errText) {
       try {
-        _report('$_tag: showing canceled by error', location: location, mediation: _mediation, attributes: attrs);
+        _report('$_tag: showing canceled by error', location: location, mediation: _mediation, attributes: {
+          'app_open_error_code': errCode,
+          'app_open_error_text': errText,
+          ...attrs
+        });
         Fimber.e('$errText ($errCode)', stacktrace: StackTrace.current);
         ad.dispose();
         _ad = null;
@@ -400,6 +417,14 @@ class DSAdsAppOpen {
 
     _report('$_tag: start showing', location: location, mediation: _mediation, attributes: attrs);
     await ad.show();
+  }
+
+  static void lockUntilAppResume() {
+    _showLockedUntilAppResumed = true;
+  }
+
+  static void unlockUntilAppResume() {
+    _showLockedUntilAppResumed = false;
   }
 
   static void lockShowFor(Duration duration) {

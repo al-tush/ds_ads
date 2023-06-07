@@ -346,7 +346,8 @@ class DSAdsInterstitial extends Cubit<DSAdsInterstitialState> {
       return;
     }
 
-    if (!DSAdsManager.instance.appState.isInForeground) {
+    if (!DSAdsManager.instance.isInForeground) {
+      _report('$_tag: app in background', location: location, mediation: _mediation, attributes: customAttributes);
       then?.call();
       fetchAd(location: location, customAttributes: customAttributes);
       // https://support.google.com/admob/answer/6201362#zippy=%2Cdisallowed-example-user-launches-app
@@ -552,11 +553,6 @@ class DSAdsInterstitial extends Cubit<DSAdsInterstitialState> {
 
     _report('$_tag: start showing', location: location, mediation: _mediation, attributes: attrs);
     await ad.show();
-  }
-
-  @Deprecated('use updateLastShowTime() instead')
-  void updateLastShowedTime() {
-    updateLastShowTime();
   }
 
   DateTime getLastShowTime() => _lastShowTime;

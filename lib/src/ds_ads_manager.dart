@@ -1,4 +1,5 @@
 import 'dart:async';
+import 'dart:ui';
 
 import 'package:applovin_max/applovin_max.dart';
 import 'package:collection/collection.dart';
@@ -7,6 +8,7 @@ import 'package:ds_ads/src/ds_ads_interstitial.dart';
 import 'package:ds_ads/src/ds_ads_native_loader_mixin.dart';
 import 'package:ds_ads/src/ds_ads_rewarded.dart';
 import 'package:fimber/fimber.dart';
+import 'package:flutter/widgets.dart';
 import 'package:freezed_annotation/freezed_annotation.dart';
 
 import 'ds_ads_types.dart';
@@ -54,6 +56,7 @@ class DSAdsManager {
   final _mediationInitialized = <DSAdMediation>{};
   /// Was the ad successfully loaded at least once in this session
   bool get isAdAvailable => _isAdAvailable;
+
   DSAdMediation? currentMediation(DSAdSource source) => _currentMediation[source];
 
   final _eventController = StreamController<DSAdsEvent>.broadcast();
@@ -84,12 +87,27 @@ class DSAdsManager {
   final List<NativeAdBanner> nativeAdCustomBanners;
   final DSIsAdAllowedCallback? isAdAllowedCallback;
 
+  /// App is in foreground (interstitial ads cannot be shown)
+  @internal
+  bool get isInForeground => _widgetsObserver!.appLifecycleState! == AppLifecycleState.resumed;
+
+  static _WidgetsObserver? _widgetsObserver;
+
+  /// Must be called before create application
+  static void preInit() {
+    if (_widgetsObserver != null) return;
+
+    _widgetsObserver = _WidgetsObserver();
+    WidgetsBinding.instance.addObserver(_widgetsObserver!);
+    _widgetsObserver!.appLifecycleState = WidgetsBinding.instance.lifecycleState;
+  }
+
   /// Initializes ads in the app
   /// [onPaidEvent] allows you to know/handle the onPaidEvent event in google_mobile_ads
-  /// In [appState] you should pass the [DSAppAdsState] interface implementation, so the ad manager can know the current 
+  /// In [appState] you should pass the [DSAppAdsState] interface implementation, so the ad manager can know the current
   /// state of the app (whether the subscription is paid, whether the app is in the foreground, etc.).
   /// [nativeAdBannerStyle] defines the appearance of the native ad unit.
-  /// If this [locations] set is defined, the nativeAdLocation method and the location parameter can return only one 
+  /// If this [locations] set is defined, the nativeAdLocation method and the location parameter can return only one
   /// of the values listed in [locations].
   /// [onLoadAdError] ToDo: TBD
   /// [onReportEvent] is an event handler for the ability to send events to analytics.
@@ -287,5 +305,16 @@ class DSAdsManager {
     _mediationInitialized.add(DSAdMediation.appLovin);
     onReportEvent?.call('ads_manager: AppLovin initialized', {});
   }
+}
 
+class _WidgetsObserver with WidgetsBindingObserver {
+  AppLifecycleState? appLifecycleState;
+
+  @override
+  void didChangeAppLifecycleState(AppLifecycleState state) {
+    if (appLifecycleState == state) return;
+    final old = appLifecycleState;
+    appLifecycleState = state;
+    DSAdsManager._instance?._adsAppOpen.appLifecycleChanged(old, state);
+  }
 }
