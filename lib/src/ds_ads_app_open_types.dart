@@ -12,6 +12,14 @@ class DSAdsAppOpenLoadedEvent extends DSAdsAppOpenEvent {
   });
 }
 
+class DSAdsAppOpenPreShowingEvent extends DSAdsAppOpenEvent {
+  final DSAppOpenAd ad;
+
+  const DSAdsAppOpenPreShowingEvent._({
+    required this.ad,
+  });
+}
+
 class DSAdsAppOpenShowedEvent extends DSAdsAppOpenEvent {
   final DSAppOpenAd ad;
 
@@ -27,5 +35,18 @@ class DSAdsAppOpenLoadFailedEvent extends DSAdsAppOpenEvent {
   const DSAdsAppOpenLoadFailedEvent._({
     required this.errCode,
     required this.errText,
+  });
+}
+
+/// Error when displaying advertisements
+class DSAdsAppOpenShowErrorEvent extends DSAdsAppOpenEvent {
+  const DSAdsAppOpenShowErrorEvent._();
+}
+
+class DSAdsAppOpenShowDismissedEvent extends DSAdsAppOpenEvent {
+  final DSAppOpenAd ad;
+
+  const DSAdsAppOpenShowDismissedEvent._({
+    required this.ad,
   });
 }

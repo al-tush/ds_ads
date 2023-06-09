@@ -366,6 +366,7 @@ class DSAdsAppOpen {
         _mediation = null;
         _adState = DSAdState.none;
         _lastLoadTime = DateTime(0);
+        DSAdsManager.instance.emitEvent(DSAdsAppOpenShowDismissedEvent._(ad: ad));
         onAdClosed?.call();
       } catch (e, stack) {
         Fimber.e('$e', stacktrace: stack);
@@ -385,6 +386,7 @@ class DSAdsAppOpen {
         _adState = DSAdState.none;
         onFailedToShow?.call(errCode, errText);
         then?.call();
+        DSAdsManager.instance.emitEvent(const DSAdsAppOpenShowErrorEvent._());
       } catch (e, stack) {
         Fimber.e('$e', stacktrace: stack);
       }
@@ -400,6 +402,7 @@ class DSAdsAppOpen {
     if (_isDisposed) {
       _report('$_tag: showing canceled: manager disposed', location: location, mediation: _mediation, attributes: attrs);
       then?.call();
+      DSAdsManager.instance.emitEvent(const DSAdsAppOpenShowErrorEvent._());
       return;
     }
 
@@ -407,10 +410,12 @@ class DSAdsAppOpen {
     if (!res) {
       _report('$_tag: showing canceled by caller', location: location, mediation: _mediation, attributes: attrs);
       then?.call();
+      DSAdsManager.instance.emitEvent(const DSAdsAppOpenShowErrorEvent._());
       return;
     }
 
     _adState = DSAdState.preShowing;
+    DSAdsManager.instance.emitEvent(DSAdsAppOpenPreShowingEvent._(ad: ad));
 
     _showNum++;
     attrs['app_open_show_num'] = _showNum;
