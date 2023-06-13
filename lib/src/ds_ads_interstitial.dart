@@ -56,6 +56,7 @@ class DSAdsInterstitial extends Cubit<DSAdsInterstitialState> {
     loadRetryCount: 0,
   ));
 
+  @internal
   void dispose() {
     _isDisposed = true;
     cancelCurrentAd(location: const DSAdLocation('internal_dispose'));

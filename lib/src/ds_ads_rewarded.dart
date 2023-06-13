@@ -39,6 +39,7 @@ class DSAdsRewarded {
     this.loadRetryDelay = const Duration(seconds: 1),
   });
 
+  @internal
   void dispose() {
     _isDisposed = true;
     cancelCurrentAd(location: const DSAdLocation('internal_dispose'));

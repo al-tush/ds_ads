@@ -43,6 +43,7 @@ class DSAdsAppOpen {
     this.loadRetryDelay = const Duration(seconds: 1),
   });
 
+  @internal
   void dispose() {
     _isDisposed = true;
     cancelCurrentAd(location: const DSAdLocation('internal_dispose'));
@@ -137,6 +138,7 @@ class DSAdsAppOpen {
     }
 
     if (DateTime.now().difference(_lastLoadTime) > maxCacheDuration) {
+      unawaited(_ad?.dispose());
       _ad = null;
       _adState = DSAdState.none;
     }
@@ -146,7 +148,7 @@ class DSAdsAppOpen {
       return;
     }
     if ([DSAdState.preShowing, DSAdState.showing].contains(_adState)) {
-      Fimber.i('$_tag: fetching is prohibited when ad is showing',
+      Fimber.w('$_tag: fetching is prohibited when ad is showing',
         stacktrace: LimitedStackTrace(stackTrace: StackTrace.current),
       );
       then?.call();
