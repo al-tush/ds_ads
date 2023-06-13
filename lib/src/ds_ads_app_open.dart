@@ -169,8 +169,8 @@ class DSAdsAppOpen {
       try {
         final duration = DateTime.now().difference(startTime);
         _report('$_tag: loaded', location: location, mediation: mediation, attributes: {
-          'google_ads_loaded_seconds': duration.inSeconds,
-          'google_ads_loaded_milliseconds': duration.inMilliseconds,
+          'ad_loaded_seconds': duration.inSeconds,
+          'ad_loaded_milliseconds': duration.inMilliseconds,
           ...?customAttributes,
         });
         await _ad?.dispose();
@@ -197,8 +197,8 @@ class DSAdsAppOpen {
         _report('$_tag: failed to load', location: location, mediation: mediation, attributes: {
           'error_text': errDescription,
           'error_code': '$errCode ($mediation)',
-          'google_ads_load_error_seconds': duration.inSeconds,
-          'google_ads_load_error_milliseconds': duration.inMilliseconds,
+          'ad_load_error_seconds': duration.inSeconds,
+          'ad_load_error_milliseconds': duration.inMilliseconds,
           ...?customAttributes,
         });
         final oldMediation = DSAdsManager.instance.currentMediation(DSAdSource.appOpen);

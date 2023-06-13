@@ -143,7 +143,8 @@ class DSAdsManager {
     this.rewardedFetchDelayCallback,
     this.rewardedShowLockCallback,
   }) :
-        assert(_instance == null, 'dismiss previous Ads instance before init new')
+        assert(_instance == null, 'dismiss previous Ads instance before init new'),
+        assert(_widgetsObserver != null, 'call DSAdsManager.preInit() before')
   {
     _instance = this;
     for (final t in DSAdSource.values) {
