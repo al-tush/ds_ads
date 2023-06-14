@@ -87,7 +87,7 @@ class DSAdsManager {
   final List<NativeAdBanner> nativeAdCustomBanners;
   final DSIsAdAllowedCallback? isAdAllowedCallback;
 
-  /// App is in foreground (interstitial ads cannot be shown)
+  /// App is in foreground
   @internal
   bool get isInForeground => _widgetsObserver!.appLifecycleState! == AppLifecycleState.resumed;
 
