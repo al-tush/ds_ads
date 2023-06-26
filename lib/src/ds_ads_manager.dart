@@ -1,5 +1,4 @@
 import 'dart:async';
-import 'dart:ui';
 
 import 'package:applovin_max/applovin_max.dart';
 import 'package:collection/collection.dart';
@@ -86,6 +85,7 @@ class DSAdsManager {
   final DSNativeStyle nativeAdBannerDefStyle;
   final List<NativeAdBanner> nativeAdCustomBanners;
   final DSIsAdAllowedCallback? isAdAllowedCallback;
+  final DSRetryCountCallback? retryCountCallback;
 
   /// App is in foreground
   @internal
@@ -142,6 +142,7 @@ class DSAdsManager {
     this.interstitialShowLockCallback,
     this.rewardedFetchDelayCallback,
     this.rewardedShowLockCallback,
+    this.retryCountCallback,
   }) :
         assert(_instance == null, 'dismiss previous Ads instance before init new'),
         assert(_widgetsObserver != null, 'call DSAdsManager.preInit() before')
@@ -305,6 +306,11 @@ class DSAdsManager {
     }
     _mediationInitialized.add(DSAdMediation.appLovin);
     onReportEvent?.call('ads_manager: AppLovin initialized', {});
+  }
+
+  @internal
+  int getRetryMaxCount(DSAdSource source) {
+    return retryCountCallback?.call(source) ?? 3;
   }
 }
 

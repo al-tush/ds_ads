@@ -39,7 +39,6 @@ class DSAdsInterstitial extends Cubit<DSAdsInterstitialState> {
     }
   }
   final DSAdsInterstitialType type;
-  final int loadRetryMaxCount;
   final Duration loadRetryDelay;
 
   var _isDisposed = false;
@@ -47,7 +46,6 @@ class DSAdsInterstitial extends Cubit<DSAdsInterstitialState> {
 
   DSAdsInterstitial({
     required this.type,
-    this.loadRetryMaxCount = 3,
     this.loadRetryDelay = const Duration(seconds: 1),
   })
       : super(DSAdsInterstitialState(
@@ -204,7 +202,7 @@ class DSAdsInterstitial extends Cubit<DSAdsInterstitialState> {
                 ));
               }
               _mediation = null;
-              if (state.loadRetryCount < loadRetryMaxCount) {
+              if (state.loadRetryCount < DSAdsManager.instance.getRetryMaxCount(DSAdSource.interstitial)) {
                 await Future.delayed(loadRetryDelay);
                 if ({DSAdState.none, DSAdState.error}.contains(state.adState) && !_isDisposed) {
                   _report('$_tag: retry loading', location: location, mediation: _mediation, attributes: customAttributes);
@@ -275,7 +273,7 @@ class DSAdsInterstitial extends Cubit<DSAdsInterstitialState> {
                   loadRetryCount: 0,
                 ));
               }
-              if (state.loadRetryCount < loadRetryMaxCount) {
+              if (state.loadRetryCount < DSAdsManager.instance.getRetryMaxCount(DSAdSource.interstitial)) {
                 await Future.delayed(loadRetryDelay);
                 if ({DSAdState.none, DSAdState.error}.contains(state.adState) && !_isDisposed) {
                   _report('$_tag: retry loading', location: location, mediation: mediation, attributes: customAttributes);

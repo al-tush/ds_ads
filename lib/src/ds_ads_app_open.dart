@@ -25,7 +25,6 @@ class DSAdsAppOpen {
 
   var _lastLoadTime = DateTime(0);
 
-  final int loadRetryMaxCount;
   final Duration loadRetryDelay;
   DateTime get lastLoadTime => _lastLoadTime;
 
@@ -39,7 +38,6 @@ class DSAdsAppOpen {
   DSAdState get adState => _adState;
 
   DSAdsAppOpen({
-    this.loadRetryMaxCount = 3,
     this.loadRetryDelay = const Duration(seconds: 1),
   });
 
@@ -206,7 +204,7 @@ class DSAdsAppOpen {
         if (DSAdsManager.instance.currentMediation(DSAdSource.appOpen) != oldMediation) {
           _loadRetryCount = 0;
         }
-        if (_loadRetryCount < loadRetryMaxCount) {
+        if (_loadRetryCount < DSAdsManager.instance.getRetryMaxCount(DSAdSource.appOpen)) {
           await Future.delayed(loadRetryDelay);
           if ({DSAdState.none, DSAdState.error}.contains(_adState) && !_isDisposed) {
             _report('$_tag: retry loading', location: location, mediation: mediation, attributes: customAttributes);

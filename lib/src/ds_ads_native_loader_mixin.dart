@@ -16,7 +16,7 @@ part 'ds_ads_native_loader_types.dart';
 mixin DSAdsNativeLoaderMixin<T extends StatefulWidget> on State<T> {
   static const _tag = 'ads_native';
 
-  final _adKey = GlobalKey();
+  var _adKey = GlobalKey();
   bool get isShowed => _showedAds[this] != null;
 
   DSAdLocation get nativeAdLocation;
@@ -60,18 +60,7 @@ mixin DSAdsNativeLoaderMixin<T extends StatefulWidget> on State<T> {
   @override
   void initState() {
     super.initState();
-    unawaited(() async {
-      await for (final event in DSAdsManager.instance.eventStream) {
-        if (!mounted) return;
-        if (event is DSAdsNativeLoadedEvent) {
-          _assignAdToMe();
-          break;
-        }
-      }
-    } ());
-    _isDisabled(nativeAdLocation);
-    _assignAdToMe();
-    unawaited(fetchAd(location: nativeAdLocation));
+    reloadAd();
   }
 
   @override
@@ -335,6 +324,28 @@ mixin DSAdsNativeLoaderMixin<T extends StatefulWidget> on State<T> {
       setState(() {});
     } ());
     return true;
+  }
+
+  void reloadAd() {
+    if (isShowed) {
+      _showedAds[this]?.dispose();
+      _showedAds.remove(this);
+      _adKey = GlobalKey();
+      final mediation = DSAdsManager.instance.currentMediation(DSAdSource.native);
+      _report('$_tag: reloading', location: nativeAdLocation, mediation: mediation);
+    }
+    unawaited(() async {
+      await for (final event in DSAdsManager.instance.eventStream) {
+        if (!mounted) return;
+        if (event is DSAdsNativeLoadedEvent) {
+          _assignAdToMe();
+          break;
+        }
+      }
+    } ());
+    _isDisabled(nativeAdLocation);
+    _assignAdToMe();
+    unawaited(fetchAd(location: nativeAdLocation));
   }
 
   Widget nativeAdWidget({

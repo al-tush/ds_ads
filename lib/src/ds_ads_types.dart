@@ -9,6 +9,7 @@ typedef OnPaidEvent = void Function(DSAd ad, DSAdMediation mediation, DSAdLocati
     String currencyCode, DSAdSource source, String? appLovinDspName, Map<String, Object> metricaAttrs);
 
 typedef DSIsAdAllowedCallback = bool Function(DSAdSource source, DSAdLocation location);
+typedef DSRetryCountCallback = int Function(DSAdSource source);
 
 typedef DSDurationCallback = Duration Function();
 

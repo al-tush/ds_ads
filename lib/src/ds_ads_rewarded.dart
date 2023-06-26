@@ -25,7 +25,6 @@ class DSAdsRewarded {
         return DSAdsManager.instance.rewardedAppLovinUnitId!;
     }
   }
-  final int loadRetryMaxCount;
   final Duration loadRetryDelay;
 
   var _isDisposed = false;
@@ -35,7 +34,6 @@ class DSAdsRewarded {
   var _loadRetryCount = 0;
 
   DSAdsRewarded({
-    this.loadRetryMaxCount = 3,
     this.loadRetryDelay = const Duration(seconds: 1),
   });
 
@@ -182,7 +180,7 @@ class DSAdsRewarded {
               if (DSAdsManager.instance.currentMediation(DSAdSource.rewarded) != oldMediation) {
                 _loadRetryCount = 0;
               }
-              if (_loadRetryCount < loadRetryMaxCount) {
+              if (_loadRetryCount < DSAdsManager.instance.getRetryMaxCount(DSAdSource.rewarded)) {
                 await Future.delayed(loadRetryDelay);
                 if ({DSAdState.none, DSAdState.error}.contains(_adState) && !_isDisposed) {
                   _report('$_tag: retry loading', location: location, mediation: mediation, attributes: customAttributes);
@@ -245,7 +243,7 @@ class DSAdsRewarded {
               if (DSAdsManager.instance.currentMediation(DSAdSource.rewarded) != oldMediation) {
                 _loadRetryCount = 0;
               }
-              if (_loadRetryCount < loadRetryMaxCount) {
+              if (_loadRetryCount < DSAdsManager.instance.getRetryMaxCount(DSAdSource.rewarded)) {
                 await Future.delayed(loadRetryDelay);
                 if ({DSAdState.none, DSAdState.error}.contains(_adState) && !_isDisposed) {
                   _report('$_tag: retry loading', location: location, mediation: mediation, attributes: {
