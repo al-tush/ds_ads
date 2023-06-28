@@ -13,10 +13,10 @@ packages:
     dependency: transitive
     description:
       name: applovin_max
-      sha256: "74021ee44a421a4562be30735ce805b83dbf8f321c340192835d74ad6a583d95"
+      sha256: "2bf8f15b0729ec063807e619c38fd91f15b0818eca496abad3518813e19b9a26"
       url: "https://pub.dev"
     source: hosted
-    version: "2.3.2"
+    version: "3.0.1"
   appmetrica_plugin:
     dependency: transitive
     description:
@@ -95,15 +95,15 @@ packages:
       path: ".."
       relative: true
     source: path
-    version: "0.3.0"
+    version: "0.3.1"
   ds_common:
     dependency: transitive
     description:
       name: ds_common
-      sha256: ff4b4fb410121ca5520210fb22f370c778793b85d9d16cf075eef8b143acc92f
+      sha256: "5f0c167dcc1e53a7672ae57ab36b797a98bbb6c24b736d4859e6f868500d55d9"
       url: "https://pub.dev"
     source: hosted
-    version: "0.1.1"
+    version: "0.1.2"
   fake_async:
     dependency: transitive
     description:
@@ -132,10 +132,10 @@ packages:
     dependency: transitive
     description:
       name: fimber
-      sha256: "1415768ddd9fd66f134dbc53f731107554c98175a63d4e93234478a113ffabb8"
+      sha256: "42fcfa33acd43556c1e7ebfc12c2b03893418bc04a07931368c3573e228af2f0"
       url: "https://pub.dev"
     source: hosted
-    version: "0.6.6"
+    version: "0.7.0"
   firebase_analytics:
     dependency: transitive
     description:
@@ -204,10 +204,10 @@ packages:
     dependency: transitive
     description:
       name: firebase_remote_config
-      sha256: "191aa5376ccf512d12e124dc7a99abcb6bd5d4e2b073d102253dd94d5a513e57"
+      sha256: "180367f364f8a7eb02a9a9d163182122d10eda4ec657c523f7027a1a3ad174d7"
       url: "https://pub.dev"
     source: hosted
-    version: "3.0.15"
+    version: "4.2.3"
   firebase_remote_config_platform_interface:
     dependency: transitive
     description:
@@ -355,10 +355,10 @@ packages:
     dependency: transitive
     description:
       name: package_info_plus
-      sha256: "10259b111176fba5c505b102e3a5b022b51dd97e30522e906d6922c745584745"
+      sha256: ceb027f6bc6a60674a233b4a90a7658af1aebdea833da0b5b53c1e9821a78c7b
       url: "https://pub.dev"
     source: hosted
-    version: "3.1.2"
+    version: "4.0.2"
   package_info_plus_platform_interface:
     dependency: transitive
     description:

@@ -1,3 +1,6 @@
+## 0.3.1
+- dependencies updated
+
 ## 0.3.0
 - app open support added
 - native add reload allowed
