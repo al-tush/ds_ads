@@ -1,11 +1,11 @@
 name: ds_ads
 description: Ads components for sect.dev (https://sect.dev/)
-version: 0.2.0
+version: 0.3.0
 repository: https://github.com/al-tush/ds_ads
 
 environment:
   sdk: ">=2.17.6 <4.0.0"
-  flutter: ">=2.5.0"
+  flutter: ">=3.0.0"
 
 dependencies:
   flutter:
@@ -13,7 +13,7 @@ dependencies:
 
   fimber: ^0.6.6
 
-  ds_common: ^0.1.0
+  ds_common: ^0.1.1
   bloc: ^8.1.0
   flutter_bloc: ^8.1.1
   freezed_annotation: ^2.1.0
