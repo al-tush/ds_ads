@@ -82,31 +82,3 @@ enum DSAdState {
 abstract class DSAdsEvent {
   const DSAdsEvent();
 }
-
-@Deprecated('Remove TEST calls before release')
-void logDeb(String message, {int stackSkip = 0, int stackDeep = 5}) {
-  if (!kDebugMode) return;
-  Fimber.d(message, stacktrace: LimitedStackTrace(
-    stackTrace: StackTrace.current,
-    skipFirst: stackSkip + 1,
-    deep: stackDeep,
-  ));
-}
-
-class LimitedStackTrace implements StackTrace {
-  final StackTrace stackTrace;
-  final int skipFirst;
-  final int deep;
-
-  const LimitedStackTrace({
-    required this.stackTrace,
-    this.skipFirst = 0,
-    this.deep = 3,
-  });
-
-  @override
-  String toString() {
-    final list = stackTrace.toString().split('\n');
-    return list.getRange(skipFirst, list.length - 1).take(deep).join('\n');
-  }
-}

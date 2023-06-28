@@ -13,6 +13,7 @@ dependencies:
 
   fimber: ^0.6.6
 
+  ds_common: ^0.1.0
   bloc: ^8.1.0
   flutter_bloc: ^8.1.1
   freezed_annotation: ^2.1.0
