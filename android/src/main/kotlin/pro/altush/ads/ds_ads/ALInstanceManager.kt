@@ -102,7 +102,6 @@ class ALNativeViewFactory (
         val adId = args as Int
         val ad = manager.adForId(adId)
         val pv = ad?.getPlatformView()
-        Timber.d("TEST2 $ad $pv")
         return pv ?: getErrorView(context!!, adId)
     }
 

@@ -50,7 +50,7 @@ mixin DSAdsNativeLoaderMixin<T extends StatefulWidget> on State<T> {
       case DSNativeAdBannerStyle.style1:
         return 260;
       case DSNativeAdBannerStyle.style2:
-        return 280;
+        return 290;
       default:
         assert(false, 'nativeAdBannerDefStyle or nativeAdCustomBanners should be defined');
         return 0;
