@@ -522,6 +522,7 @@ class DSAdsInterstitial extends Cubit<DSAdsInterstitialState> {
     };
     ad.onAdClicked = (ad) {
       try {
+        DSAdsAppOpen.lockShowFor(const Duration(hours: 1));
         _report('$_tag: ad clicked', location: location, mediation: _mediation, attributes: attrs);
       } catch (e, stack) {
         Fimber.e('$e', stacktrace: stack);
