@@ -469,6 +469,7 @@ class DSAdsInterstitial extends Cubit<DSAdsInterstitialState> {
     };
     ad.onAdShown = (ad) {
       try {
+        DSAdsAppOpen.lockShowFor(const Duration(hours: 1));
         _report('$_tag: showed full screen content', location: location, mediation: _mediation, attributes: attrs);
         if (_isDisposed) {
           Fimber.e('$_tag: showing disposed ad', stacktrace: StackTrace.current);
@@ -522,7 +523,6 @@ class DSAdsInterstitial extends Cubit<DSAdsInterstitialState> {
     };
     ad.onAdClicked = (ad) {
       try {
-        DSAdsAppOpen.lockShowFor(const Duration(hours: 1));
         _report('$_tag: ad clicked', location: location, mediation: _mediation, attributes: attrs);
       } catch (e, stack) {
         Fimber.e('$e', stacktrace: stack);
