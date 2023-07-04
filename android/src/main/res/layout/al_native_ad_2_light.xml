@@ -10,13 +10,18 @@
       android:layout_width="wrap_content"
       android:layout_height="wrap_content">
 
-    <FrameLayout
-        android:id="@+id/media_view_container"
+    <androidx.constraintlayout.widget.ConstraintLayout
         android:layout_width="match_parent"
-        android:layout_height="160dp"
-        android:maxHeight="160dp"
-        app:layout_constraintDimensionRatio="W,16:9"
-        android:layout_gravity="center_horizontal" />
+        android:layout_height="160dp">
+      <FrameLayout
+          android:id="@+id/media_view_container"
+          android:layout_width="0dp"
+          android:layout_height="160dp"
+          android:maxHeight="160dp"
+          app:layout_constraintDimensionRatio="W,16:9"
+          app:layout_constraintEnd_toEndOf="parent"
+          app:layout_constraintStart_toStartOf="parent" />
+    </androidx.constraintlayout.widget.ConstraintLayout>
 
     <TextView
         android:layout_width="wrap_content"
