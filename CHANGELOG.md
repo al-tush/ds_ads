@@ -1,3 +1,8 @@
+## 0.3.2
+- fix AppLovin native ads for Yandex adapter (banner and size for video)
+- fix app open showing after interstitial
+- add adapter attribute in events report
+
 ## 0.3.1
 - dependencies updated
 
