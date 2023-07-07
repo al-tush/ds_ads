@@ -65,6 +65,7 @@ class DSAdsInterstitial extends Cubit<DSAdsInterstitialState> {
     required DSAdLocation location,
     required DSAdMediation? mediation,
     String? customAdId,
+    String? adapter,
     Map<String, Object>? attributes,
   }) {
     DSAdsManager.instance.onReportEvent?.call(eventName, {
@@ -72,6 +73,8 @@ class DSAdsInterstitial extends Cubit<DSAdsInterstitialState> {
         'adUnitId': customAdId ?? _adUnitId(mediation),
       'location': location.val,
       'mediation': '$mediation',
+      if (adapter != null)
+        'adapter': adapter,
       ...?attributes,
     });
   }
@@ -162,11 +165,17 @@ class DSAdsInterstitial extends Cubit<DSAdsInterstitialState> {
           onAdLoaded: (ad) async {
             try {
               final duration = DateTime.now().difference(startTime);
-              _report('$_tag: loaded', location: location, mediation: mediation, customAdId: ad.adUnitId, attributes: {
-                'google_ads_loaded_seconds': duration.inSeconds,
-                'google_ads_loaded_milliseconds': duration.inMilliseconds,
-                ...?customAttributes,
-              });
+              _report('$_tag: loaded',
+                location: location,
+                mediation: mediation,
+                customAdId: ad.adUnitId,
+                adapter: ad.mediationAdapterClassName,
+                attributes: {
+                  'google_ads_loaded_seconds': duration.inSeconds,
+                  'google_ads_loaded_milliseconds': duration.inMilliseconds,
+                  ...?customAttributes,
+                },
+              );
               await state.ad?.dispose();
               emit(state.copyWith(
                 ad: ad,
@@ -189,13 +198,18 @@ class DSAdsInterstitial extends Cubit<DSAdsInterstitialState> {
                 adState: DSAdState.error,
                 loadRetryCount: state.loadRetryCount + 1,
               ));
-              _report('$_tag: failed to load', location: location, mediation: mediation, attributes: {
-                'error_text': errDescription,
-                'error_code': '$errCode ($mediation)',
-                'google_ads_load_error_seconds': duration.inSeconds,
-                'google_ads_load_error_milliseconds': duration.inMilliseconds,
-                ...?customAttributes,
-              });
+              _report('$_tag: failed to load',
+                location: location,
+                mediation: mediation,
+                adapter: ad.mediationAdapterClassName,
+                attributes: {
+                  'error_text': errDescription,
+                  'error_code': '$errCode ($mediation)',
+                  'google_ads_load_error_seconds': duration.inSeconds,
+                  'google_ads_load_error_milliseconds': duration.inMilliseconds,
+                  ...?customAttributes,
+                },
+              );
               await DSAdsManager.instance.onLoadAdError(errCode, errDescription, mediation, DSAdSource.interstitial);
               if (DSAdsManager.instance.currentMediation(DSAdSource.interstitial) != _mediation) {
                 emit(state.copyWith(
@@ -233,11 +247,17 @@ class DSAdsInterstitial extends Cubit<DSAdsInterstitialState> {
           onAdLoaded: (ad) async {
             try {
               final duration = DateTime.now().difference(startTime);
-              _report('$_tag: loaded', location: location, mediation: mediation, customAdId: ad.adUnitId, attributes: {
-                'applovin_ads_loaded_seconds': duration.inSeconds,
-                'applovin_ads_loaded_milliseconds': duration.inMilliseconds,
-                ...?customAttributes,
-              });
+              _report('$_tag: loaded',
+                location: location,
+                mediation: mediation,
+                customAdId: ad.adUnitId,
+                adapter: ad.mediationAdapterClassName,
+                attributes: {
+                  'applovin_ads_loaded_seconds': duration.inSeconds,
+                  'applovin_ads_loaded_milliseconds': duration.inMilliseconds,
+                  ...?customAttributes,
+                },
+              );
               await state.ad?.dispose();
               emit(state.copyWith(
                 ad: ad,
@@ -260,13 +280,17 @@ class DSAdsInterstitial extends Cubit<DSAdsInterstitialState> {
                 adState: DSAdState.error,
                 loadRetryCount: state.loadRetryCount + 1,
               ));
-              _report('$_tag: failed to load', location: location, mediation: mediation, attributes: {
-                'error_text': errDescription,
-                'error_code': '$errCode ($mediation)',
-                'applovin_ads_load_error_seconds': duration.inSeconds,
-                'applovin_ads_load_error_milliseconds': duration.inMilliseconds,
-                ...?customAttributes,
-              });
+              _report('$_tag: failed to load',
+                location: location,
+                mediation: mediation,
+                attributes: {
+                  'error_text': errDescription,
+                  'error_code': '$errCode ($mediation)',
+                  'applovin_ads_load_error_seconds': duration.inSeconds,
+                  'applovin_ads_load_error_milliseconds': duration.inMilliseconds,
+                  ...?customAttributes,
+                },
+              );
               final oldMediation = DSAdsManager.instance.currentMediation(DSAdSource.interstitial);
               await DSAdsManager.instance.onLoadAdError(errCode, errDescription, mediation, DSAdSource.interstitial);
               if (DSAdsManager.instance.currentMediation(DSAdSource.interstitial) != oldMediation) {
@@ -454,7 +478,7 @@ class DSAdsInterstitial extends Cubit<DSAdsInterstitialState> {
 
     ad.onAdImpression = (ad) {
       try {
-        _report('$_tag: impression', location: location, mediation: _mediation, attributes: attrs);
+        _report('$_tag: impression', location: location, mediation: _mediation, adapter: ad.mediationAdapterClassName, attributes: attrs);
       } catch (e, stack) {
         Fimber.e('$e', stacktrace: stack);
       }
@@ -470,7 +494,7 @@ class DSAdsInterstitial extends Cubit<DSAdsInterstitialState> {
     ad.onAdShown = (ad) {
       try {
         DSAdsAppOpen.lockShowFor(const Duration(hours: 1));
-        _report('$_tag: showed full screen content', location: location, mediation: _mediation, attributes: attrs);
+        _report('$_tag: showed full screen content', location: location, mediation: _mediation, adapter: ad.mediationAdapterClassName, attributes: attrs);
         if (_isDisposed) {
           Fimber.e('$_tag: showing disposed ad', stacktrace: StackTrace.current);
         }
@@ -487,7 +511,7 @@ class DSAdsInterstitial extends Cubit<DSAdsInterstitialState> {
     ad.onAdDismissed = (ad) {
       try {
         DSAdsAppOpen.lockShowFor(const Duration(seconds: 5));
-        _report('$_tag: full screen content dismissed', location: location, mediation: _mediation, attributes: attrs);
+        _report('$_tag: full screen content dismissed', location: location, mediation: _mediation, adapter: ad.mediationAdapterClassName, attributes: attrs);
         ad.dispose();
         updateLastShowTime();
         _mediation = null;
@@ -505,7 +529,7 @@ class DSAdsInterstitial extends Cubit<DSAdsInterstitialState> {
     ad.onAdFailedToShow = (ad, int errCode, String errText) {
       try {
         DSAdsAppOpen.lockShowFor(const Duration(seconds: 5));
-        _report('$_tag: showing canceled by error', location: location, mediation: _mediation, attributes: attrs);
+        _report('$_tag: showing canceled by error', location: location, mediation: _mediation, adapter: ad.mediationAdapterClassName, attributes: attrs);
         Fimber.e('$errText ($errCode)', stacktrace: StackTrace.current);
         ad.dispose();
         updateLastShowTime();
@@ -523,7 +547,7 @@ class DSAdsInterstitial extends Cubit<DSAdsInterstitialState> {
     };
     ad.onAdClicked = (ad) {
       try {
-        _report('$_tag: ad clicked', location: location, mediation: _mediation, attributes: attrs);
+        _report('$_tag: ad clicked', location: location, mediation: _mediation, adapter: ad.mediationAdapterClassName, attributes: attrs);
       } catch (e, stack) {
         Fimber.e('$e', stacktrace: stack);
       }

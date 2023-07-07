@@ -82,7 +82,7 @@ class DSGoogleInterstitialAd extends DSInterstitialAd {
   void Function(DSInterstitialAd ad)? onAdImpression;
 
   @override
-  String get mediationAdapterClassName => '${_ad!.responseInfo?.mediationAdapterClassName}';
+  String get mediationAdapterClassName => '${_ad?.responseInfo?.mediationAdapterClassName}';
 
 }
 

@@ -111,6 +111,7 @@ mixin DSAdsNativeLoaderMixin<T extends StatefulWidget> on State<T> {
   static void _report(String eventName, {
     required final DSAdLocation location,
     required DSAdMediation? mediation,
+    String? adapter,
     Map<String, Object>? attributes,
   }) {
     DSAdsManager.instance.onReportEvent?.call(eventName, {
@@ -118,6 +119,8 @@ mixin DSAdsNativeLoaderMixin<T extends StatefulWidget> on State<T> {
         'adUnitId': _adUnitId(mediation),
       'location': location.val,
       'mediation': '$mediation',
+      if (adapter != null)
+        'adapter': adapter,
       ...?attributes,
     });
   }
@@ -209,7 +212,7 @@ mixin DSAdsNativeLoaderMixin<T extends StatefulWidget> on State<T> {
 
     Future<void> onAdImpression(DSNativeAd ad) async {
       try {
-        _report('$_tag: impression', location: _getLocationByAd(ad), mediation: ad.mediation);
+        _report('$_tag: impression', location: _getLocationByAd(ad), mediation: ad.mediation, adapter: ad.mediationAdapterClassName);
       } catch (e, stack) {
         Fimber.e('$e', stacktrace: stack);
       }
@@ -217,7 +220,7 @@ mixin DSAdsNativeLoaderMixin<T extends StatefulWidget> on State<T> {
     Future<void> onAdLoaded(DSNativeAd ad) async {
       try {
         _loadingAds[style] = ad;
-        _report('$_tag: loaded', location: location, mediation: ad.mediation);
+        _report('$_tag: loaded', location: location, mediation: ad.mediation, adapter: ad.mediationAdapterClassName);
         DSAdsManager.instance.emitEvent(DSAdsNativeLoadedEvent._(ad: ad));
       } catch (e, stack) {
         Fimber.e('$e', stacktrace: stack);
@@ -226,10 +229,15 @@ mixin DSAdsNativeLoaderMixin<T extends StatefulWidget> on State<T> {
     Future<void> onAdFailedToLoad(DSNativeAd ad, int code, String message) async {
       try {
         _loadingAds.remove(style);
-        _report('$_tag: failed to load', location: location, mediation: ad.mediation,  attributes: {
-          'error_text': message,
-          'error_code': '$code ($mediation)',
-        });
+        _report('$_tag: failed to load',
+          location: location,
+          mediation: ad.mediation,
+          adapter: ad.mediationAdapterClassName,
+          attributes: {
+            'error_text': message,
+            'error_code': '$code ($mediation)',
+          },
+        );
         DSAdsManager.instance.emitEvent(const DSAdsNativeLoadFailed._());
         await ad.dispose();
         await DSAdsManager.instance.onLoadAdError(code, message, mediation, DSAdSource.native);
@@ -251,28 +259,28 @@ mixin DSAdsNativeLoaderMixin<T extends StatefulWidget> on State<T> {
     }
     Future<void> onAdOpened(DSNativeAd ad) async {
       try {
-        _report('$_tag: ad opened', location: _getLocationByAd(ad), mediation: ad.mediation);
+        _report('$_tag: ad opened', location: _getLocationByAd(ad), mediation: ad.mediation, adapter: ad.mediationAdapterClassName);
       } catch (e, stack) {
         Fimber.e('$e', stacktrace: stack);
       }
     }
     Future<void> onAdClicked(DSNativeAd ad) async {
       try {
-        _report('$_tag: ad clicked', location: _getLocationByAd(ad), mediation: ad.mediation);
+        _report('$_tag: ad clicked', location: _getLocationByAd(ad), mediation: ad.mediation, adapter: ad.mediationAdapterClassName);
       } catch (e, stack) {
         Fimber.e('$e', stacktrace: stack);
       }
     }
     Future<void> onAdClosed(DSNativeAd ad) async {
       try {
-        _report('$_tag: ad closed', location: _getLocationByAd(ad), mediation: ad.mediation);
+        _report('$_tag: ad closed', location: _getLocationByAd(ad), mediation: ad.mediation, adapter: ad.mediationAdapterClassName);
       } catch (e, stack) {
         Fimber.e('$e', stacktrace: stack);
       }
     }
     Future<void> onAdExpired(DSNativeAd ad) async {
       try {
-        _report('$_tag: ad expired', location: _getLocationByAd(ad), mediation: ad.mediation);
+        _report('$_tag: ad expired', location: _getLocationByAd(ad), mediation: ad.mediation, adapter: ad.mediationAdapterClassName);
       } catch (e, stack) {
         Fimber.e('$e', stacktrace: stack);
       }

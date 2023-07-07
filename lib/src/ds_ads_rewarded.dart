@@ -48,6 +48,7 @@ class DSAdsRewarded {
     required DSAdLocation location,
     required DSAdMediation? mediation,
     String? customAdId,
+    String? adapter,
     Map<String, Object>? attributes,
   }) {
     DSAdsManager.instance.onReportEvent?.call(eventName, {
@@ -55,6 +56,8 @@ class DSAdsRewarded {
         'adUnitId': customAdId ?? _adUnitId(mediation),
       'location': location.val,
       'mediation': '$mediation',
+      if (adapter != null)
+        'adapter': adapter,
       ...?attributes,
     });
   }
@@ -145,12 +148,18 @@ class DSAdsRewarded {
           onAdLoaded: (ad) async {
             try {
               final duration = DateTime.now().difference(startTime);
-              _report('$_tag: loaded', location: location, mediation: mediation, customAdId: ad.adUnitId, attributes: {
-                'mediation': '$mediation', // override
-                'google_ads_loaded_seconds': duration.inSeconds,
-                'google_ads_loaded_milliseconds': duration.inMilliseconds,
-                ...?customAttributes,
-              });
+              _report('$_tag: loaded',
+                location: location,
+                mediation: mediation,
+                customAdId: ad.adUnitId,
+                adapter: ad.mediationAdapterClassName,
+                attributes: {
+                  'mediation': '$mediation', // override
+                  'google_ads_loaded_seconds': duration.inSeconds,
+                  'google_ads_loaded_milliseconds': duration.inMilliseconds,
+                  ...?customAttributes,
+                },
+              );
               await _ad?.dispose();
               _ad = ad;
               _adState = DSAdState.loaded;
@@ -208,11 +217,17 @@ class DSAdsRewarded {
           onAdLoaded: (ad) async {
             try {
               final duration = DateTime.now().difference(startTime);
-              _report('$_tag: loaded', location: location, mediation: mediation, customAdId: ad.adUnitId, attributes: {
-                'applovin_ads_loaded_seconds': duration.inSeconds,
-                'applovin_ads_loaded_milliseconds': duration.inMilliseconds,
-                ...?customAttributes,
-              });
+              _report('$_tag: loaded',
+                location: location,
+                mediation: mediation,
+                customAdId: ad.adUnitId,
+                adapter: ad.mediationAdapterClassName,
+                attributes: {
+                  'applovin_ads_loaded_seconds': duration.inSeconds,
+                  'applovin_ads_loaded_milliseconds': duration.inMilliseconds,
+                  ...?customAttributes,
+                },
+              );
               await _ad?.dispose();
               _ad = ad;
               _adState = DSAdState.loaded;
@@ -232,13 +247,17 @@ class DSAdsRewarded {
               _mediation = null;
               _adState = DSAdState.error;
               _loadRetryCount++;
-              _report('$_tag: failed to load', location: location, mediation: mediation, attributes: {
-                'error_text': errDescription,
-                'error_code': '$errCode ($mediation)',
-                'applovin_ads_load_error_seconds': duration.inSeconds,
-                'applovin_ads_load_error_milliseconds': duration.inMilliseconds,
-                ...?customAttributes,
-              });
+              _report('$_tag: failed to load',
+                location: location,
+                mediation: mediation,
+                attributes: {
+                  'error_text': errDescription,
+                  'error_code': '$errCode ($mediation)',
+                  'applovin_ads_load_error_seconds': duration.inSeconds,
+                  'applovin_ads_load_error_milliseconds': duration.inMilliseconds,
+                  ...?customAttributes,
+                },
+              );
               final oldMediation = DSAdsManager.instance.currentMediation(DSAdSource.rewarded);
               await DSAdsManager.instance.onLoadAdError(errCode, errDescription, mediation, DSAdSource.rewarded);
               if (DSAdsManager.instance.currentMediation(DSAdSource.rewarded) != oldMediation) {
@@ -431,7 +450,7 @@ class DSAdsRewarded {
 
     ad.onAdImpression = (ad) {
       try {
-        _report('$_tag: impression', location: location, mediation: _mediation, attributes: attrs);
+        _report('$_tag: impression', location: location, mediation: _mediation, adapter: ad.mediationAdapterClassName, attributes: attrs);
       } catch (e, stack) {
         Fimber.e('$e', stacktrace: stack);
       }
@@ -446,7 +465,7 @@ class DSAdsRewarded {
     };
     ad.onAdShown = (ad) {
       try {
-        _report('$_tag: showed full screen content', location: location, mediation: _mediation, attributes: attrs);
+        _report('$_tag: showed full screen content', location: location, mediation: _mediation, adapter: ad.mediationAdapterClassName, attributes: attrs);
         if (_isDisposed) {
           Fimber.e('$_tag: showing disposed ad', stacktrace: StackTrace.current);
         }
@@ -460,7 +479,7 @@ class DSAdsRewarded {
     };
     ad.onAdDismissed = (ad) {
       try {
-        _report('$_tag: full screen content dismissed', location: location, mediation: _mediation, attributes: attrs);
+        _report('$_tag: full screen content dismissed', location: location, mediation: _mediation, adapter: ad.mediationAdapterClassName, attributes: attrs);
         ad.dispose();
         _ad = null;
         _adState = DSAdState.none;
@@ -475,7 +494,7 @@ class DSAdsRewarded {
     };
     ad.onAdFailedToShow = (ad, int errCode, String errText) {
       try {
-        _report('$_tag: showing canceled by error', location: location, mediation: _mediation, attributes: attrs);
+        _report('$_tag: showing canceled by error', location: location, mediation: _mediation, adapter: ad.mediationAdapterClassName, attributes: attrs);
         Fimber.e('$errText ($errCode)', stacktrace: StackTrace.current);
         ad.dispose();
         _ad = null;
@@ -491,7 +510,7 @@ class DSAdsRewarded {
     };
     ad.onAdClicked = (ad) {
       try {
-        _report('$_tag: ad clicked', location: location, mediation: _mediation, attributes: attrs);
+        _report('$_tag: ad clicked', location: location, mediation: _mediation, adapter: ad.mediationAdapterClassName, attributes: attrs);
       } catch (e, stack) {
         Fimber.e('$e', stacktrace: stack);
       }
