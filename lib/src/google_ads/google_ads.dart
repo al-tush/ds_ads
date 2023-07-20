@@ -200,9 +200,11 @@ class DSGoogleNativeAd extends DSNativeAd {
       listener: NativeAdListener(
         onAdLoaded: (ad) {
           _isLoaded = true;
+          setLoaded();
           onAdLoaded?.call(this);
         },
         onAdFailedToLoad: (ad, error) {
+          setLoadFailed();
           onAdFailedToLoad?.call(this, error.code, error.message);
         },
         onAdOpened: (ad) {
@@ -236,6 +238,7 @@ class DSGoogleNativeAd extends DSNativeAd {
 
   @override
   Future<void> load() {
+    startLoading();
     return _ad!.load();
   }
 
@@ -273,6 +276,7 @@ class DSGoogleAppOpenAd extends DSAppOpenAd {
     required void Function(DSGoogleAppOpenAd ad) onAdLoaded,
     required DSOnAdFailedToLoad onAdFailedToLoad,
   }) async {
+    startLoading();
     await AppOpenAd.load(
       adUnitId: adUnitId,
       orientation: orientation,
@@ -280,6 +284,7 @@ class DSGoogleAppOpenAd extends DSAppOpenAd {
       adLoadCallback: AppOpenAdLoadCallback(
         onAdLoaded: (ad) async {
           _ad = ad;
+          setLoaded();
           ad.onPaidEvent = (Ad ad, double valueMicros, PrecisionType precision, String currencyCode) {
             assert(_ad == ad);
             onPaidEvent?.call(this, valueMicros, precision, currencyCode, null);
@@ -309,6 +314,7 @@ class DSGoogleAppOpenAd extends DSAppOpenAd {
           onAdLoaded(this);
         },
         onAdFailedToLoad: (LoadAdError error) {
+          setLoadFailed();
           onAdFailedToLoad(this, error.code, error.message);
         },
       ),

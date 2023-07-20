@@ -151,7 +151,6 @@ class DSAdsInterstitial extends Cubit<DSAdsInterstitialState> {
       return;
     }
 
-    final startTime = DateTime.now();
     final mediation = DSAdsManager.instance.currentMediation(DSAdSource.interstitial);
     _mediation = mediation;
     if (mediation == null) {
@@ -164,15 +163,13 @@ class DSAdsInterstitial extends Cubit<DSAdsInterstitialState> {
         DSGoogleInterstitialAd(adUnitId: _adUnitId(mediation)).load(
           onAdLoaded: (ad) async {
             try {
-              final duration = DateTime.now().difference(startTime);
               _report('$_tag: loaded',
                 location: location,
                 mediation: mediation,
                 customAdId: ad.adUnitId,
                 adapter: ad.mediationAdapterClassName,
                 attributes: {
-                  'google_ads_loaded_seconds': duration.inSeconds,
-                  'google_ads_loaded_milliseconds': duration.inMilliseconds,
+                  ...ad.getReportAttributes(),
                   ...?customAttributes,
                 },
               );
@@ -191,7 +188,7 @@ class DSAdsInterstitial extends Cubit<DSAdsInterstitialState> {
           },
           onAdFailedToLoad: (DSAd ad, int errCode, String errDescription) async {
             try {
-              final duration = DateTime.now().difference(startTime);
+              final attrs = ad.getReportAttributes();
               await state.ad?.dispose();
               emit(state.copyWith(
                 ad: null,
@@ -205,8 +202,7 @@ class DSAdsInterstitial extends Cubit<DSAdsInterstitialState> {
                 attributes: {
                   'error_text': errDescription,
                   'error_code': '$errCode ($mediation)',
-                  'google_ads_load_error_seconds': duration.inSeconds,
-                  'google_ads_load_error_milliseconds': duration.inMilliseconds,
+                  ...attrs,
                   ...?customAttributes,
                 },
               );
@@ -246,15 +242,13 @@ class DSAdsInterstitial extends Cubit<DSAdsInterstitialState> {
         DSAppLovinInterstitialAd(adUnitId: _adUnitId(mediation)).load(
           onAdLoaded: (ad) async {
             try {
-              final duration = DateTime.now().difference(startTime);
               _report('$_tag: loaded',
                 location: location,
                 mediation: mediation,
                 customAdId: ad.adUnitId,
                 adapter: ad.mediationAdapterClassName,
                 attributes: {
-                  'applovin_ads_loaded_seconds': duration.inSeconds,
-                  'applovin_ads_loaded_milliseconds': duration.inMilliseconds,
+                  ...ad.getReportAttributes(),
                   ...?customAttributes,
                 },
               );
@@ -273,7 +267,7 @@ class DSAdsInterstitial extends Cubit<DSAdsInterstitialState> {
           },
           onAdFailedToLoad: (DSAd ad, int errCode, String errDescription) async {
             try {
-              final duration = DateTime.now().difference(startTime);
+              final attrs = ad.getReportAttributes();
               await state.ad?.dispose();
               emit(state.copyWith(
                 ad: null,
@@ -286,8 +280,7 @@ class DSAdsInterstitial extends Cubit<DSAdsInterstitialState> {
                 attributes: {
                   'error_text': errDescription,
                   'error_code': '$errCode ($mediation)',
-                  'applovin_ads_load_error_seconds': duration.inSeconds,
-                  'applovin_ads_load_error_milliseconds': duration.inMilliseconds,
+                  ...attrs,
                   ...?customAttributes,
                 },
               );

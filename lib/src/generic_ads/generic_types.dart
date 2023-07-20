@@ -1,4 +1,5 @@
 import 'package:ds_ads/ds_ads.dart';
+import 'package:freezed_annotation/freezed_annotation.dart';
 import 'package:google_mobile_ads/google_mobile_ads.dart';
 
 typedef DSOnPaidEventCallback = void Function(
@@ -11,15 +12,50 @@ typedef DSPrecisionType = PrecisionType;
 abstract class DSAd {
   final String adUnitId;
 
+  var _startTime = DateTime.now();
+  var _loadTime = const Duration(seconds: -1);
+  var _loadFailedTime = const Duration(seconds: -1);
+
   String get mediationAdapterClassName;
 
-  const DSAd({
+  DSAd({
     required this.adUnitId,
   });
+
+  @internal
+  void startLoading() {
+    _startTime = DateTime.now();
+  }
+
+  @internal
+  void setLoaded() {
+    _loadTime = DateTime.now().difference(_startTime);
+  }
+
+  @internal
+  void setLoadFailed() {
+    _loadFailedTime = DateTime.now().difference(_startTime);
+  }
+
+  Map<String, Object> getReportAttributes() {
+    return {
+      if (!_loadTime.isNegative)
+        ...{
+          'ads_loaded_seconds': _loadTime.inSeconds,
+          'ads_loaded_milliseconds': _loadTime.inMilliseconds,
+        },
+      if (!_loadFailedTime.isNegative)
+        ...{
+          'ads_load_error_seconds': _loadFailedTime.inSeconds,
+          'ads_load_error_milliseconds': _loadFailedTime.inMilliseconds,
+        },
+    };
+  }
+
 }
 
 abstract class DSInterstitialAd extends DSAd {
-  const DSInterstitialAd({
+  DSInterstitialAd({
     required super.adUnitId,
   });
 
@@ -66,7 +102,7 @@ abstract class DSNativeAd  extends DSAd {
 }
 
 abstract class DSRewardedAd extends DSAd {
-  const DSRewardedAd({
+  DSRewardedAd({
     required super.adUnitId,
   });
 
@@ -87,7 +123,7 @@ abstract class DSRewardedAd extends DSAd {
 }
 
 abstract class DSAppOpenAd extends DSAd {
-  const DSAppOpenAd({
+  DSAppOpenAd({
     required super.adUnitId,
   });
 

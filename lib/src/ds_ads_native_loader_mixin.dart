@@ -220,7 +220,12 @@ mixin DSAdsNativeLoaderMixin<T extends StatefulWidget> on State<T> {
     Future<void> onAdLoaded(DSNativeAd ad) async {
       try {
         _loadingAds[style] = ad;
-        _report('$_tag: loaded', location: location, mediation: ad.mediation, adapter: ad.mediationAdapterClassName);
+        _report('$_tag: loaded',
+          location: location,
+          mediation: ad.mediation,
+          adapter: ad.mediationAdapterClassName,
+          attributes: ad.getReportAttributes(),
+        );
         DSAdsManager.instance.emitEvent(DSAdsNativeLoadedEvent._(ad: ad));
       } catch (e, stack) {
         Fimber.e('$e', stacktrace: stack);
@@ -234,6 +239,7 @@ mixin DSAdsNativeLoaderMixin<T extends StatefulWidget> on State<T> {
           mediation: ad.mediation,
           adapter: ad.mediationAdapterClassName,
           attributes: {
+            ...ad.getReportAttributes(),
             'error_text': message,
             'error_code': '$code ($mediation)',
           },
@@ -336,11 +342,16 @@ mixin DSAdsNativeLoaderMixin<T extends StatefulWidget> on State<T> {
 
   void reloadAd() {
     if (isShowed) {
+      final mediation = DSAdsManager.instance.currentMediation(DSAdSource.native);
+      _report(
+        '$_tag: reloading',
+        location: nativeAdLocation,
+        mediation: mediation,
+        attributes: _showedAds[this]?.getReportAttributes(),
+      );
       _showedAds[this]?.dispose();
       _showedAds.remove(this);
       _adKey = GlobalKey();
-      final mediation = DSAdsManager.instance.currentMediation(DSAdSource.native);
-      _report('$_tag: reloading', location: nativeAdLocation, mediation: mediation);
     }
     unawaited(() async {
       await for (final event in DSAdsManager.instance.eventStream) {

@@ -19,9 +19,11 @@ class DSAppLovinInterstitialAd extends DSInterstitialAd {
     AppLovinMAX.setInterstitialListener(InterstitialListener(
       onAdLoadedCallback: (ad) {
         _ad = ad;
+        setLoaded();
         onAdLoaded(this);
       },
       onAdLoadFailedCallback: (adUnitId, error) {
+        setLoadFailed();
         onAdFailedToLoad(this, error.code, error.message);
       },
       onAdDisplayedCallback: (ad) {
@@ -47,6 +49,7 @@ class DSAppLovinInterstitialAd extends DSInterstitialAd {
       },
     ));
 
+    startLoading();
     AppLovinMAX.loadInterstitial(adUnitId);
   }
 
@@ -100,9 +103,11 @@ class DSAppLovinRewardedAd extends DSRewardedAd {
     AppLovinMAX.setRewardedAdListener(RewardedAdListener(
       onAdLoadedCallback: (ad) {
         _ad = ad;
+        setLoaded();
         onAdLoaded(this);
       },
       onAdLoadFailedCallback: (adUnitId, error) {
+        setLoadFailed();
         onAdFailedToLoad(this, error.code, error.message);
       },
       onAdDisplayedCallback: (ad) {
@@ -125,7 +130,7 @@ class DSAppLovinRewardedAd extends DSRewardedAd {
         onRewardEvent?.call(this, reward.amount, reward.label);
       },
     ));
-
+    startLoading();
     AppLovinMAX.loadRewardedAd(adUnitId);
   }
 
@@ -181,9 +186,11 @@ class DSAppLovinAppOpenAd extends DSAppOpenAd {
     AppLovinMAX.setAppOpenAdListener(AppOpenAdListener(
       onAdLoadedCallback: (ad) {
         _ad = ad;
+        setLoaded();
         onAdLoaded(this);
       },
       onAdLoadFailedCallback: (adUnitId, error) {
+        setLoadFailed();
         onAdFailedToLoad(this, error.code, error.message);
       },
       onAdDisplayedCallback: (ad) {
@@ -208,6 +215,7 @@ class DSAppLovinAppOpenAd extends DSAppOpenAd {
         onPaidEvent?.call(this, ad.revenue * 1000000, DSPrecisionType.unknown, 'USD',  ad.dspName);
       },
     ));
+    startLoading();
     AppLovinMAX.loadAppOpenAd(adUnitId);
   }
 

@@ -157,7 +157,6 @@ class DSAdsAppOpen {
       return;
     }
 
-    final startTime = DateTime.now();
     final mediation = DSAdsManager.instance.currentMediation(DSAdSource.appOpen);
     _mediation = mediation;
     if (mediation == null) {
@@ -169,14 +168,12 @@ class DSAdsAppOpen {
 
     Future<void> onAdLoaded(DSAppOpenAd ad) async {
       try {
-        final duration = DateTime.now().difference(startTime);
         _report('$_tag: loaded',
           location: location,
           mediation: mediation,
           adapter: ad.mediationAdapterClassName,
           attributes: {
-            'ad_loaded_seconds': duration.inSeconds,
-            'ad_loaded_milliseconds': duration.inMilliseconds,
+            ...ad.getReportAttributes(),
             ...?customAttributes,
           },
         );
@@ -195,7 +192,7 @@ class DSAdsAppOpen {
     }
     Future<void> onAdFailedToLoad(DSAd ad, int errCode, String errDescription) async {
       try {
-        final duration = DateTime.now().difference(startTime);
+        final attrs = ad.getReportAttributes();
         unawaited(_ad?.dispose());
         _ad = null;
         _lastLoadTime = DateTime(0);
@@ -204,8 +201,7 @@ class DSAdsAppOpen {
         _report('$_tag: failed to load', location: location, mediation: mediation, attributes: {
           'error_text': errDescription,
           'error_code': '$errCode ($mediation)',
-          'ad_load_error_seconds': duration.inSeconds,
-          'ad_load_error_milliseconds': duration.inMilliseconds,
+          ...attrs,
           ...?customAttributes,
         });
         final oldMediation = DSAdsManager.instance.currentMediation(DSAdSource.appOpen);

@@ -134,7 +134,6 @@ class DSAdsRewarded {
       return;
     }
 
-    final startTime = DateTime.now();
     final mediation = DSAdsManager.instance.currentMediation(DSAdSource.rewarded);
     _mediation = mediation;
     if (mediation == null) {
@@ -147,16 +146,13 @@ class DSAdsRewarded {
         DSGoogleRewardedAd(adUnitId: _adUnitId(mediation)).load(
           onAdLoaded: (ad) async {
             try {
-              final duration = DateTime.now().difference(startTime);
               _report('$_tag: loaded',
                 location: location,
                 mediation: mediation,
                 customAdId: ad.adUnitId,
                 adapter: ad.mediationAdapterClassName,
                 attributes: {
-                  'mediation': '$mediation', // override
-                  'google_ads_loaded_seconds': duration.inSeconds,
-                  'google_ads_loaded_milliseconds': duration.inMilliseconds,
+                  ...ad.getReportAttributes(),
                   ...?customAttributes,
                 },
               );
@@ -172,19 +168,21 @@ class DSAdsRewarded {
           },
           onAdFailedToLoad: (DSAd ad, int errCode, String errDescription) async {
             try {
-              final duration = DateTime.now().difference(startTime);
+              final attrs = ad.getReportAttributes();
               await _ad?.dispose();
               _ad = null;
               _adState = DSAdState.error;
               _loadRetryCount++;
-              _report('$_tag: failed to load', location: location, mediation: mediation, attributes: {
-                'error_text': errDescription,
-                'error_code': '$errCode ($mediation)',
-                'mediation': '$mediation', // override
-                'google_ads_load_error_seconds': duration.inSeconds,
-                'google_ads_load_error_milliseconds': duration.inMilliseconds,
-                ...?customAttributes,
-              });
+              _report('$_tag: failed to load',
+                location: location,
+                mediation: mediation,
+                attributes: {
+                  'error_text': errDescription,
+                  'error_code': '$errCode ($mediation)',
+                  ...attrs,
+                  ...?customAttributes,
+                },
+              );
               final oldMediation = DSAdsManager.instance.currentMediation(DSAdSource.rewarded);
               await DSAdsManager.instance.onLoadAdError(errCode, errDescription, mediation, DSAdSource.rewarded);
               if (DSAdsManager.instance.currentMediation(DSAdSource.rewarded) != oldMediation) {
@@ -216,15 +214,13 @@ class DSAdsRewarded {
         DSAppLovinRewardedAd(adUnitId: _adUnitId(mediation)).load(
           onAdLoaded: (ad) async {
             try {
-              final duration = DateTime.now().difference(startTime);
               _report('$_tag: loaded',
                 location: location,
                 mediation: mediation,
                 customAdId: ad.adUnitId,
                 adapter: ad.mediationAdapterClassName,
                 attributes: {
-                  'applovin_ads_loaded_seconds': duration.inSeconds,
-                  'applovin_ads_loaded_milliseconds': duration.inMilliseconds,
+                  ...ad.getReportAttributes(),
                   ...?customAttributes,
                 },
               );
@@ -241,7 +237,7 @@ class DSAdsRewarded {
           },
           onAdFailedToLoad: (DSAd ad, int errCode, String errDescription) async {
             try {
-              final duration = DateTime.now().difference(startTime);
+              final attrs = ad.getReportAttributes();
               await _ad?.dispose();
               _ad = null;
               _mediation = null;
@@ -253,8 +249,7 @@ class DSAdsRewarded {
                 attributes: {
                   'error_text': errDescription,
                   'error_code': '$errCode ($mediation)',
-                  'applovin_ads_load_error_seconds': duration.inSeconds,
-                  'applovin_ads_load_error_milliseconds': duration.inMilliseconds,
+                  ...attrs,
                   ...?customAttributes,
                 },
               );

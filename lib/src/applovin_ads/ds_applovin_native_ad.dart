@@ -33,6 +33,7 @@ class DSAppLovinNativeAd  extends DSNativeAd {
     if (!DSAdsManager.instance.isMediationInitialized(DSAdMediation.appLovin)) {
       Fimber.e('AppLovin was not initialized', stacktrace: StackTrace.current);
     }
+    startLoading();
     return ALInstanceManager.instance.loadNativeAd(this);
   }
 
@@ -78,9 +79,11 @@ class ALInstanceManager {
       case 'onAdLoaded':
         ad._isLoaded = true;
         ad._networkName = arguments['networkName'] as String;
+        ad.setLoaded();
         ad.onAdLoaded?.call(ad);
         break;
       case 'onAdLoadFailed':
+        ad.setLoadFailed();
         final code = arguments['error_code'];
         final message = arguments['error_message'];
         ad.onAdFailedToLoad?.call(ad, code, message);
