@@ -331,7 +331,8 @@ mixin DSAdsNativeLoaderMixin<T extends StatefulWidget> on State<T> {
     if (readyAd == null || !readyAd.isLoaded) return false;
     _showedAds[this] = readyAd;
     _loadingAds.remove(style);
-    Fimber.i('$_tag: assigned (location: $nativeAdLocation)');
+    final mediation = DSAdsManager.instance.currentMediation(DSAdSource.native);
+    _report('$_tag: assigned', location: nativeAdLocation, mediation: mediation);
     unawaited(() async {
       // to prevent empty transparent rect instead banner
       await Future.delayed(const Duration(milliseconds: 500));
