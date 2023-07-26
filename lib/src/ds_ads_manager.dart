@@ -10,6 +10,7 @@ import 'package:fimber/fimber.dart';
 import 'package:flutter/widgets.dart';
 import 'package:freezed_annotation/freezed_annotation.dart';
 
+import 'ds_ads_native2_loader_mixin.dart';
 import 'ds_ads_types.dart';
 
 class DSAdsManager {
@@ -67,17 +68,19 @@ class DSAdsManager {
   final DSAppAdsState appState;
   final OnReportEvent? onReportEvent;
   final Set<DSAdLocation>? locations;
-  final String? interstitialGoogleUnitId;
-  final String? interstitialSplashGoogleUnitId;
-  final String? nativeGoogleUnitId;
-  final String? appOpenGoogleUnitId;
-  final String? rewardedGoogleUnitId;
-  final String? appLovinSDKKey;
-  final String? interstitialAppLovinUnitId;
-  final String? interstitialSplashAppLovinUnitId;
-  final String? nativeAppLovinUnitId;
-  final String? appOpenAppLovinUnitId;
-  final String? rewardedAppLovinUnitId;
+  final String interstitialGoogleUnitId;
+  final String interstitialSplashGoogleUnitId;
+  final String nativeGoogleUnitId;
+  final String native2GoogleUnitId;
+  final String appOpenGoogleUnitId;
+  final String rewardedGoogleUnitId;
+  final String appLovinSDKKey;
+  final String interstitialAppLovinUnitId;
+  final String interstitialSplashAppLovinUnitId;
+  final String nativeAppLovinUnitId;
+  final String native2AppLovinUnitId;
+  final String appOpenAppLovinUnitId;
+  final String rewardedAppLovinUnitId;
   final DSDurationCallback? interstitialFetchDelayCallback;
   final DSDurationCallback? interstitialShowLockCallback;
   final DSDurationCallback? rewardedFetchDelayCallback;
@@ -124,17 +127,19 @@ class DSAdsManager {
     this.nativeAdBannerDefStyle = DSNativeAdBannerStyle.notDefined,
     this.locations,
     this.onReportEvent,
-    this.interstitialGoogleUnitId,
-    this.interstitialSplashGoogleUnitId,
-    this.rewardedGoogleUnitId,
-    this.nativeGoogleUnitId,
-    this.appOpenGoogleUnitId,
-    this.appLovinSDKKey,
-    this.interstitialAppLovinUnitId,
-    this.interstitialSplashAppLovinUnitId,
-    this.nativeAppLovinUnitId,
-    this.appOpenAppLovinUnitId,
-    this.rewardedAppLovinUnitId,
+    this.interstitialGoogleUnitId = '',
+    this.interstitialSplashGoogleUnitId = '',
+    this.rewardedGoogleUnitId = '',
+    this.nativeGoogleUnitId = '',
+    this.native2GoogleUnitId = '',
+    this.appOpenGoogleUnitId = '',
+    this.appLovinSDKKey = '',
+    this.interstitialAppLovinUnitId = '',
+    this.interstitialSplashAppLovinUnitId = '',
+    this.nativeAppLovinUnitId = '',
+    this.native2AppLovinUnitId = '',
+    this.appOpenAppLovinUnitId = '',
+    this.rewardedAppLovinUnitId = '',
     this.isAdAllowedCallback,
     this.nativeAdCustomBanners = const [],
 
@@ -149,7 +154,7 @@ class DSAdsManager {
   {
     _instance = this;
     for (final t in DSAdSource.values) {
-      _tryNextMediation(t);
+      _tryNextMediation(t, true);
     }
 
     unawaited(() async {
@@ -164,6 +169,7 @@ class DSAdsManager {
   Future<void> dismiss() async {
     _instance = null;
     await DSAdsNativeLoaderMixin.disposeClass();
+    await DSAdsNative2LoaderMixin.disposeClass();
   }
 
   @internal
@@ -173,27 +179,54 @@ class DSAdsManager {
   
   var _lockMediationTill = DateTime(0);
   
-  void _tryNextMediation(DSAdSource source) {
+  void _tryNextMediation(DSAdSource source, bool isInit) {
     final mediationPriorities = mediationPrioritiesCallback(source);
     _prevMediationPriorities[source] = mediationPriorities.toSet();
+    final String googleId;
+    final String appLovinId;
+    switch (source) {
+      case DSAdSource.interstitial:
+        googleId = interstitialGoogleUnitId;
+        appLovinId = interstitialAppLovinUnitId;
+        break;
+      case DSAdSource.native:
+        googleId = nativeGoogleUnitId;
+        appLovinId = nativeAppLovinUnitId;
+        break;
+      case DSAdSource.native2:
+        googleId = native2GoogleUnitId;
+        appLovinId = native2AppLovinUnitId;
+        break;
+      case DSAdSource.rewarded:
+        googleId = rewardedGoogleUnitId;
+        appLovinId = rewardedAppLovinUnitId;
+        break;
+      case DSAdSource.appOpen:
+        googleId = appOpenGoogleUnitId;
+        appLovinId = appOpenAppLovinUnitId;
+        break;
+    }
+
     if (mediationPriorities.contains(DSAdMediation.google)) {
-      if (interstitialGoogleUnitId?.isNotEmpty != true) {
+      if (googleId.isEmpty) {
         mediationPriorities.remove(DSAdMediation.google);
-        assert(false, 'setup interstitialGoogleUnitId or remove DSAdMediation.google from mediationPrioritiesCallack');
+        assert(false, '$source error: setup ...GoogleUnitId field or remove DSAdMediation.google from mediationPrioritiesCallback');
       }
     }
     if (mediationPriorities.contains(DSAdMediation.appLovin)) {
-      if (appLovinSDKKey?.isNotEmpty != true) {
+      if (appLovinSDKKey.isEmpty) {
         mediationPriorities.remove(DSAdMediation.appLovin);
         assert(false, 'setup appLovinSDKKey or remove DSAdMediation.appLovin from mediationPrioritiesCallack');
       }
-      if (interstitialAppLovinUnitId?.isNotEmpty != true) {
+      if (appLovinId.isEmpty) {
         mediationPriorities.remove(DSAdMediation.appLovin);
-        assert(false, 'setup interstitialAppLovinUnitId or remove DSAdMediation.appLovin from mediationPrioritiesCallack');
+        assert(false, '$source error: setup ...AppLovinUnitId or remove DSAdMediation.appLovin from mediationPrioritiesCallack');
       }
     }
     if (mediationPriorities.isEmpty) {
-      Fimber.e('ads_manager: no mediation', stacktrace: StackTrace.current);
+      if (!isInit) {
+        Fimber.e('ads_manager: no mediation', stacktrace: StackTrace.current);
+      }
       return;
     }
 
@@ -208,7 +241,7 @@ class DSAdsManager {
         onReportEvent?.call('ads_manager: no next mediation, waiting ${_nextMediationWait.inSeconds}s', {});
         Timer(_nextMediationWait, () async {
           if (currentMediation(source) == null) {
-            _tryNextMediation(source);
+            _tryNextMediation(source, false);
           }
         });
         return;
@@ -253,7 +286,7 @@ class DSAdsManager {
         Fimber.i('ads_manager: mediations reloaded');
         _lockMediationTill = DateTime(0);
         _currentMediation[source] = null;
-        _tryNextMediation(source);
+        _tryNextMediation(source, false);
       }
       if (!mediationPriorities.contains(currentMediation(source))) {
         reloadMediation();
@@ -281,7 +314,7 @@ class DSAdsManager {
       // https://support.google.com/admob/thread/3494603/admob-error-codes-logs?hl=en
         if (errCode == 3) {
           if (!updateMediations(source)) {
-            _tryNextMediation(source);
+            _tryNextMediation(source, false);
           }
         }
         break;
@@ -289,7 +322,7 @@ class DSAdsManager {
       // https://dash.applovin.com/documentation/mediation/flutter/getting-started/errorcodes
         if (errCode == 204 || errCode == -5001) {
           if (!updateMediations(source)) {
-            _tryNextMediation(source);
+            _tryNextMediation(source, false);
           }
         }
         break;
@@ -300,7 +333,11 @@ class DSAdsManager {
 
   Future<void> initAppLovine() async {
     appLovinSDKConfiguration.clear();
-    final config = await AppLovinMAX.initialize(appLovinSDKKey!);
+    if (appLovinSDKKey.isEmpty) {
+      Fimber.e('AppLovin not initialized. SDKKey is empty', stacktrace: StackTrace.current);
+      return;
+    }
+    final config = await AppLovinMAX.initialize(appLovinSDKKey);
     if (config != null) {
       appLovinSDKConfiguration.addAll(config);
     }

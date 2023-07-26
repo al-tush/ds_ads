@@ -21,9 +21,9 @@ class DSAdsRewarded {
   String _adUnitId(DSAdMediation mediation) {
     switch (mediation) {
       case DSAdMediation.google:
-        return DSAdsManager.instance.rewardedGoogleUnitId!;
+        return DSAdsManager.instance.rewardedGoogleUnitId;
       case DSAdMediation.appLovin:
-        return DSAdsManager.instance.rewardedAppLovinUnitId!;
+        return DSAdsManager.instance.rewardedAppLovinUnitId;
     }
   }
   final Duration loadRetryDelay;

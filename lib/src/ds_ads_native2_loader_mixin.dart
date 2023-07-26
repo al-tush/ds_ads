@@ -10,10 +10,10 @@ import 'package:freezed_annotation/freezed_annotation.dart';
 
 import 'google_ads/export.dart';
 
-part 'ds_ads_native_loader_types.dart';
+part 'ds_ads_native2_loader_types.dart';
 
-
-mixin DSAdsNativeLoaderMixin<T extends StatefulWidget> on State<T> {
+// Just for experimental purposes. Needs refactoring
+mixin DSAdsNative2LoaderMixin<T extends StatefulWidget> on State<T> {
   static const _tag = 'ads_native';
 
   var _adKey = GlobalKey();
@@ -22,7 +22,7 @@ mixin DSAdsNativeLoaderMixin<T extends StatefulWidget> on State<T> {
   DSAdLocation get nativeAdLocation;
 
   static final _loadingAds = <DSNativeStyle, DSNativeAd>{};
-  static final _showedAds = <DSAdsNativeLoaderMixin, DSNativeAd>{};
+  static final _showedAds = <DSAdsNative2LoaderMixin, DSNativeAd>{};
 
   static const _loadingTimeout = Duration(minutes: 1);
   static const _loadedTimeout = Duration(hours: 4);
@@ -36,9 +36,9 @@ mixin DSAdsNativeLoaderMixin<T extends StatefulWidget> on State<T> {
   static String _adUnitId(DSAdMediation mediation) {
     switch (mediation) {
       case DSAdMediation.google:
-        return DSAdsManager.instance.nativeGoogleUnitId;
+        return DSAdsManager.instance.native2GoogleUnitId;
       case DSAdMediation.appLovin:
-        return DSAdsManager.instance.nativeAppLovinUnitId;
+        return DSAdsManager.instance.native2AppLovinUnitId;
     }
   }
 
@@ -226,7 +226,7 @@ mixin DSAdsNativeLoaderMixin<T extends StatefulWidget> on State<T> {
           adapter: ad.mediationAdapterClassName,
           attributes: ad.getReportAttributes(),
         );
-        DSAdsManager.instance.emitEvent(DSAdsNativeLoadedEvent._(ad: ad));
+        DSAdsManager.instance.emitEvent(DSAdsNative2LoadedEvent._(ad: ad));
       } catch (e, stack) {
         Fimber.e('$e', stacktrace: stack);
       }
@@ -244,7 +244,7 @@ mixin DSAdsNativeLoaderMixin<T extends StatefulWidget> on State<T> {
             'error_code': '$code ($mediation)',
           },
         );
-        DSAdsManager.instance.emitEvent(const DSAdsNativeLoadFailed._());
+        DSAdsManager.instance.emitEvent(const DSAdsNative2LoadFailed._());
         await ad.dispose();
         await DSAdsManager.instance.onLoadAdError(code, message, mediation, DSAdSource.native);
         final newMediation = DSAdsManager.instance.currentMediation(DSAdSource.native);

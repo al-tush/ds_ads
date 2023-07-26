@@ -1,4 +1,5 @@
 import 'package:flutter/foundation.dart';
+import 'package:flutter/widgets.dart';
 import 'package:google_mobile_ads/google_mobile_ads.dart';
 
 import 'generic_ads/export.dart';
@@ -15,6 +16,7 @@ typedef DSDurationCallback = Duration Function();
 enum DSAdSource {
   interstitial,
   native,
+  native2,
   rewarded,
   appOpen,
 }
@@ -42,6 +44,7 @@ class DSAdLocation {
 }
 
 typedef DSNativeStyle = String;
+typedef NativeAdBuilder = Widget Function(BuildContext context, bool isLoaded, Widget child);
 
 class NativeAdBanner {
   final DSAdLocation location;

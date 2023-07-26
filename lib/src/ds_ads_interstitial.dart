@@ -26,16 +26,16 @@ class DSAdsInterstitial extends Cubit<DSAdsInterstitialState> {
       case DSAdsInterstitialType.def:
         switch (mediation) {
           case DSAdMediation.google:
-            return DSAdsManager.instance.interstitialGoogleUnitId!;
+            return DSAdsManager.instance.interstitialGoogleUnitId;
           case DSAdMediation.appLovin:
-            return DSAdsManager.instance.interstitialAppLovinUnitId!;
+            return DSAdsManager.instance.interstitialAppLovinUnitId;
         }
       case DSAdsInterstitialType.splash:
         switch (mediation) {
           case DSAdMediation.google:
-            return DSAdsManager.instance.interstitialSplashGoogleUnitId!;
+            return DSAdsManager.instance.interstitialSplashGoogleUnitId;
           case DSAdMediation.appLovin:
-            return DSAdsManager.instance.interstitialSplashAppLovinUnitId!;
+            return DSAdsManager.instance.interstitialSplashAppLovinUnitId;
         }
     }
   }

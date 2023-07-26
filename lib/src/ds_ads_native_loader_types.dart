@@ -1,7 +1,5 @@
 part of 'ds_ads_native_loader_mixin.dart';
 
-typedef NativeAdBuilder = Widget Function(BuildContext context, bool isLoaded, Widget child);
-
 abstract class DSAdsNativeEvent extends DSAdsEvent {
   const DSAdsNativeEvent();
 }

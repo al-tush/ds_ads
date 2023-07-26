@@ -72,9 +72,9 @@ class DSAdsAppOpen {
   static String _adUnitId(DSAdMediation mediation) {
     switch (mediation) {
       case DSAdMediation.google:
-        return DSAdsManager.instance.appOpenGoogleUnitId!;
+        return DSAdsManager.instance.appOpenGoogleUnitId;
       case DSAdMediation.appLovin:
-        return DSAdsManager.instance.appOpenAppLovinUnitId!;
+        return DSAdsManager.instance.appOpenAppLovinUnitId;
     }
   }
 
