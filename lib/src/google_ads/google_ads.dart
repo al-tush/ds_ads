@@ -83,7 +83,6 @@ class DSGoogleInterstitialAd extends DSInterstitialAd {
 
   @override
   String get mediationAdapterClassName => '${_ad?.responseInfo?.mediationAdapterClassName}';
-
 }
 
 class DSGoogleRewardedAd extends DSRewardedAd {
@@ -141,12 +140,10 @@ class DSGoogleRewardedAd extends DSRewardedAd {
   @override
   Future<void> show() async {
     await _ad!.setImmersiveMode(true);
-    await _ad!.show(
-        onUserEarnedReward: (ad, reward) {
-          if (ad != _ad) Fimber.e('ds_ads: assert error', stacktrace: StackTrace.current);
-          onRewardEvent?.call(this, reward.amount, reward.type);
-        }
-    );
+    await _ad!.show(onUserEarnedReward: (ad, reward) {
+      if (ad != _ad) Fimber.e('ds_ads: assert error', stacktrace: StackTrace.current);
+      onRewardEvent?.call(this, reward.amount, reward.type);
+    });
   }
 
   @override
@@ -172,7 +169,6 @@ class DSGoogleRewardedAd extends DSRewardedAd {
 
   @override
   String get mediationAdapterClassName => '${_ad!.responseInfo?.mediationAdapterClassName}';
-
 }
 
 class DSGoogleNativeAd extends DSNativeAd {
@@ -246,7 +242,6 @@ class DSGoogleNativeAd extends DSNativeAd {
   Future<void> dispose() async {
     await _ad?.dispose();
   }
-
 }
 
 class DSGoogleAdWidget extends StatelessWidget {
@@ -261,7 +256,6 @@ class DSGoogleAdWidget extends StatelessWidget {
   Widget build(BuildContext context) {
     return AdWidget(ad: ad._ad!);
   }
-
 }
 
 class DSGoogleAppOpenAd extends DSAppOpenAd {
@@ -347,5 +341,4 @@ class DSGoogleAppOpenAd extends DSAppOpenAd {
 
   @override
   String get mediationAdapterClassName => '${_ad!.responseInfo?.mediationAdapterClassName}';
-
 }

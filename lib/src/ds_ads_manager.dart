@@ -15,6 +15,7 @@ import 'ds_ads_types.dart';
 
 class DSAdsManager {
   static DSAdsManager? _instance;
+
   static DSAdsManager get instance {
     assert(_instance != null, 'Call AdsManager(...) to initialize ads');
     return _instance!;
@@ -33,6 +34,7 @@ class DSAdsManager {
   static bool get isInitialized => _instance != null;
 
   static DSAdsInterstitial get interstitial => instance._adsInterstitial;
+
   static DSAdsInterstitial get splashInterstitial {
     if (instance._splashInterstitial == null) {
       Fimber.i('splash interstitial created');
@@ -54,6 +56,7 @@ class DSAdsManager {
   var _isAdAvailable = false;
   final _currentMediation = <DSAdSource, DSAdMediation?>{};
   final _mediationInitialized = <DSAdMediation>{};
+
   /// Was the ad successfully loaded at least once in this session
   bool get isAdAvailable => _isAdAvailable;
 
@@ -62,7 +65,7 @@ class DSAdsManager {
   final _eventController = StreamController<DSAdsEvent>.broadcast();
 
   Stream<DSAdsEvent> get eventStream => _eventController.stream;
-  
+
   final List<DSAdMediation> Function(DSAdSource source) mediationPrioritiesCallback;
   final OnPaidEvent onPaidEvent;
   final DSAppAdsState appState;
@@ -142,16 +145,13 @@ class DSAdsManager {
     this.rewardedAppLovinUnitId = '',
     this.isAdAllowedCallback,
     this.nativeAdCustomBanners = const [],
-
     this.interstitialFetchDelayCallback,
     this.interstitialShowLockCallback,
     this.rewardedFetchDelayCallback,
     this.rewardedShowLockCallback,
     this.retryCountCallback,
-  }) :
-        assert(_instance == null, 'dismiss previous Ads instance before init new'),
-        assert(_widgetsObserver != null, 'call DSAdsManager.preInit() before')
-  {
+  })  : assert(_instance == null, 'dismiss previous Ads instance before init new'),
+        assert(_widgetsObserver != null, 'call DSAdsManager.preInit() before') {
     _instance = this;
     for (final t in DSAdSource.values) {
       _tryNextMediation(t, true);
@@ -176,9 +176,9 @@ class DSAdsManager {
   void emitEvent(DSAdsEvent event) {
     _eventController.sink.add(event);
   }
-  
+
   var _lockMediationTill = DateTime(0);
-  
+
   void _tryNextMediation(DSAdSource source, bool isInit) {
     final mediationPriorities = mediationPrioritiesCallback(source);
     _prevMediationPriorities[source] = mediationPriorities.toSet();
@@ -210,7 +210,8 @@ class DSAdsManager {
     if (mediationPriorities.contains(DSAdMediation.google)) {
       if (googleId.isEmpty) {
         mediationPriorities.remove(DSAdMediation.google);
-        assert(false, '$source error: setup ...GoogleUnitId field or remove DSAdMediation.google from mediationPrioritiesCallback');
+        assert(false,
+            '$source error: setup ...GoogleUnitId field or remove DSAdMediation.google from mediationPrioritiesCallback');
       }
     }
     if (mediationPriorities.contains(DSAdMediation.appLovin)) {
@@ -220,7 +221,8 @@ class DSAdsManager {
       }
       if (appLovinId.isEmpty) {
         mediationPriorities.remove(DSAdMediation.appLovin);
-        assert(false, '$source error: setup ...AppLovinUnitId or remove DSAdMediation.appLovin from mediationPrioritiesCallack');
+        assert(false,
+            '$source error: setup ...AppLovinUnitId or remove DSAdMediation.appLovin from mediationPrioritiesCallack');
       }
     }
     if (mediationPriorities.isEmpty) {
@@ -249,7 +251,7 @@ class DSAdsManager {
       final curr = mediationPriorities.indexOf(_currentMediation[source]!);
       next = mediationPriorities[curr + 1];
     }
-    
+
     onReportEvent?.call('ads_manager: select mediation', {
       'mediation': '$next',
       'mediation_type': '$source',
@@ -258,20 +260,20 @@ class DSAdsManager {
     if (!_mediationInitialized.contains(next)) {
       unawaited(() async {
         try {
-        switch (next) {
-          case DSAdMediation.google:
-          // It seems that init just creates competition for other mediations
-          //await MobileAds.instance.initialize();
-            break;
-          case DSAdMediation.appLovin:
-            await initAppLovine();
-            break;
+          switch (next) {
+            case DSAdMediation.google:
+              // It seems that init just creates competition for other mediations
+              //await MobileAds.instance.initialize();
+              break;
+            case DSAdMediation.appLovin:
+              await initAppLovine();
+              break;
+          }
+          _mediationInitialized.add(next);
+        } catch (e, stack) {
+          Fimber.e('$e', stacktrace: stack);
         }
-        _mediationInitialized.add(next);
-      } catch (e, stack) {
-        Fimber.e('$e', stacktrace: stack);
-      }
-      } ());
+      }());
     }
   }
 
@@ -288,6 +290,7 @@ class DSAdsManager {
         _currentMediation[source] = null;
         _tryNextMediation(source, false);
       }
+
       if (!mediationPriorities.contains(currentMediation(source))) {
         reloadMediation();
         return true;
@@ -311,7 +314,7 @@ class DSAdsManager {
     if (mediationPrioritiesCallback(source).length <= 1) return;
     switch (mediation) {
       case DSAdMediation.google:
-      // https://support.google.com/admob/thread/3494603/admob-error-codes-logs?hl=en
+        // https://support.google.com/admob/thread/3494603/admob-error-codes-logs?hl=en
         if (errCode == 3) {
           if (!updateMediations(source)) {
             _tryNextMediation(source, false);
@@ -319,7 +322,7 @@ class DSAdsManager {
         }
         break;
       case DSAdMediation.appLovin:
-      // https://dash.applovin.com/documentation/mediation/flutter/getting-started/errorcodes
+        // https://dash.applovin.com/documentation/mediation/flutter/getting-started/errorcodes
         if (errCode == 204 || errCode == -5001) {
           if (!updateMediations(source)) {
             _tryNextMediation(source, false);

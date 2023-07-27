@@ -38,7 +38,6 @@ class DSAdsRewardedShowedEvent extends DSAdsRewardedEvent {
   });
 }
 
-
 /// Error when displaying advertisements
 /// This event allows the next advertisement to be loaded immediately after the event occurs
 class DSAdsRewardedShowErrorEvent extends DSAdsRewardedEvent {

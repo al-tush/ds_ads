@@ -39,19 +39,16 @@ abstract class DSAd {
 
   Map<String, Object> getReportAttributes() {
     return {
-      if (!_loadTime.isNegative)
-        ...{
-          'ads_loaded_seconds': _loadTime.inSeconds,
-          'ads_loaded_milliseconds': _loadTime.inMilliseconds,
-        },
-      if (!_loadFailedTime.isNegative)
-        ...{
-          'ads_load_error_seconds': _loadFailedTime.inSeconds,
-          'ads_load_error_milliseconds': _loadFailedTime.inMilliseconds,
-        },
+      if (!_loadTime.isNegative) ...{
+        'ads_loaded_seconds': _loadTime.inSeconds,
+        'ads_loaded_milliseconds': _loadTime.inMilliseconds,
+      },
+      if (!_loadFailedTime.isNegative) ...{
+        'ads_load_error_seconds': _loadFailedTime.inSeconds,
+        'ads_load_error_milliseconds': _loadFailedTime.inMilliseconds,
+      },
     };
   }
-
 }
 
 abstract class DSInterstitialAd extends DSAd {
@@ -68,13 +65,17 @@ abstract class DSInterstitialAd extends DSAd {
 //  set onAdLoaded(void Function(DSInterstitialAd ad) value);
 //  set onAdFailedToLoad(void Function(DSInterstitialAd ad, int errCode, String errText) value);
   set onAdDismissed(void Function(DSInterstitialAd ad)? value);
+
   set onAdFailedToShow(void Function(DSInterstitialAd ad, int errCode, String errText) value);
+
   set onAdShown(void Function(DSInterstitialAd ad)? value);
+
   set onAdClicked(void Function(DSInterstitialAd ad)? value);
+
   set onAdImpression(void Function(DSInterstitialAd ad)? value);
 }
 
-abstract class DSNativeAd  extends DSAd {
+abstract class DSNativeAd extends DSAd {
   final String factoryId;
   final created = DateTime.now();
 
@@ -111,14 +112,19 @@ abstract class DSRewardedAd extends DSAd {
   Future<void> dispose();
 
   set onPaidEvent(DSOnPaidEventCallback? value);
+
   set onRewardEvent(DSOnRewardEventCallback? value);
 
 //  set onAdLoaded(void Function(DSRewardedAd ad) value);
 //  set onAdFailedToLoad(void Function(DSRewardedAd ad, int errCode, String errText) value);
   set onAdDismissed(void Function(DSRewardedAd ad)? value);
+
   set onAdFailedToShow(void Function(DSRewardedAd ad, int errCode, String errText) value);
+
   set onAdShown(void Function(DSRewardedAd ad)? value);
+
   set onAdClicked(void Function(DSRewardedAd ad)? value);
+
   set onAdImpression(void Function(DSRewardedAd ad)? value);
 }
 
@@ -136,8 +142,12 @@ abstract class DSAppOpenAd extends DSAd {
 //  set onAdLoaded(void Function(DSAppOpenAd ad) value);
 //  set onAdFailedToLoad(void Function(DSAppOpenAd ad, int errCode, String errText) value);
   set onAdDismissed(void Function(DSAppOpenAd ad)? value);
+
   set onAdFailedToShow(void Function(DSAppOpenAd ad, int errCode, String errText) value);
+
   set onAdShown(void Function(DSAppOpenAd ad)? value);
+
   set onAdClicked(void Function(DSAppOpenAd ad)? value);
+
   set onAdImpression(void Function(DSAppOpenAd ad)? value);
 }

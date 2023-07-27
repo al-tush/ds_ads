@@ -17,31 +17,29 @@ final _privateConstructorUsedError = UnsupportedError(
 /// @nodoc
 mixin _$AdsInterstitialState {
   DSInterstitialAd? get ad => throw _privateConstructorUsedError;
+
   DSAdState get adState => throw _privateConstructorUsedError;
+
   int get loadRetryCount => throw _privateConstructorUsedError;
 
   @JsonKey(ignore: true)
-  $AdsInterstitialStateCopyWith<DSAdsInterstitialState> get copyWith =>
-      throw _privateConstructorUsedError;
+  $AdsInterstitialStateCopyWith<DSAdsInterstitialState> get copyWith => throw _privateConstructorUsedError;
 }
 
 /// @nodoc
 abstract class $AdsInterstitialStateCopyWith<$Res> {
-  factory $AdsInterstitialStateCopyWith(DSAdsInterstitialState value,
-          $Res Function(DSAdsInterstitialState) then) =
+  factory $AdsInterstitialStateCopyWith(DSAdsInterstitialState value, $Res Function(DSAdsInterstitialState) then) =
       _$AdsInterstitialStateCopyWithImpl<$Res>;
-  $Res call(
-      {DSInterstitialAd? ad,
-      DSAdState adState,
-      int loadRetryCount});
+
+  $Res call({DSInterstitialAd? ad, DSAdState adState, int loadRetryCount});
 }
 
 /// @nodoc
-class _$AdsInterstitialStateCopyWithImpl<$Res>
-    implements $AdsInterstitialStateCopyWith<$Res> {
+class _$AdsInterstitialStateCopyWithImpl<$Res> implements $AdsInterstitialStateCopyWith<$Res> {
   _$AdsInterstitialStateCopyWithImpl(this._value, this._then);
 
   final DSAdsInterstitialState _value;
+
   // ignore: unused_field
   final $Res Function(DSAdsInterstitialState) _then;
 
@@ -69,30 +67,24 @@ class _$AdsInterstitialStateCopyWithImpl<$Res>
 }
 
 /// @nodoc
-abstract class _$$_AdsInterstitialStateDataCopyWith<$Res>
-    implements $AdsInterstitialStateCopyWith<$Res> {
+abstract class _$$_AdsInterstitialStateDataCopyWith<$Res> implements $AdsInterstitialStateCopyWith<$Res> {
   factory _$$_AdsInterstitialStateDataCopyWith(
-          _$_AdsInterstitialStateData value,
-          $Res Function(_$_AdsInterstitialStateData) then) =
+          _$_AdsInterstitialStateData value, $Res Function(_$_AdsInterstitialStateData) then) =
       __$$_AdsInterstitialStateDataCopyWithImpl<$Res>;
+
   @override
-  $Res call(
-      {DSInterstitialAd? ad,
-      DSAdState adState,
-      int loadRetryCount});
+  $Res call({DSInterstitialAd? ad, DSAdState adState, int loadRetryCount});
 }
 
 /// @nodoc
-class __$$_AdsInterstitialStateDataCopyWithImpl<$Res>
-    extends _$AdsInterstitialStateCopyWithImpl<$Res>
+class __$$_AdsInterstitialStateDataCopyWithImpl<$Res> extends _$AdsInterstitialStateCopyWithImpl<$Res>
     implements _$$_AdsInterstitialStateDataCopyWith<$Res> {
-  __$$_AdsInterstitialStateDataCopyWithImpl(_$_AdsInterstitialStateData _value,
-      $Res Function(_$_AdsInterstitialStateData) _then)
+  __$$_AdsInterstitialStateDataCopyWithImpl(
+      _$_AdsInterstitialStateData _value, $Res Function(_$_AdsInterstitialStateData) _then)
       : super(_value, (v) => _then(v as _$_AdsInterstitialStateData));
 
   @override
-  _$_AdsInterstitialStateData get _value =>
-      super._value as _$_AdsInterstitialStateData;
+  _$_AdsInterstitialStateData get _value => super._value as _$_AdsInterstitialStateData;
 
   @override
   $Res call({
@@ -120,10 +112,7 @@ class __$$_AdsInterstitialStateDataCopyWithImpl<$Res>
 /// @nodoc
 
 class _$_AdsInterstitialStateData implements _AdsInterstitialStateData {
-  _$_AdsInterstitialStateData(
-      {required this.ad,
-      required this.adState,
-      required this.loadRetryCount});
+  _$_AdsInterstitialStateData({required this.ad, required this.adState, required this.loadRetryCount});
 
   @override
   final DSInterstitialAd? ad;
@@ -144,22 +133,17 @@ class _$_AdsInterstitialStateData implements _AdsInterstitialStateData {
             other is _$_AdsInterstitialStateData &&
             const DeepCollectionEquality().equals(other.ad, ad) &&
             const DeepCollectionEquality().equals(other.adState, adState) &&
-            const DeepCollectionEquality()
-                .equals(other.loadRetryCount, loadRetryCount));
+            const DeepCollectionEquality().equals(other.loadRetryCount, loadRetryCount));
   }
 
   @override
-  int get hashCode => Object.hash(
-      runtimeType,
-      const DeepCollectionEquality().hash(ad),
-      const DeepCollectionEquality().hash(adState),
-      const DeepCollectionEquality().hash(loadRetryCount));
+  int get hashCode => Object.hash(runtimeType, const DeepCollectionEquality().hash(ad),
+      const DeepCollectionEquality().hash(adState), const DeepCollectionEquality().hash(loadRetryCount));
 
   @JsonKey(ignore: true)
   @override
-  _$$_AdsInterstitialStateDataCopyWith<_$_AdsInterstitialStateData>
-      get copyWith => __$$_AdsInterstitialStateDataCopyWithImpl<
-          _$_AdsInterstitialStateData>(this, _$identity);
+  _$$_AdsInterstitialStateDataCopyWith<_$_AdsInterstitialStateData> get copyWith =>
+      __$$_AdsInterstitialStateDataCopyWithImpl<_$_AdsInterstitialStateData>(this, _$identity);
 }
 
 abstract class _AdsInterstitialStateData implements DSAdsInterstitialState {
@@ -170,12 +154,14 @@ abstract class _AdsInterstitialStateData implements DSAdsInterstitialState {
 
   @override
   DSInterstitialAd? get ad => throw _privateConstructorUsedError;
+
   @override
   DSAdState get adState => throw _privateConstructorUsedError;
+
   @override
   int get loadRetryCount => throw _privateConstructorUsedError;
+
   @override
   @JsonKey(ignore: true)
-  _$$_AdsInterstitialStateDataCopyWith<_$_AdsInterstitialStateData>
-      get copyWith => throw _privateConstructorUsedError;
+  _$$_AdsInterstitialStateDataCopyWith<_$_AdsInterstitialStateData> get copyWith => throw _privateConstructorUsedError;
 }

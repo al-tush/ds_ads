@@ -12,11 +12,11 @@ import 'google_ads/export.dart';
 
 part 'ds_ads_native_loader_types.dart';
 
-
 mixin DSAdsNativeLoaderMixin<T extends StatefulWidget> on State<T> {
   static const _tag = 'ads_native';
 
   var _adKey = GlobalKey();
+
   bool get isShowed => _showedAds[this] != null;
 
   DSAdLocation get nativeAdLocation;
@@ -43,7 +43,8 @@ mixin DSAdsNativeLoaderMixin<T extends StatefulWidget> on State<T> {
   }
 
   double get nativeAdHeight {
-    var height = DSAdsManager.instance.nativeAdCustomBanners.firstWhereOrNull((e) => e.location == nativeAdLocation)?.height;
+    var height =
+        DSAdsManager.instance.nativeAdCustomBanners.firstWhereOrNull((e) => e.location == nativeAdLocation)?.height;
     if (height != null) return height;
     // the same as in res/layout/native_ad_X_light.xml and res/layout/native_ad_X_dark.xml
     switch (DSAdsManager.instance.nativeAdBannerDefStyle) {
@@ -108,19 +109,18 @@ mixin DSAdsNativeLoaderMixin<T extends StatefulWidget> on State<T> {
     });
   }
 
-  static void _report(String eventName, {
+  static void _report(
+    String eventName, {
     required final DSAdLocation location,
     required DSAdMediation? mediation,
     String? adapter,
     Map<String, Object>? attributes,
   }) {
     DSAdsManager.instance.onReportEvent?.call(eventName, {
-      if (mediation != null)
-        'adUnitId': _adUnitId(mediation),
+      if (mediation != null) 'adUnitId': _adUnitId(mediation),
       'location': location.val,
       'mediation': '$mediation',
-      if (adapter != null)
-        'adapter': adapter,
+      if (adapter != null) 'adapter': adapter,
       ...?attributes,
     });
   }
@@ -212,15 +212,18 @@ mixin DSAdsNativeLoaderMixin<T extends StatefulWidget> on State<T> {
 
     Future<void> onAdImpression(DSNativeAd ad) async {
       try {
-        _report('$_tag: impression', location: _getLocationByAd(ad), mediation: ad.mediation, adapter: ad.mediationAdapterClassName);
+        _report('$_tag: impression',
+            location: _getLocationByAd(ad), mediation: ad.mediation, adapter: ad.mediationAdapterClassName);
       } catch (e, stack) {
         Fimber.e('$e', stacktrace: stack);
       }
     }
+
     Future<void> onAdLoaded(DSNativeAd ad) async {
       try {
         _loadingAds[style] = ad;
-        _report('$_tag: loaded',
+        _report(
+          '$_tag: loaded',
           location: location,
           mediation: ad.mediation,
           adapter: ad.mediationAdapterClassName,
@@ -231,10 +234,12 @@ mixin DSAdsNativeLoaderMixin<T extends StatefulWidget> on State<T> {
         Fimber.e('$e', stacktrace: stack);
       }
     }
+
     Future<void> onAdFailedToLoad(DSNativeAd ad, int code, String message) async {
       try {
         _loadingAds.remove(style);
-        _report('$_tag: failed to load',
+        _report(
+          '$_tag: failed to load',
           location: location,
           mediation: ad.mediation,
           adapter: ad.mediationAdapterClassName,
@@ -255,38 +260,47 @@ mixin DSAdsNativeLoaderMixin<T extends StatefulWidget> on State<T> {
         Fimber.e('$e', stacktrace: stack);
       }
     }
+
     Future<void> onPaidEvent(DSNativeAd ad, double valueMicros, DSPrecisionType precision, String currencyCode) async {
       try {
-        DSAdsManager.instance.onPaidEvent(ad, mediation, _getLocationByAd(ad), valueMicros, precision, currencyCode,
-            DSAdSource.native, null, {});
+        DSAdsManager.instance.onPaidEvent(
+            ad, mediation, _getLocationByAd(ad), valueMicros, precision, currencyCode, DSAdSource.native, null, {});
       } catch (e, stack) {
         Fimber.e('$e', stacktrace: stack);
       }
     }
+
     Future<void> onAdOpened(DSNativeAd ad) async {
       try {
-        _report('$_tag: ad opened', location: _getLocationByAd(ad), mediation: ad.mediation, adapter: ad.mediationAdapterClassName);
+        _report('$_tag: ad opened',
+            location: _getLocationByAd(ad), mediation: ad.mediation, adapter: ad.mediationAdapterClassName);
       } catch (e, stack) {
         Fimber.e('$e', stacktrace: stack);
       }
     }
+
     Future<void> onAdClicked(DSNativeAd ad) async {
       try {
-        _report('$_tag: ad clicked', location: _getLocationByAd(ad), mediation: ad.mediation, adapter: ad.mediationAdapterClassName);
+        _report('$_tag: ad clicked',
+            location: _getLocationByAd(ad), mediation: ad.mediation, adapter: ad.mediationAdapterClassName);
       } catch (e, stack) {
         Fimber.e('$e', stacktrace: stack);
       }
     }
+
     Future<void> onAdClosed(DSNativeAd ad) async {
       try {
-        _report('$_tag: ad closed', location: _getLocationByAd(ad), mediation: ad.mediation, adapter: ad.mediationAdapterClassName);
+        _report('$_tag: ad closed',
+            location: _getLocationByAd(ad), mediation: ad.mediation, adapter: ad.mediationAdapterClassName);
       } catch (e, stack) {
         Fimber.e('$e', stacktrace: stack);
       }
     }
+
     Future<void> onAdExpired(DSNativeAd ad) async {
       try {
-        _report('$_tag: ad expired', location: _getLocationByAd(ad), mediation: ad.mediation, adapter: ad.mediationAdapterClassName);
+        _report('$_tag: ad expired',
+            location: _getLocationByAd(ad), mediation: ad.mediation, adapter: ad.mediationAdapterClassName);
       } catch (e, stack) {
         Fimber.e('$e', stacktrace: stack);
       }
@@ -337,7 +351,7 @@ mixin DSAdsNativeLoaderMixin<T extends StatefulWidget> on State<T> {
       // to prevent empty transparent rect instead banner
       await Future.delayed(const Duration(milliseconds: 500));
       setState(() {});
-    } ());
+    }());
     return true;
   }
 
@@ -362,12 +376,13 @@ mixin DSAdsNativeLoaderMixin<T extends StatefulWidget> on State<T> {
           break;
         }
       }
-    } ());
+    }());
     _isDisabled(nativeAdLocation);
     _assignAdToMe();
     unawaited(fetchAd(location: nativeAdLocation));
   }
 
+  @protected
   Widget nativeAdWidget({
     final NativeAdBuilder? builder,
   }) {
@@ -399,5 +414,4 @@ mixin DSAdsNativeLoaderMixin<T extends StatefulWidget> on State<T> {
       return child;
     }
   }
-
 }

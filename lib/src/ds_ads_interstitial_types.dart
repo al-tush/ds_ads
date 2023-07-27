@@ -1,9 +1,6 @@
 part of 'ds_ads_interstitial.dart';
 
-enum DSAdsInterstitialType {
-  def,
-  splash
-}
+enum DSAdsInterstitialType { def, splash }
 
 abstract class DSAdsInterstitialEvent extends DSAdsEvent {
   const DSAdsInterstitialEvent();
@@ -42,7 +39,6 @@ class DSAdsInterstitialShowedEvent extends DSAdsInterstitialEvent {
     required this.ad,
   });
 }
-
 
 /// Error when displaying advertisements
 /// This event allows the next advertisement to be loaded immediately after the event occurs
