@@ -189,6 +189,10 @@ class DSAdsManager {
         googleId = interstitialGoogleUnitId;
         appLovinId = interstitialAppLovinUnitId;
         break;
+      case DSAdSource.banner:
+        // ToDo: need implement mediations check for banner different approach
+        googleId = '-';
+        appLovinId = '-';
       case DSAdSource.native:
         googleId = nativeGoogleUnitId;
         appLovinId = nativeAppLovinUnitId;
