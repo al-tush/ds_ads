@@ -81,7 +81,7 @@ class _DSAdsBannerState extends State<DSAdsBanner> {
     super.initState();
     if (widget.appLovinUnitId.isNotEmpty) {
       // https://dash.applovin.com/documentation/mediation/flutter/ad-formats/banners#adaptive-banners
-      AppLovinMAX.setBannerExtraParameter(widget.appLovinUnitId, "adaptive_banner", "false");
+      AppLovinMAX.setBannerExtraParameter(widget.appLovinUnitId, 'adaptive_banner', 'false');
     }
   }
 

@@ -15,3 +15,15 @@ class DSAdsNativeLoadedEvent extends DSAdsNativeEvent {
 class DSAdsNativeLoadFailed extends DSAdsNativeEvent {
   const DSAdsNativeLoadFailed._();
 }
+
+class DSAdsNativeClickEvent extends DSAdsNativeEvent {
+  const DSAdsNativeClickEvent._();
+}
+
+class DSAdsNativeOpenedEvent extends DSAdsNativeEvent {
+  const DSAdsNativeOpenedEvent._();
+}
+
+class DSAdsNativeClosedEvent extends DSAdsNativeEvent {
+  const DSAdsNativeClosedEvent._();
+}

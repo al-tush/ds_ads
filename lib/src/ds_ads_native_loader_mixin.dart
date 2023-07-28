@@ -272,6 +272,7 @@ mixin DSAdsNativeLoaderMixin<T extends StatefulWidget> on State<T> {
 
     Future<void> onAdOpened(DSNativeAd ad) async {
       try {
+        DSAdsManager.instance.emitEvent(const DSAdsNativeOpenedEvent._());
         _report('$_tag: ad opened',
             location: _getLocationByAd(ad), mediation: ad.mediation, adapter: ad.mediationAdapterClassName);
       } catch (e, stack) {
@@ -281,6 +282,7 @@ mixin DSAdsNativeLoaderMixin<T extends StatefulWidget> on State<T> {
 
     Future<void> onAdClicked(DSNativeAd ad) async {
       try {
+        DSAdsManager.instance.emitEvent(const DSAdsNativeClickEvent._());
         _report('$_tag: ad clicked',
             location: _getLocationByAd(ad), mediation: ad.mediation, adapter: ad.mediationAdapterClassName);
       } catch (e, stack) {
@@ -290,6 +292,7 @@ mixin DSAdsNativeLoaderMixin<T extends StatefulWidget> on State<T> {
 
     Future<void> onAdClosed(DSNativeAd ad) async {
       try {
+        DSAdsManager.instance.emitEvent(const DSAdsNativeClosedEvent._());
         _report('$_tag: ad closed',
             location: _getLocationByAd(ad), mediation: ad.mediation, adapter: ad.mediationAdapterClassName);
       } catch (e, stack) {
