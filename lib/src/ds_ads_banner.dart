@@ -73,6 +73,7 @@ class _DSAdsBannerState extends State<DSAdsBanner> {
     return false;
   }
 
+  var _isStartLoading = false;
   var _isLoaded = false;
   BannerAd? _googleAd;
 
@@ -89,9 +90,10 @@ class _DSAdsBannerState extends State<DSAdsBanner> {
   void didChangeDependencies() {
     super.didChangeDependencies();
 
+    _isStartLoading = false;
+    _isLoaded = false;
     final mediation = DSAdsManager.instance.currentMediation(DSAdSource.banner);
     if (mediation == DSAdMediation.google) {
-      _isLoaded = false;
       unawaited(_loadGoogleAd());
     }
   }
@@ -243,6 +245,8 @@ class _DSAdsBannerState extends State<DSAdsBanner> {
         },
       ),
     );
+    _report('$_tag: start loading', mediation: DSAdMediation.google);
+    _isStartLoading = true;
     await _googleAd!.load();
   }
 
@@ -267,11 +271,16 @@ class _DSAdsBannerState extends State<DSAdsBanner> {
         );
         break;
       case DSAdMediation.appLovin:
+        if (!_isStartLoading) {
+          _isStartLoading = true;
+          _report('$_tag: start loading', mediation: DSAdMediation.appLovin);
+        }
         child = MaxAdView(
           adUnitId: _adUnitId(DSAdMediation.appLovin),
           adFormat: AdFormat.banner,
           listener: AdViewAdListener(
             onAdLoadedCallback: (ad) {
+              _isLoaded = true;
               _onAdLoaded(mediation, ad.networkName);
             },
             onAdLoadFailedCallback: (adUnitId, error) {
