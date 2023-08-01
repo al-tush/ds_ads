@@ -351,18 +351,26 @@ class DSAdsManager {
 
   bool isMediationInitialized(DSAdMediation mediation) => _mediationInitialized.contains(mediation);
 
+  Future<void>? _appLovinInit;
+
   Future<void> initAppLovine() async {
-    appLovinSDKConfiguration.clear();
-    if (appLovinSDKKey.isEmpty) {
-      Fimber.e('AppLovin not initialized. SDKKey is empty', stacktrace: StackTrace.current);
-      return;
-    }
-    final config = await AppLovinMAX.initialize(appLovinSDKKey);
-    if (config != null) {
-      appLovinSDKConfiguration.addAll(config);
-    }
-    _mediationInitialized.add(DSAdMediation.appLovin);
-    onReportEvent?.call('ads_manager: AppLovin initialized', {});
+    if (isMediationInitialized(DSAdMediation.appLovin)) return;
+
+    _appLovinInit ??= () async {
+        appLovinSDKConfiguration.clear();
+        if (appLovinSDKKey.isEmpty) {
+          Fimber.e('AppLovin not initialized. SDKKey is empty', stacktrace: StackTrace.current);
+          return;
+        }
+        final config = await AppLovinMAX.initialize(appLovinSDKKey);
+        if (config != null) {
+          appLovinSDKConfiguration.addAll(config);
+        }
+        _mediationInitialized.add(DSAdMediation.appLovin);
+        onReportEvent?.call('ads_manager: AppLovin initialized', {});
+      } ();
+
+    await _appLovinInit;
   }
 
   @internal
