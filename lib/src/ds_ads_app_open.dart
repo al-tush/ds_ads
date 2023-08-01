@@ -14,6 +14,7 @@ import 'ds_ads_types.dart';
 
 part 'ds_ads_app_open_types.dart';
 
+/// Allows to pre fetch and show Google and AppLovin MAX app open ads
 class DSAdsAppOpen {
   static var _showLockedUntil = DateTime(0);
   static var _showLockedUntilAppResumed = false;

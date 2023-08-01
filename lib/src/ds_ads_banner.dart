@@ -6,6 +6,7 @@ import 'package:fimber/fimber.dart';
 import 'package:flutter/material.dart';
 import 'package:google_mobile_ads/google_mobile_ads.dart';
 
+/// Widget to show Google and AppLovin MAX banner ads
 class DSAdsBanner extends StatefulWidget {
   final NativeAdBuilder? builder;
   final DSAdLocation location;

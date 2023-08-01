@@ -12,6 +12,7 @@ import 'ds_ads_types.dart';
 
 part 'ds_ads_rewarded_types.dart';
 
+/// Allows to pre fetch and show Google and AppLovin MAX rewarded ads
 class DSAdsRewarded {
   static var _lastShowTime = DateTime(0);
   static const _tag = 'ads_rewarded';

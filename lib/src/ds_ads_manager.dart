@@ -13,6 +13,10 @@ import 'package:freezed_annotation/freezed_annotation.dart';
 import 'ds_ads_native2_loader_mixin.dart';
 import 'ds_ads_types.dart';
 
+/// [DSAdsManager} is a root point to control ads
+/// Call [DSAdsManager.preInit] before create application
+/// Call constructor for init ds_ads library
+/// Read README.md file for more information
 class DSAdsManager {
   static DSAdsManager? _instance;
 

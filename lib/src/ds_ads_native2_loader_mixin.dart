@@ -12,7 +12,8 @@ import 'google_ads/export.dart';
 
 part 'ds_ads_native2_loader_types.dart';
 
-// Just for experimental purposes. Needs refactoring
+/// Widget mixin to show Google and AppLovin MAX native ads with different ad id
+/// Just for experimental purposes. Needs refactoring
 mixin DSAdsNative2LoaderMixin<T extends StatefulWidget> on State<T> {
   static const _tag = 'ads_native';
 
