@@ -5,6 +5,9 @@ import 'package:fimber/fimber.dart';
 class DSAppLovinInterstitialAd extends DSInterstitialAd {
   MaxAd? _ad;
 
+  @override
+  DSAdMediation get mediation => DSAdMediation.appLovin;
+
   DSAppLovinInterstitialAd({
     required super.adUnitId,
   });
@@ -89,6 +92,9 @@ class DSAppLovinInterstitialAd extends DSInterstitialAd {
 class DSAppLovinRewardedAd extends DSRewardedAd {
   MaxAd? _ad;
 
+  @override
+  DSAdMediation get mediation => DSAdMediation.appLovin;
+
   DSAppLovinRewardedAd({
     required super.adUnitId,
   });
@@ -171,6 +177,9 @@ class DSAppLovinRewardedAd extends DSRewardedAd {
 
 class DSAppLovinAppOpenAd extends DSAppOpenAd {
   MaxAd? _ad;
+
+  @override
+  DSAdMediation get mediation => DSAdMediation.appLovin;
 
   DSAppLovinAppOpenAd({
     required super.adUnitId,

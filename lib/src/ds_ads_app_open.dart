@@ -11,6 +11,7 @@ import 'package:google_mobile_ads/google_mobile_ads.dart';
 
 import 'applovin_ads/applovin_ads.dart';
 import 'ds_ads_types.dart';
+import 'ds_ads_types_internal.dart';
 
 part 'ds_ads_app_open_types.dart';
 
@@ -21,6 +22,10 @@ class DSAdsAppOpen {
   static const _tag = 'ads_app_open';
 
   static var _showNum = 0;
+
+  var _startLoadTime = DateTime(0);
+  var _totalLoadDuration = Duration.zero;
+  final _loadConditions = <DSAdsLoadCondition>{};
 
   /// Maximum duration allowed between loading and showing the ad.
   final maxCacheDuration = const Duration(hours: 4);
@@ -53,8 +58,8 @@ class DSAdsAppOpen {
   void cancelCurrentAd({
     required final DSAdLocation location,
   }) {
-    _report('$_tag: cancel current ad (adState: $_adState)', location: location, mediation: _mediation);
-    if (_adState == DSAdState.showing) return;
+    _report('$_tag: cancel current ad (adState: $adState)', location: location, mediation: _mediation);
+    if (adState == DSAdState.showing) return;
     _ad?.dispose();
     _ad = null;
     _mediation = null;
@@ -139,17 +144,17 @@ class DSAdsAppOpen {
       return;
     }
 
-    if (DateTime.now().difference(_lastLoadTime) > maxCacheDuration) {
+    if (DateTime.timestamp().difference(_lastLoadTime) > maxCacheDuration) {
       unawaited(_ad?.dispose());
       _ad = null;
       _adState = DSAdState.none;
     }
 
-    if ([DSAdState.loading, DSAdState.loaded].contains(_adState)) {
+    if ([DSAdState.loading, DSAdState.loaded].contains(adState)) {
       then?.call();
       return;
     }
-    if ([DSAdState.preShowing, DSAdState.showing].contains(_adState)) {
+    if ([DSAdState.preShowing, DSAdState.showing].contains(adState)) {
       Fimber.w(
         '$_tag: fetching is prohibited when ad is showing',
         stacktrace: LimitedStackTrace(stackTrace: StackTrace.current),
@@ -166,9 +171,14 @@ class DSAdsAppOpen {
     }
 
     _report('$_tag: start loading', location: location, mediation: mediation, attributes: customAttributes);
+    if (_startLoadTime.year == 0) {
+      _startLoadTime = DateTime.timestamp();
+    }
 
     Future<void> onAdLoaded(DSAppOpenAd ad) async {
       try {
+        _totalLoadDuration = DateTime.timestamp().difference(_startLoadTime);
+        _startLoadTime = DateTime(0);
         _report(
           '$_tag: loaded',
           location: location,
@@ -182,7 +192,7 @@ class DSAdsAppOpen {
         await _ad?.dispose();
         _ad = ad;
         _adState = DSAdState.loaded;
-        _lastLoadTime = DateTime.now();
+        _lastLoadTime = DateTime.timestamp();
         _loadRetryCount = 0;
 
         then?.call();
@@ -209,12 +219,19 @@ class DSAdsAppOpen {
         });
         final oldMediation = DSAdsManager.instance.currentMediation(DSAdSource.appOpen);
         await DSAdsManager.instance.onLoadAdError(errCode, errDescription, mediation, DSAdSource.appOpen);
-        if (DSAdsManager.instance.currentMediation(DSAdSource.appOpen) != oldMediation) {
+        _loadConditions.add(DSAdsLoadCondition.error);
+        final newMediation = DSAdsManager.instance.currentMediation(DSAdSource.appOpen);
+        if (newMediation != oldMediation) {
           _loadRetryCount = 0;
+          if (newMediation == null) {
+            _loadConditions.add(DSAdsLoadCondition.mediationTimeout);
+          } else {
+            _loadConditions.add(DSAdsLoadCondition.mediationChanged);
+          }
         }
         if (_loadRetryCount < DSAdsManager.instance.getRetryMaxCount(DSAdSource.appOpen)) {
           await Future.delayed(loadRetryDelay);
-          if ({DSAdState.none, DSAdState.error}.contains(_adState) && !_isDisposed) {
+          if ({DSAdState.none, DSAdState.error}.contains(adState) && !_isDisposed) {
             _report('$_tag: retry loading', location: location, mediation: mediation, attributes: customAttributes);
             fetchAd(location: location, then: then, customAttributes: customAttributes);
           }
@@ -226,6 +243,7 @@ class DSAdsAppOpen {
             errCode: errCode,
             errText: errDescription,
           ));
+          _startLoadTime = DateTime(0);
         }
       } catch (e, stack) {
         then?.call();
@@ -282,7 +300,9 @@ class DSAdsAppOpen {
       return;
     }
 
-    if (_showLockedUntilAppResumed || DateTime.now().compareTo(_showLockedUntil) < 0) {
+    final startTime = DateTime.timestamp();
+
+    if (_showLockedUntilAppResumed || DateTime.timestamp().compareTo(_showLockedUntil) < 0) {
       then?.call();
       _report('$_tag: showing locked', location: location, mediation: _mediation, attributes: customAttributes);
       return;
@@ -295,15 +315,15 @@ class DSAdsAppOpen {
       return;
     }
 
-    if ([DSAdState.preShowing, DSAdState.showing].contains(_adState)) {
-      Fimber.e('showAd recall (adState: $_adState)', stacktrace: StackTrace.current);
+    if ([DSAdState.preShowing, DSAdState.showing].contains(adState)) {
+      Fimber.e('showAd recall (adState: $adState)', stacktrace: StackTrace.current);
       _report('$_tag: showing canceled by error',
           location: location, mediation: _mediation, attributes: customAttributes);
       then?.call();
       return;
     }
 
-    if ([DSAdState.none, DSAdState.loading, DSAdState.error].contains(_adState)) {
+    if ([DSAdState.none, DSAdState.loading, DSAdState.error].contains(adState)) {
       _report(
         '$_tag: ad was not ready',
         location: location,
@@ -314,7 +334,7 @@ class DSAdsAppOpen {
       return;
     }
 
-    if (DateTime.now().difference(_lastLoadTime) > maxCacheDuration) {
+    if (DateTime.timestamp().difference(_lastLoadTime) > maxCacheDuration) {
       _report(
         '$_tag: loaded ad is too old',
         location: location,
@@ -345,14 +365,14 @@ class DSAdsAppOpen {
     ad.onAdImpression = (ad) {
       try {
         _report('$_tag: impression',
-            location: location, mediation: _mediation, adapter: ad.mediationAdapterClassName, attributes: attrs);
+            location: location, mediation: ad.mediation, adapter: ad.mediationAdapterClassName, attributes: attrs);
       } catch (e, stack) {
         Fimber.e('$e', stacktrace: stack);
       }
     };
     ad.onPaidEvent = (ad, valueMicros, precision, currencyCode, appLovinDspName) {
       try {
-        DSAdsManager.instance.onPaidEvent(ad, _mediation!, location, valueMicros, precision, currencyCode,
+        DSAdsManager.instance.onPaidEvent(ad, ad.mediation, location, valueMicros, precision, currencyCode,
             DSAdSource.appOpen, appLovinDspName, attrs);
       } catch (e, stack) {
         Fimber.e('$e', stacktrace: stack);
@@ -360,8 +380,15 @@ class DSAdsAppOpen {
     };
     ad.onAdShown = (ad) {
       try {
+        final eventAttrs = attrs.putShowAdInfo(
+          startShowRequest: startTime,
+          totalLoadDuration: _totalLoadDuration,
+          loadConditions: _loadConditions,
+        );
+        _totalLoadDuration = Duration.zero;
+
         _report('$_tag: showed full screen content',
-            location: location, mediation: _mediation, adapter: ad.mediationAdapterClassName, attributes: attrs);
+            location: location, mediation: ad.mediation, adapter: ad.mediationAdapterClassName, attributes: eventAttrs);
         if (_isDisposed) {
           Fimber.e('showing disposed ad', stacktrace: StackTrace.current);
         }
@@ -376,7 +403,7 @@ class DSAdsAppOpen {
     ad.onAdDismissed = (ad) {
       try {
         _report('$_tag: full screen content dismissed',
-            location: location, mediation: _mediation, adapter: ad.mediationAdapterClassName, attributes: attrs);
+            location: location, mediation: ad.mediation, adapter: ad.mediationAdapterClassName, attributes: attrs);
         ad.dispose();
         _ad = null;
         _mediation = null;
@@ -410,7 +437,7 @@ class DSAdsAppOpen {
     ad.onAdClicked = (ad) {
       try {
         _report('$_tag: ad clicked',
-            location: location, mediation: _mediation, adapter: ad.mediationAdapterClassName, attributes: attrs);
+            location: location, mediation: ad.mediation, adapter: ad.mediationAdapterClassName, attributes: attrs);
       } catch (e, stack) {
         Fimber.e('$e', stacktrace: stack);
       }
@@ -451,6 +478,6 @@ class DSAdsAppOpen {
   }
 
   static void lockShowFor(Duration duration) {
-    _showLockedUntil = DateTime.now().add(duration);
+    _showLockedUntil = DateTime.timestamp().add(duration);
   }
 }

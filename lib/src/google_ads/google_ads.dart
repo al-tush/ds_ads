@@ -8,6 +8,9 @@ import '../ds_ads_types.dart';
 class DSGoogleInterstitialAd extends DSInterstitialAd {
   InterstitialAd? _ad;
 
+  @override
+  DSAdMediation get mediation => DSAdMediation.google;
+
   DSGoogleInterstitialAd({
     required super.adUnitId,
   });
@@ -87,6 +90,9 @@ class DSGoogleInterstitialAd extends DSInterstitialAd {
 
 class DSGoogleRewardedAd extends DSRewardedAd {
   RewardedAd? _ad;
+
+  @override
+  DSAdMediation get mediation => DSAdMediation.google;
 
   DSGoogleRewardedAd({
     required super.adUnitId,
@@ -260,6 +266,9 @@ class DSGoogleAdWidget extends StatelessWidget {
 
 class DSGoogleAppOpenAd extends DSAppOpenAd {
   AppOpenAd? _ad;
+
+  @override
+  DSAdMediation get mediation => DSAdMediation.google;
 
   DSGoogleAppOpenAd({
     required super.adUnitId,

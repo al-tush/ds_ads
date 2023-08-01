@@ -151,6 +151,7 @@ class _DSAdsBannerState extends State<DSAdsBanner> {
       final ad = _DSBannerAdStub(
         adUnitId: _adUnitId(mediation),
         adapter: adapter,
+        mediation: mediation,
       );
       DSAdsManager.instance.onPaidEvent(
           ad, mediation, widget.location, valueMicros, precision, currencyCode, DSAdSource.banner, appLovinDspName, {});
@@ -322,9 +323,14 @@ class _DSAdsBannerState extends State<DSAdsBanner> {
 class _DSBannerAdStub extends DSAd {
   final String? adapter;
 
+  @override
+  final DSAdMediation mediation;
+
+
   _DSBannerAdStub({
     required super.adUnitId,
     required this.adapter,
+    required this.mediation,
   });
 
   @override

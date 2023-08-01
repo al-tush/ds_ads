@@ -51,6 +51,15 @@ class DSAdsManager {
 
   static DSAdsAppOpen get appOpen => instance._adsAppOpen;
 
+  /// Is any full-screen ad shows
+  static bool get isAdShowing =>
+      isInitialized &&
+          ({DSAdState.preShowing, DSAdState.showing}.contains(interstitial.adState) ||
+              {DSAdState.preShowing, DSAdState.showing}.contains(splashInterstitial.adState) ||
+              {DSAdState.preShowing, DSAdState.showing}.contains(rewarded.adState) ||
+              {DSAdState.preShowing, DSAdState.showing}.contains(appOpen.adState));
+
+  /// Stop loading splash interstitial and dispose [DSAdsManager.splashInterstitial] object
   void disposeSplashInterstitial() {
     _splashInterstitial?.dispose();
     _splashInterstitial = null;
@@ -242,11 +251,11 @@ class DSAdsManager {
 
     final DSAdMediation next;
     if (_currentMediation[source] == null) {
-      if (_lockMediationTill.isAfter(DateTime.now())) return;
+      if (_lockMediationTill.isAfter(DateTime.timestamp())) return;
       next = mediationPriorities.first;
     } else {
       if (_currentMediation[source] == mediationPriorities.last) {
-        _lockMediationTill = DateTime.now().add(_nextMediationWait);
+        _lockMediationTill = DateTime.timestamp().add(_nextMediationWait);
         _currentMediation[source] = null;
         onReportEvent?.call('ads_manager: no next mediation, waiting ${_nextMediationWait.inSeconds}s', {});
         Timer(_nextMediationWait, () async {

@@ -11,8 +11,9 @@ typedef DSPrecisionType = PrecisionType;
 
 abstract class DSAd {
   final String adUnitId;
+  DSAdMediation get mediation;
 
-  var _startTime = DateTime.now();
+  var created = DateTime.timestamp();
   var _loadTime = const Duration(seconds: -1);
   var _loadFailedTime = const Duration(seconds: -1);
 
@@ -24,17 +25,17 @@ abstract class DSAd {
 
   @internal
   void startLoading() {
-    _startTime = DateTime.now();
+    created = DateTime.timestamp();
   }
 
   @internal
   void setLoaded() {
-    _loadTime = DateTime.now().difference(_startTime);
+    _loadTime = DateTime.timestamp().difference(created);
   }
 
   @internal
   void setLoadFailed() {
-    _loadFailedTime = DateTime.now().difference(_startTime);
+    _loadFailedTime = DateTime.timestamp().difference(created);
   }
 
   Map<String, Object> getReportAttributes() {
@@ -77,7 +78,6 @@ abstract class DSInterstitialAd extends DSAd {
 
 abstract class DSNativeAd extends DSAd {
   final String factoryId;
-  final created = DateTime.now();
 
   final void Function(DSNativeAd ad)? onAdLoaded;
   final void Function(DSNativeAd ad, int errCode, String errDescription)? onAdFailedToLoad;
@@ -94,8 +94,6 @@ abstract class DSNativeAd extends DSAd {
   });
 
   bool get isLoaded;
-
-  DSAdMediation get mediation;
 
   Future<void> load();
 

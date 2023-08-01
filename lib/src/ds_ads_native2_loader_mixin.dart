@@ -187,12 +187,12 @@ mixin DSAdsNative2LoaderMixin<T extends StatefulWidget> on State<T> {
     final style = _getStyleByLocation(location);
     if (_loadingAds.containsKey(style)) {
       if (_loadingAds[style]?.isLoaded == true) {
-        if (_loadingAds[style]!.created.add(_loadedTimeout).isAfter(DateTime.now())) {
+        if (_loadingAds[style]!.created.add(_loadedTimeout).isAfter(DateTime.timestamp())) {
           Fimber.i('$_tag: banner already loaded (location: $location)');
           return;
         }
       } else {
-        if (_loadingAds[style]?.created.add(_loadingTimeout).isAfter(DateTime.now()) == true) {
+        if (_loadingAds[style]?.created.add(_loadingTimeout).isAfter(DateTime.timestamp()) == true) {
           Fimber.i('$_tag: banner is already loading (location: $location)');
           return;
         }
