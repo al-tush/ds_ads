@@ -495,6 +495,7 @@ class DSAdsInterstitial {
     };
     ad.onAdClicked = (ad) {
       try {
+        DSAdsAppOpen.lockShowFor(const Duration(hours: 1));
         _report('$_tag: ad clicked',
             location: location, mediation: ad.mediation, adapter: ad.mediationAdapterClassName, attributes: attrs);
       } catch (e, stack) {
