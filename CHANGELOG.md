@@ -1,3 +1,12 @@
+## 0.4.0
+- add banners support
+- аdd experimental native2 mixin
+- update dependencies: Flutter to 3.10, etc
+- fix tryNextMediation availability checks
+- remove bloc state management
+- fixed app open showing after click on interstitial (rare case)
+- optimize AppLovin initialization
+
 ## 0.3.2
 - fix AppLovin native ads for Yandex adapter (banner and size for video)
 - fix app open showing after interstitial
