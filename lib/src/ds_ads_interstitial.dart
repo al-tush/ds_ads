@@ -27,22 +27,45 @@ class DSAdsInterstitial {
 
   DSAdState get adState => _adState;
 
-  String _adUnitId(DSAdMediation mediation) {
+
+  DSAdMediation? _getMediation() {
+    if (_adUnitIdGoogle().isNotEmpty && _adUnitIdAppLovin().isEmpty) {
+      return DSAdMediation.google;
+    }
+    if (_adUnitIdGoogle().isEmpty && _adUnitIdAppLovin().isNotEmpty) {
+      return DSAdMediation.appLovin;
+    }
+    return DSAdsManager.instance.currentMediation(DSAdSource.interstitial);
+  }
+
+  String _adUnitIdGoogle() {
     switch (type) {
       case DSAdsInterstitialType.def:
-        switch (mediation) {
-          case DSAdMediation.google:
-            return DSAdsManager.instance.interstitialGoogleUnitId;
-          case DSAdMediation.appLovin:
-            return DSAdsManager.instance.interstitialAppLovinUnitId;
-        }
+        return DSAdsManager.instance.interstitialGoogleUnitId;
       case DSAdsInterstitialType.splash:
-        switch (mediation) {
-          case DSAdMediation.google:
-            return DSAdsManager.instance.interstitialSplashGoogleUnitId;
-          case DSAdMediation.appLovin:
-            return DSAdsManager.instance.interstitialSplashAppLovinUnitId;
-        }
+        return DSAdsManager.instance.interstitialSplashGoogleUnitId;
+      case DSAdsInterstitialType.instance2:
+        return DSAdsManager.instance.interstitial2GoogleUnitId;
+    }
+  }
+
+  String _adUnitIdAppLovin() {
+    switch (type) {
+      case DSAdsInterstitialType.def:
+        return DSAdsManager.instance.interstitialAppLovinUnitId;
+      case DSAdsInterstitialType.splash:
+        return DSAdsManager.instance.interstitialSplashAppLovinUnitId;
+      case DSAdsInterstitialType.instance2:
+        return DSAdsManager.instance.interstitial2AppLovinUnitId;
+    }
+  }
+
+  String _adUnitId(DSAdMediation mediation) {
+    switch (mediation) {
+      case DSAdMediation.google:
+        return _adUnitIdGoogle();
+      case DSAdMediation.appLovin:
+        return _adUnitIdAppLovin();
     }
   }
 
@@ -87,7 +110,7 @@ class DSAdsInterstitial {
 
   static final _locationErrReports = <DSAdLocation>{};
 
-  static bool _isDisabled(DSAdLocation location) {
+  bool _isDisabled(DSAdLocation location) {
     if (!location.isInternal && DSAdsManager.instance.locations?.contains(location) == false) {
       final msg = '$_tag: location $location not in locations';
       assert(false, msg);
@@ -100,7 +123,7 @@ class DSAdsInterstitial {
       Fimber.i('$_tag: disabled (location: $location)');
       return true;
     }
-    if (DSAdsManager.instance.currentMediation(DSAdSource.interstitial) == null) {
+    if (_getMediation() == null) {
       Fimber.i('$_tag: disabled (no mediation)');
       return true;
     }
@@ -157,7 +180,7 @@ class DSAdsInterstitial {
       return;
     }
 
-    final mediation = DSAdsManager.instance.currentMediation(DSAdSource.interstitial);
+    final mediation = _getMediation();
     _mediation = mediation;
     if (mediation == null) {
       _report('$_tag: no mediation', location: location, mediation: mediation, attributes: customAttributes);
@@ -215,7 +238,7 @@ class DSAdsInterstitial {
         );
         await DSAdsManager.instance.onLoadAdError(errCode, errDescription, mediation, DSAdSource.interstitial);
         _loadConditions.add(DSAdsLoadCondition.error);
-        final newMediation = DSAdsManager.instance.currentMediation(DSAdSource.interstitial);
+        final newMediation = _getMediation();
         if (newMediation != _mediation) {
           _loadRetryCount = 0;
           if (newMediation == null) {

@@ -28,6 +28,7 @@ class DSAdsManager {
   final _nextMediationWait = const Duration(minutes: 1);
 
   final _adsInterstitial = DSAdsInterstitial(type: DSAdsInterstitialType.def);
+  final _adsInterstitial2 = DSAdsInterstitial(type: DSAdsInterstitialType.instance2);
   final _adsRewarded = DSAdsRewarded();
   final _adsAppOpen = DSAdsAppOpen();
   DSAdsInterstitial? _splashInterstitial;
@@ -38,6 +39,7 @@ class DSAdsManager {
   static bool get isInitialized => _instance != null;
 
   static DSAdsInterstitial get interstitial => instance._adsInterstitial;
+  static DSAdsInterstitial get interstitial2 => instance._adsInterstitial2;
 
   static DSAdsInterstitial get splashInterstitial {
     if (instance._splashInterstitial == null) {
@@ -86,6 +88,7 @@ class DSAdsManager {
   final Set<DSAdLocation>? locations;
   final String interstitialGoogleUnitId;
   final String interstitialSplashGoogleUnitId;
+  final String interstitial2GoogleUnitId;
   final String nativeGoogleUnitId;
   final String native2GoogleUnitId;
   final String appOpenGoogleUnitId;
@@ -93,6 +96,7 @@ class DSAdsManager {
   final String appLovinSDKKey;
   final String interstitialAppLovinUnitId;
   final String interstitialSplashAppLovinUnitId;
+  final String interstitial2AppLovinUnitId;
   final String nativeAppLovinUnitId;
   final String native2AppLovinUnitId;
   final String appOpenAppLovinUnitId;
@@ -145,6 +149,7 @@ class DSAdsManager {
     this.onReportEvent,
     this.interstitialGoogleUnitId = '',
     this.interstitialSplashGoogleUnitId = '',
+    this.interstitial2GoogleUnitId = '',
     this.rewardedGoogleUnitId = '',
     this.nativeGoogleUnitId = '',
     this.native2GoogleUnitId = '',
@@ -152,6 +157,7 @@ class DSAdsManager {
     this.appLovinSDKKey = '',
     this.interstitialAppLovinUnitId = '',
     this.interstitialSplashAppLovinUnitId = '',
+    this.interstitial2AppLovinUnitId = '',
     this.nativeAppLovinUnitId = '',
     this.native2AppLovinUnitId = '',
     this.appOpenAppLovinUnitId = '',
@@ -328,6 +334,7 @@ class DSAdsManager {
 
   @internal
   Future<void> onLoadAdError(int errCode, String errText, DSAdMediation mediation, DSAdSource source) async {
+    if (mediation != currentMediation(source)) return;
     if (mediationPrioritiesCallback(source).length <= 1) return;
     switch (mediation) {
       case DSAdMediation.google:
@@ -357,7 +364,8 @@ class DSAdsManager {
     if (isMediationInitialized(DSAdMediation.appLovin)) return;
 
     _appLovinInit ??= () async {
-        appLovinSDKConfiguration.clear();
+      onReportEvent?.call('ads_manager: AppLovin start initializing', {});
+      appLovinSDKConfiguration.clear();
         if (appLovinSDKKey.isEmpty) {
           Fimber.e('AppLovin not initialized. SDKKey is empty', stacktrace: StackTrace.current);
           return;
