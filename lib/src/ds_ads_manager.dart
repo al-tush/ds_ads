@@ -234,18 +234,18 @@ class DSAdsManager {
       if (googleId.isEmpty) {
         mediationPriorities.remove(DSAdMediation.google);
         assert(false,
-            '$source error: setup ...GoogleUnitId field or remove DSAdMediation.google from mediationPrioritiesCallback');
+            '$source error: setup ...GoogleUnitId field or remove DSAdMediation.google from mediationPrioritiesCallback ($source)');
       }
     }
     if (mediationPriorities.contains(DSAdMediation.appLovin)) {
       if (appLovinSDKKey.isEmpty) {
         mediationPriorities.remove(DSAdMediation.appLovin);
-        assert(false, 'setup appLovinSDKKey or remove DSAdMediation.appLovin from mediationPrioritiesCallack');
-      }
+        assert(false, 'setup appLovinSDKKey or remove DSAdMediation.appLovin from mediationPrioritiesCallack ($source)');
+      } 
       if (appLovinId.isEmpty) {
         mediationPriorities.remove(DSAdMediation.appLovin);
         assert(false,
-            '$source error: setup ...AppLovinUnitId or remove DSAdMediation.appLovin from mediationPrioritiesCallack');
+            '$source error: setup ...AppLovinUnitId or remove DSAdMediation.appLovin from mediationPrioritiesCallack ($source)');
       }
     }
     if (mediationPriorities.isEmpty) {
