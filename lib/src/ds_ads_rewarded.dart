@@ -72,7 +72,7 @@ class DSAdsRewarded {
 
   static final _locationErrReports = <DSAdLocation>{};
 
-  static bool _isDisabled(DSAdLocation location) {
+  bool _isDisabled(DSAdLocation location) {
     if (!location.isInternal && DSAdsManager.instance.locations?.contains(location) == false) {
       final msg = '$_tag: location $location not in locations';
       assert(false, msg);
@@ -86,7 +86,7 @@ class DSAdsRewarded {
       return true;
     }
     if (DSAdsManager.instance.currentMediation(DSAdSource.rewarded) == null) {
-      Fimber.i('$_tag: disabled (no mediation)');
+      _report('$_tag: disabled (no mediation)', location: location, mediation: null);
       return true;
     }
     return false;

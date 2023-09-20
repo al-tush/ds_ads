@@ -169,7 +169,7 @@ mixin DSAdsNative2LoaderMixin<T extends StatefulWidget> on State<T> {
       return true;
     }
     if (DSAdsManager.instance.currentMediation(DSAdSource.native2) == null) {
-      Fimber.i('$_tag: disabled (no mediation)');
+      _report('$_tag: disabled (no mediation)', location: location, mediation: null);
       return true;
     }
     return false;

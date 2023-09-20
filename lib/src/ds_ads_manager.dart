@@ -250,6 +250,13 @@ class DSAdsManager {
     }
     if (mediationPriorities.isEmpty) {
       if (!isInit) {
+        _lockMediationTill = DateTime.timestamp().add(_nextMediationWait);
+        _currentMediation[source] = null;
+        Timer(_nextMediationWait, () async {
+          if (currentMediation(source) == null) {
+            _tryNextMediation(source, false);
+          }
+        });
         Fimber.e('ads_manager: no mediation', stacktrace: StackTrace.current);
       }
       return;

@@ -29,13 +29,15 @@ class DSAdsInterstitial {
 
 
   DSAdMediation? _getMediation() {
+    final m = DSAdsManager.instance.currentMediation(DSAdSource.interstitial);
+    if (m == null) return null;
     if (_adUnitIdGoogle().isNotEmpty && _adUnitIdAppLovin().isEmpty) {
       return DSAdMediation.google;
     }
     if (_adUnitIdGoogle().isEmpty && _adUnitIdAppLovin().isNotEmpty) {
       return DSAdMediation.appLovin;
     }
-    return DSAdsManager.instance.currentMediation(DSAdSource.interstitial);
+    return m;
   }
 
   String _adUnitIdGoogle() {
@@ -124,7 +126,7 @@ class DSAdsInterstitial {
       return true;
     }
     if (_getMediation() == null) {
-      Fimber.i('$_tag: disabled (no mediation)');
+      _report('$_tag: disabled (no mediation)', location: location, mediation: null);
       return true;
     }
     return false;
@@ -364,11 +366,12 @@ class DSAdsInterstitial {
         DSAdsManager.instance.emitEvent(const DSAdsInterstitialShowErrorEvent._());
       } else {
         var processed = false;
-        Timer(calcDismissAdAfter(), () {
+        final timeout = calcDismissAdAfter();
+        Timer(timeout, () {
           if (processed) return;
           processed = true;
           _report(
-            '$_tag: showing canceled: not ready after ${calcDismissAdAfter().inSeconds}s, state: $adState',
+            '$_tag: showing canceled: not ready after ${timeout.inSeconds}s, state: $adState',
             location: location,
             mediation: _mediation,
             attributes: customAttributes,

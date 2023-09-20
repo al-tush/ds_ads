@@ -54,7 +54,7 @@ class _DSAdsBannerState extends State<DSAdsBanner> {
 
   static final _locationErrReports = <DSAdLocation>{};
 
-  static bool _isDisabled(DSAdLocation location) {
+  bool _isDisabled(DSAdLocation location) {
     if (!location.isInternal && DSAdsManager.instance.locations?.contains(location) == false) {
       final msg = '$_tag: location $location not in locations';
       assert(false, msg);
@@ -68,7 +68,7 @@ class _DSAdsBannerState extends State<DSAdsBanner> {
       return true;
     }
     if (DSAdsManager.instance.currentMediation(DSAdSource.banner) == null) {
-      Fimber.i('$_tag: disabled (no mediation)');
+      _report('$_tag: disabled (no mediation)', mediation: null);
       return true;
     }
     return false;
