@@ -384,6 +384,9 @@ mixin DSAdsNativeLoaderMixin<T extends StatefulWidget> on State<T> {
     _isDisabled(nativeAdLocation);
     _assignAdToMe();
     unawaited(fetchAd(location: nativeAdLocation));
+    Timer(const Duration(milliseconds: 100), () {
+      setState(() {});
+    });
   }
 
   @protected
