@@ -8,7 +8,7 @@ import 'package:google_mobile_ads/google_mobile_ads.dart';
 
 /// Widget to show Google and AppLovin MAX banner ads
 class DSAdsBanner extends StatefulWidget {
-  final NativeAdBuilder? builder;
+  final BannerAdBuilder? builder;
   final DSAdLocation location;
   final String googleUnitId;
   final String appLovinUnitId;
@@ -55,6 +55,7 @@ class _DSAdsBannerState extends State<DSAdsBanner> {
   static final _locationErrReports = <DSAdLocation>{};
 
   bool _isDisabled(DSAdLocation location) {
+    if (DSAdsManager.instance.appState.isPremium) return true;
     if (!location.isInternal && DSAdsManager.instance.locations?.contains(location) == false) {
       final msg = '$_tag: location $location not in locations';
       assert(false, msg);
