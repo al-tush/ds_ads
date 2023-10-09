@@ -23,6 +23,8 @@ typedef DSDurationCallback = Duration Function();
 
 enum DSAdSource {
   interstitial,
+  interstitial2,
+  interstitialSplash,
   banner,
   native,
   native2,

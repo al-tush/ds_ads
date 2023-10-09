@@ -1,11 +1,5 @@
 part of 'ds_ads_interstitial.dart';
 
-enum DSAdsInterstitialType {
-  def,
-  splash,
-  instance2,
-}
-
 abstract class DSAdsInterstitialEvent extends DSAdsEvent {
   const DSAdsInterstitialEvent();
 }

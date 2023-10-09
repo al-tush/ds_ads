@@ -27,8 +27,8 @@ class DSAdsManager {
 
   final _nextMediationWait = const Duration(minutes: 1);
 
-  final _adsInterstitial = DSAdsInterstitial(type: DSAdsInterstitialType.def);
-  final _adsInterstitial2 = DSAdsInterstitial(type: DSAdsInterstitialType.instance2);
+  final _adsInterstitial = DSAdsInterstitial(source: DSAdSource.interstitial);
+  final _adsInterstitial2 = DSAdsInterstitial(source: DSAdSource.interstitial2);
   final _adsRewarded = DSAdsRewarded();
   final _adsAppOpen = DSAdsAppOpen();
   DSAdsInterstitial? _splashInterstitial;
@@ -44,7 +44,7 @@ class DSAdsManager {
   static DSAdsInterstitial get splashInterstitial {
     if (instance._splashInterstitial == null) {
       Fimber.i('splash interstitial created');
-      instance._splashInterstitial = DSAdsInterstitial(type: DSAdsInterstitialType.splash);
+      instance._splashInterstitial = DSAdsInterstitial(source: DSAdSource.interstitialSplash);
     }
     return instance._splashInterstitial!;
   }
@@ -207,6 +207,14 @@ class DSAdsManager {
       case DSAdSource.interstitial:
         googleId = interstitialGoogleUnitId;
         appLovinId = interstitialAppLovinUnitId;
+        break;
+      case DSAdSource.interstitial2:
+        googleId = interstitial2GoogleUnitId;
+        appLovinId = interstitial2AppLovinUnitId;
+        break;
+      case DSAdSource.interstitialSplash:
+        googleId = interstitialSplashGoogleUnitId;
+        appLovinId = interstitialSplashAppLovinUnitId;
         break;
       case DSAdSource.banner:
         // ToDo: need implement mediations check for banner different approach

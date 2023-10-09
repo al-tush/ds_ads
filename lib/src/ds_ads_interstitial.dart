@@ -41,24 +41,28 @@ class DSAdsInterstitial {
   }
 
   String _adUnitIdGoogle() {
-    switch (type) {
-      case DSAdsInterstitialType.def:
+    switch (source) {
+      case DSAdSource.interstitial:
         return DSAdsManager.instance.interstitialGoogleUnitId;
-      case DSAdsInterstitialType.splash:
+      case DSAdSource.interstitialSplash:
         return DSAdsManager.instance.interstitialSplashGoogleUnitId;
-      case DSAdsInterstitialType.instance2:
+      case DSAdSource.interstitial2:
         return DSAdsManager.instance.interstitial2GoogleUnitId;
+      default:
+        throw Exception('Unsupported source $source');
     }
   }
 
   String _adUnitIdAppLovin() {
-    switch (type) {
-      case DSAdsInterstitialType.def:
+    switch (source) {
+      case DSAdSource.interstitial:
         return DSAdsManager.instance.interstitialAppLovinUnitId;
-      case DSAdsInterstitialType.splash:
+      case DSAdSource.interstitialSplash:
         return DSAdsManager.instance.interstitialSplashAppLovinUnitId;
-      case DSAdsInterstitialType.instance2:
+      case DSAdSource.interstitial2:
         return DSAdsManager.instance.interstitial2AppLovinUnitId;
+      default:
+        throw Exception('Unsupported source $source');
     }
   }
 
@@ -71,7 +75,7 @@ class DSAdsInterstitial {
     }
   }
 
-  final DSAdsInterstitialType type;
+  final DSAdSource source;
   final Duration loadRetryDelay;
 
   DSInterstitialAd? _ad;
@@ -83,9 +87,9 @@ class DSAdsInterstitial {
   late final state = DSStateStub(owner: this);
 
   DSAdsInterstitial({
-    required this.type,
+    required this.source,
     this.loadRetryDelay = const Duration(seconds: 1),
-  });
+  }) : assert({DSAdSource.interstitial, DSAdSource.interstitial2, DSAdSource.interstitialSplash}.contains(source));
 
   @internal
   void dispose() {
