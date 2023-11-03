@@ -1,3 +1,12 @@
+## 0.5.0
+- add different ids support for interstitial ads
+- update applovin_max dependency
+- fix unclickable native ad after reload
+- fix banner bug for premium mode
+
+BREAKING CHANGE
+- DSAdsInterstitialType replaced to part of DSAdSource
+
 ## 0.4.0
 - add banners support
 - аdd experimental native2 mixin
