@@ -1,4 +1,5 @@
 import 'dart:async';
+import 'dart:io';
 
 import 'package:applovin_max/applovin_max.dart';
 import 'package:collection/collection.dart';
@@ -6,9 +7,11 @@ import 'package:ds_ads/src/ds_ads_app_open.dart';
 import 'package:ds_ads/src/ds_ads_interstitial.dart';
 import 'package:ds_ads/src/ds_ads_native_loader_mixin.dart';
 import 'package:ds_ads/src/ds_ads_rewarded.dart';
+import 'package:ds_common/ds_common.dart';
 import 'package:fimber/fimber.dart';
 import 'package:flutter/widgets.dart';
 import 'package:freezed_annotation/freezed_annotation.dart';
+import 'package:google_mobile_ads/google_mobile_ads.dart';
 
 import 'ds_ads_native2_loader_mixin.dart';
 import 'ds_ads_types.dart';
@@ -72,6 +75,9 @@ class DSAdsManager {
   final _currentMediation = <DSAdSource, DSAdMediation?>{};
   final _mediationInitialized = <DSAdMediation>{};
 
+  ConsentForm? _consentForm;
+  ConsentStatus _lastConsentStatus = ConsentStatus.unknown;
+
   /// Was the ad successfully loaded at least once in this session
   bool get isAdAvailable => _isAdAvailable;
 
@@ -109,6 +115,7 @@ class DSAdsManager {
   final List<NativeAdBanner> nativeAdCustomBanners;
   final DSIsAdAllowedCallback? isAdAllowedCallback;
   final DSRetryCountCallback? retryCountCallback;
+  final ConsentDebugSettings? consentDebugSettings;
 
   /// App is in foreground
   @internal
@@ -140,6 +147,7 @@ class DSAdsManager {
   /// [isAdAllowedCallback] allows you to dynamically determine whether an ad can be displayed.
   /// [interstitialFetchDelay] sets the minimum time after displaying an interstitial before the next interstitial is started to load.
   /// [interstitialShowLock] the time from the moment the user closes the interstitial for which the interstitials show are blocked.
+  /// [consentDebugSettings] settings for UMP Consent for internal app builds (by default debugGeography: DebugGeography.debugGeographyEea)
   DSAdsManager({
     required this.mediationPrioritiesCallback,
     required this.onPaidEvent,
@@ -169,6 +177,7 @@ class DSAdsManager {
     this.rewardedFetchDelayCallback,
     this.rewardedShowLockCallback,
     this.retryCountCallback,
+    this.consentDebugSettings,
   })  : assert(_instance == null, 'dismiss previous Ads instance before init new'),
         assert(_widgetsObserver != null, 'call DSAdsManager.preInit() before') {
     _instance = this;
@@ -183,12 +192,95 @@ class DSAdsManager {
         }
       }
     }());
+
+    unawaited(() async {
+      if (!Platform.isAndroid) return;
+
+      ConsentDebugSettings? settings = null;
+      if (DSConstants.I.isInternalVersion) {
+        settings = consentDebugSettings;
+        if (settings == null) {
+          settings = ConsentDebugSettings(
+            debugGeography: DebugGeography.debugGeographyEea,
+          );
+        }
+      }
+      final params = ConsentRequestParameters(
+        consentDebugSettings: settings,
+      );
+      ConsentInformation.instance.requestConsentInfoUpdate(
+        params, () async {
+        _lastConsentStatus = await ConsentInformation.instance.getConsentStatus();
+        AppLovinMAX.setHasUserConsent(_lastConsentStatus == ConsentStatus.obtained);
+        DSMetrica.reportEvent('consent status', attributes: {
+          'consent_status': '$_lastConsentStatus',
+          'position': 'init',
+        });
+        if ([ConsentStatus.notRequired, ConsentStatus.obtained].contains(_lastConsentStatus)) return;
+        if (await ConsentInformation.instance.isConsentFormAvailable()) {
+          ConsentForm.loadConsentForm((ConsentForm consentForm) async {
+            _consentForm = consentForm;
+          },
+                (FormError error) => Fimber.e('Consent error: ${error.message} (${error.errorCode})', stacktrace: StackTrace.current),
+          );
+        } else {
+          DSMetrica.reportEvent('consent status', attributes: {
+            'consent_status': 'formUnavailable',
+            'position': 'init',
+          });
+        }
+      }, (FormError error) => Fimber.e('Consent error: ${error.message} (${error.errorCode})', stacktrace: StackTrace.current),
+      );
+    }());
   }
 
   Future<void> dismiss() async {
     _instance = null;
     await DSAdsNativeLoaderMixin.disposeClass();
     await DSAdsNative2LoaderMixin.disposeClass();
+  }
+
+  ConsentStatus get consentStatus => _lastConsentStatus;
+
+  bool get isConsentAvailable => (consentStatus != ConsentStatus.notRequired);
+
+  Future<bool> tryShowConsent() async {
+    assert(Platform.isAndroid);
+    if (Platform.isAndroid) {
+      if (_consentForm == null) {
+        final completerForm = Completer<ConsentForm?>();
+        ConsentForm.loadConsentForm((ConsentForm consentForm) async {
+          completerForm.complete(consentForm);
+        }, (FormError error) {
+          Fimber.e('Consent error: ${error.message} (${error.errorCode})', stacktrace: StackTrace.current);
+          completerForm.complete(null);
+        });
+        _consentForm = await completerForm.future;
+        if (_consentForm == null) {
+          return false;
+        }
+      }
+      final completer = Completer<bool>();
+      _consentForm!.show(
+            (FormError? error) async {
+          _consentForm = null;
+          if (error == null) {
+            _lastConsentStatus = await ConsentInformation.instance.getConsentStatus();
+            AppLovinMAX.setHasUserConsent(_lastConsentStatus == ConsentStatus.obtained);
+            DSMetrica.reportEvent('consent status', attributes: {
+              'consent_status': '$_lastConsentStatus',
+              'position': 'after dialog',
+            });
+            completer.complete(true);
+          } else {
+            Fimber.e('Consent error: ${error.message} (${error.errorCode})', stacktrace: StackTrace.current);
+            completer.complete(false);
+          }
+        },
+      );
+      return await completer.future;
+    }
+    return false; // iOS not implemented yet
   }
 
   @internal
