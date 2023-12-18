@@ -87,15 +87,15 @@ packages:
       path: ".."
       relative: true
     source: path
-    version: "0.5.0"
+    version: "0.5.1"
   ds_common:
     dependency: transitive
     description:
       name: ds_common
-      sha256: "519080f3a4ca9633292f869521d53bf279a212e75de466605e4a4f396ed80c4d"
+      sha256: "50ee9d95a1c3e7656d743d2ab044eb72206bcc290f47e59ceb50b414876f95c3"
       url: "https://pub.dev"
     source: hosted
-    version: "0.1.4"
+    version: "0.1.11"
   fake_async:
     dependency: transitive
     description:
@@ -528,10 +528,10 @@ packages:
     dependency: transitive
     description:
       name: userx_flutter
-      sha256: "9578431048f9b5534a79160236345464d7b24c7965980c29ae00809d04e8255a"
+      sha256: a806b4be8bdd5627ff17dd4f4e03d4bba1dc39b26c0fda07a4b376650cec04eb
       url: "https://pub.dev"
     source: hosted
-    version: "1.0.17"
+    version: "1.1.1"
   vector_math:
     dependency: transitive
     description:

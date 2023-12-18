@@ -1,3 +1,8 @@
+## 0.5.1
+- added consent form support
+- google_mobile_ads and applovin_max updated
+- ds_common minimum version updated
+
 ## 0.5.0
 - add different ids support for interstitial ads
 - update applovin_max dependency
