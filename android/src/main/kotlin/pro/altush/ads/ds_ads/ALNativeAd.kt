@@ -32,7 +32,7 @@ class ALNativeAd(
 
         nativeAdLoader = MaxNativeAdLoader(adUnitId, context)
         nativeAdLoader!!.setRevenueListener(object : MaxAdRevenueListener {
-            override fun onAdRevenuePaid(ad: MaxAd?) {
+            override fun onAdRevenuePaid(ad: MaxAd) {
                 manager.invokeMethod("onPaidEvent",
                 mapOf(
                     "adId" to id,
@@ -61,7 +61,7 @@ class ALNativeAd(
                 manager.invokeMethod("onAdClicked", mapOf("adId" to id))
             }
 
-            override fun onNativeAdExpired(nativeAd: MaxAd?) {
+            override fun onNativeAdExpired(nativeAd: MaxAd) {
                 manager.invokeMethod("onAdExpired", mapOf("adId" to id))
             }
         })
