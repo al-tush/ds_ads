@@ -1,3 +1,7 @@
+## 0.5.2
+- add AppLovin 3.6.0 support
+- remove appLovinSDKConfiguration property
+
 ## 0.5.1
 - added consent form support
 - google_mobile_ads and applovin_max updated
