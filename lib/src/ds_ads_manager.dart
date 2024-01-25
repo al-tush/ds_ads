@@ -36,9 +36,6 @@ class DSAdsManager {
   final _adsAppOpen = DSAdsAppOpen();
   DSAdsInterstitial? _splashInterstitial;
 
-  @protected
-  final appLovinSDKConfiguration = {};
-
   static bool get isInitialized => _instance != null;
 
   static DSAdsInterstitial get interstitial => instance._adsInterstitial;
@@ -472,18 +469,14 @@ class DSAdsManager {
 
     _appLovinInit ??= () async {
       onReportEvent?.call('ads_manager: AppLovin start initializing', {});
-      appLovinSDKConfiguration.clear();
-        if (appLovinSDKKey.isEmpty) {
-          Fimber.e('AppLovin not initialized. SDKKey is empty', stacktrace: StackTrace.current);
-          return;
-        }
-        final config = await AppLovinMAX.initialize(appLovinSDKKey);
-        if (config != null) {
-          appLovinSDKConfiguration.addAll(config);
-        }
-        _mediationInitialized.add(DSAdMediation.appLovin);
-        onReportEvent?.call('ads_manager: AppLovin initialized', {});
-      } ();
+      if (appLovinSDKKey.isEmpty) {
+        Fimber.e('AppLovin not initialized. SDKKey is empty', stacktrace: StackTrace.current);
+        return;
+      }
+      await AppLovinMAX.initialize(appLovinSDKKey);
+      _mediationInitialized.add(DSAdMediation.appLovin);
+      onReportEvent?.call('ads_manager: AppLovin initialized', {});
+    } ();
 
     await _appLovinInit;
   }
