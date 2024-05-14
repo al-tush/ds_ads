@@ -255,7 +255,6 @@ class DSAdsAppOpen {
       switch (mediation) {
         case DSAdMediation.google:
           DSGoogleAppOpenAd(adUnitId: _adUnitId(mediation)).load(
-            orientation: AppOpenAd.orientationPortrait,
             onAdLoaded: onAdLoaded,
             onAdFailedToLoad: onAdFailedToLoad,
           );

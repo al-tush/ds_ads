@@ -29,12 +29,15 @@ class _DSAdsBannerState extends State<DSAdsBanner> {
   static const _tag = 'ads_banner';
 
   String _adUnitId(DSAdMediation mediation) {
+    var res = '';
     switch (mediation) {
       case DSAdMediation.google:
-        return widget.googleUnitId;
+        res = widget.googleUnitId;
       case DSAdMediation.appLovin:
-        return widget.appLovinUnitId;
+        res = widget.appLovinUnitId;
     }
+    assert(res.isNotEmpty);
+    return res;
   }
 
   void _report(
@@ -206,6 +209,8 @@ class _DSAdsBannerState extends State<DSAdsBanner> {
   }
 
   Future<void> _loadGoogleAd() async {
+    if (_isDisabled(widget.location)) return;
+
     final size =
         await AdSize.getCurrentOrientationAnchoredAdaptiveBannerAdSize(MediaQuery.of(context).size.width.truncate());
     if (size == null) {

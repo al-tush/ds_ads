@@ -275,14 +275,12 @@ class DSGoogleAppOpenAd extends DSAppOpenAd {
   });
 
   Future<void> load({
-    required int orientation,
     required void Function(DSGoogleAppOpenAd ad) onAdLoaded,
     required DSOnAdFailedToLoad onAdFailedToLoad,
   }) async {
     startLoading();
     await AppOpenAd.load(
       adUnitId: adUnitId,
-      orientation: orientation,
       request: const AdRequest(),
       adLoadCallback: AppOpenAdLoadCallback(
         onAdLoaded: (ad) async {
