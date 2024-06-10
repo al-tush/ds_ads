@@ -234,6 +234,7 @@ class DSAdsManager {
     await DSAdsNative2LoaderMixin.disposeClass();
   }
 
+  /// Wait for initialize lib. [maxWait] define stop wait after this period (default 5 seconds)
   static Future<void> waitForInit({final maxWait = const Duration(seconds: 5)}) async {
     final start = DateTime.now();
     while (true) {
@@ -248,8 +249,10 @@ class DSAdsManager {
 
   ConsentStatus get consentStatus => _lastConsentStatus;
 
+  /// return true if consent available
   bool get isConsentAvailable => (consentStatus != ConsentStatus.notRequired);
 
+  /// Show consent window if consent available
   Future<bool> tryShowConsent() async {
     assert(Platform.isAndroid);
     if (Platform.isAndroid) {
@@ -473,6 +476,7 @@ class DSAdsManager {
 
   Future<void>? _appLovinInit;
 
+  /// Force init AppLovin dependency
   Future<void> initAppLovine() async {
     if (isMediationInitialized(DSAdMediation.appLovin)) return;
 
