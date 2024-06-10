@@ -10,7 +10,7 @@ Add using it:
 ### Add `ds_ads` to `pubspec.yaml`
 ```yaml
 dependencies:
-  ds_ads: ^0.1.0
+  ds_ads: ^0.6.0
 ```
 
 ### Initialize
