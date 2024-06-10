@@ -193,14 +193,11 @@ class DSAdsManager {
     unawaited(() async {
       if (!Platform.isAndroid) return;
 
-      ConsentDebugSettings? settings = null;
+      ConsentDebugSettings? settings;
       if (DSConstants.I.isInternalVersion) {
-        settings = consentDebugSettings;
-        if (settings == null) {
-          settings = ConsentDebugSettings(
-            debugGeography: DebugGeography.debugGeographyEea,
-          );
-        }
+        settings = consentDebugSettings ?? ConsentDebugSettings(
+          debugGeography: DebugGeography.debugGeographyEea,
+        );
       }
       final params = ConsentRequestParameters(
         consentDebugSettings: settings,
@@ -318,7 +315,7 @@ class DSAdsManager {
         appLovinId = interstitialSplashAppLovinUnitId;
         break;
       case DSAdSource.banner:
-        // ToDo: need implement mediations check for banner different approach
+      // ToDo: need implement mediations check for banner different approach
         googleId = '-';
         appLovinId = '-';
       case DSAdSource.native:
@@ -343,18 +340,18 @@ class DSAdsManager {
       if (googleId.isEmpty) {
         mediationPriorities.remove(DSAdMediation.google);
         assert(false,
-            '$source error: setup ...GoogleUnitId field or remove DSAdMediation.google from mediationPrioritiesCallback ($source)');
+        '$source error: setup ...GoogleUnitId field or remove DSAdMediation.google from mediationPrioritiesCallback ($source)');
       }
     }
     if (mediationPriorities.contains(DSAdMediation.appLovin)) {
       if (appLovinSDKKey.isEmpty) {
         mediationPriorities.remove(DSAdMediation.appLovin);
         assert(false, 'setup appLovinSDKKey or remove DSAdMediation.appLovin from mediationPrioritiesCallack ($source)');
-      } 
+      }
       if (appLovinId.isEmpty) {
         mediationPriorities.remove(DSAdMediation.appLovin);
         assert(false,
-            '$source error: setup ...AppLovinUnitId or remove DSAdMediation.appLovin from mediationPrioritiesCallack ($source)');
+        '$source error: setup ...AppLovinUnitId or remove DSAdMediation.appLovin from mediationPrioritiesCallack ($source)');
       }
     }
     if (mediationPriorities.isEmpty) {
@@ -401,8 +398,8 @@ class DSAdsManager {
         try {
           switch (next) {
             case DSAdMediation.google:
-              // It seems that init just creates competition for other mediations
-              //await MobileAds.instance.initialize();
+            // It seems that init just creates competition for other mediations
+            //await MobileAds.instance.initialize();
               break;
             case DSAdMediation.appLovin:
               await initAppLovine();
@@ -454,7 +451,7 @@ class DSAdsManager {
     if (mediationPrioritiesCallback(source).length <= 1) return;
     switch (mediation) {
       case DSAdMediation.google:
-        // https://support.google.com/admob/thread/3494603/admob-error-codes-logs?hl=en
+      // https://support.google.com/admob/thread/3494603/admob-error-codes-logs?hl=en
         if (errCode == 3) {
           if (!updateMediations(source)) {
             _tryNextMediation(source, false);
@@ -462,7 +459,7 @@ class DSAdsManager {
         }
         break;
       case DSAdMediation.appLovin:
-        // https://dash.applovin.com/documentation/mediation/flutter/getting-started/errorcodes
+      // https://dash.applovin.com/documentation/mediation/flutter/getting-started/errorcodes
         if (errCode == 204 || errCode == -5001) {
           if (!updateMediations(source)) {
             _tryNextMediation(source, false);

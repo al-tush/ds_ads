@@ -7,7 +7,6 @@ import 'package:ds_ads/src/google_ads/export.dart';
 import 'package:ds_common/ds_common.dart';
 import 'package:fimber/fimber.dart';
 import 'package:freezed_annotation/freezed_annotation.dart';
-import 'package:google_mobile_ads/google_mobile_ads.dart';
 
 import 'applovin_ads/applovin_ads.dart';
 import 'ds_ads_types.dart';
