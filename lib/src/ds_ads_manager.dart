@@ -237,6 +237,18 @@ class DSAdsManager {
     await DSAdsNative2LoaderMixin.disposeClass();
   }
 
+  static Future<void> waitForInit({final maxWait = const Duration(seconds: 5)}) async {
+    final start = DateTime.now();
+    while (true) {
+      if (isInitialized) break;
+      if (DateTime.now().difference(start) >= maxWait) {
+        Fimber.e('Failed to wait DSAdsManager', stacktrace: StackTrace.current);
+        break;
+      }
+      await Future.delayed(const Duration(milliseconds: 10));
+    }
+  }
+
   ConsentStatus get consentStatus => _lastConsentStatus;
 
   bool get isConsentAvailable => (consentStatus != ConsentStatus.notRequired);
