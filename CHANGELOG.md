@@ -1,3 +1,9 @@
+## 0.6.0
+- update google_mobile_ads to 5.1.0 
+- banner optimizations
+- add waitForInit method
+- applovin_max updated
+
 ## 0.5.2
 - add AppLovin 3.6.0 support
 - remove appLovinSDKConfiguration property
