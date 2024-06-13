@@ -12,12 +12,14 @@ class DSAdsBanner extends StatefulWidget {
   final DSAdLocation location;
   final String googleUnitId;
   final String appLovinUnitId;
-
+  final bool adaptive;
+  
   const DSAdsBanner({
     super.key,
     required this.location,
     this.googleUnitId = '',
     this.appLovinUnitId = '',
+    this.adaptive = false,
     this.builder,
   }) : assert(googleUnitId != '' || appLovinUnitId != '');
 
@@ -286,6 +288,7 @@ class _DSAdsBannerState extends State<DSAdsBanner> {
         child = MaxAdView(
           adUnitId: _adUnitId(DSAdMediation.appLovin),
           adFormat: AdFormat.banner,
+          adaptiveBannerWidth: widget.adaptive ? MediaQuery.of(context).size.width : null,
           listener: AdViewAdListener(
             onAdLoadedCallback: (ad) {
               _isLoaded = true;
@@ -318,11 +321,13 @@ class _DSAdsBannerState extends State<DSAdsBanner> {
     }
 
     // ToDo: переделать на вызов билдера и для случая, когда isShowed == false
+    Widget res;
     if (widget.builder != null) {
-      return widget.builder!(context, true, child);
+      res = widget.builder!(context, true, child);
     } else {
-      return child;
+      res = child;
     }
+    return res;
   }
 }
 

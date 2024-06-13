@@ -2,11 +2,13 @@ import 'dart:async';
 
 import 'package:ds_ads/src/applovin_ads/applovin_ads.dart';
 import 'package:ds_ads/src/ds_ads_manager.dart';
+import 'package:ds_ads/src/ds_ads_overlay_screen.dart';
 import 'package:ds_ads/src/ds_ads_types_internal.dart';
 import 'package:ds_ads/src/generic_ads/export.dart';
 import 'package:ds_ads/src/google_ads/export.dart';
 import 'package:ds_common/ds_common.dart';
 import 'package:fimber/fimber.dart';
+import 'package:flutter/material.dart';
 import 'package:freezed_annotation/freezed_annotation.dart';
 
 import 'ds_ads_app_open.dart';
@@ -311,8 +313,10 @@ class DSAdsInterstitial {
   /// [beforeAdShow] allows to cancel ad by return false
   Future<void> showAd({
     required final DSAdLocation location,
+    BuildContext? context,
     final Duration dismissAdAfter = const Duration(),
     final Duration Function()? dismissAdAfterCallback,
+    final int counterDelaySec = 0,
     final Future<bool> Function()? beforeAdShow,
     final Function()? onAdShow,
     final Function(int errCode, String errText)? onFailedToShow,
@@ -321,6 +325,7 @@ class DSAdsInterstitial {
     Map<String, Object>? customAttributes,
   }) async {
     assert(!location.isInternal);
+    assert(counterDelaySec == 0 || context != null, 'context must be assigned to show counter dialog before ad');
     assert(_checkCustomAttributes(customAttributes), 'custom attributes must have custom_attr_ prefix');
 
     if (DSAdsManager.instance.appState.isPremium || _isDisposed) {
@@ -533,6 +538,21 @@ class DSAdsInterstitial {
       }
     };
 
+    if (counterDelaySec > 0) {
+      final streamController = StreamController();
+      unawaitedCatch(() async {
+        await showDialog(
+          context: context!,
+          builder: (context) => DSAdsOverlayScreen(
+            counterDoneCallback: () => streamController.add(null),
+            delaySec: counterDelaySec,
+          ),
+        );
+        await streamController.close();
+      });
+      await streamController.stream.first;
+    }
+    
     if (_isDisposed) {
       _report('$_tag: showing canceled: manager disposed',
           location: location, mediation: _mediation, attributes: attrs);
