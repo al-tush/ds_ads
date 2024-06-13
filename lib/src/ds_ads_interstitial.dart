@@ -311,6 +311,7 @@ class DSAdsInterstitial {
   /// [allowFetchNext] allows start fetching after show interstitial ad.
   /// [location] sets location attribute to report (any string allowed)
   /// [beforeAdShow] allows to cancel ad by return false
+  /// [counterDelaySec] show counter before ad. If positive [context] must be assigned
   Future<void> showAd({
     required final DSAdLocation location,
     BuildContext? context,

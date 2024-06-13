@@ -1,3 +1,6 @@
+## 0.6.1
+- add optional counter before interstitial
+
 ## 0.6.0
 - update google_mobile_ads to 5.1.0 
 - banner optimizations
