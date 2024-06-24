@@ -31,7 +31,7 @@ class DSAdsInterstitial {
 
 
   DSAdMediation? _getMediation() {
-    final m = DSAdsManager.instance.currentMediation(DSAdSource.interstitial);
+    final m = DSAdsManager.instance.currentMediation(source);
     if (m == null) return null;
     if (_adUnitIdGoogle().isNotEmpty && _adUnitIdAppLovin().isEmpty) {
       return DSAdMediation.google;
@@ -69,12 +69,15 @@ class DSAdsInterstitial {
   }
 
   String _adUnitId(DSAdMediation mediation) {
+    final String id;
     switch (mediation) {
       case DSAdMediation.google:
-        return _adUnitIdGoogle();
+        id = _adUnitIdGoogle();
       case DSAdMediation.appLovin:
-        return _adUnitIdAppLovin();
+        id = _adUnitIdAppLovin();
     }
+    assert(id.isNotEmpty, 'empty adsId for mediation=$mediation source=$source');
+    return id;
   }
 
   final DSAdSource source;
@@ -127,7 +130,7 @@ class DSAdsInterstitial {
         Fimber.e(msg, stacktrace: StackTrace.current);
       }
     }
-    if (DSAdsManager.instance.isAdAllowedCallback?.call(DSAdSource.interstitial, location) == false) {
+    if (DSAdsManager.instance.isAdAllowedCallback?.call(source, location) == false) {
       Fimber.i('$_tag: disabled (location: $location)');
       return true;
     }
@@ -156,7 +159,7 @@ class DSAdsInterstitial {
       return;
     }
 
-    DSAdsManager.instance.updateMediations(DSAdSource.interstitial);
+    DSAdsManager.instance.updateMediations(source);
 
     if (_isDisabled(location)) {
       then?.call();
@@ -244,7 +247,7 @@ class DSAdsInterstitial {
             ...?customAttributes,
           },
         );
-        await DSAdsManager.instance.onLoadAdError(errCode, errDescription, mediation, DSAdSource.interstitial);
+        await DSAdsManager.instance.onLoadAdError(errCode, errDescription, mediation, source);
         _loadConditions.add(DSAdsLoadCondition.error);
         final newMediation = _getMediation();
         if (newMediation != _mediation) {
@@ -256,7 +259,7 @@ class DSAdsInterstitial {
           }
         }
         _mediation = null;
-        if (_loadRetryCount < DSAdsManager.instance.getRetryMaxCount(DSAdSource.interstitial)) {
+        if (_loadRetryCount < DSAdsManager.instance.getRetryMaxCount(source)) {
           await Future.delayed(loadRetryDelay);
           if ({DSAdState.none, DSAdState.error}.contains(adState) && !_isDisposed) {
             _report('$_tag: retry loading',
@@ -465,7 +468,7 @@ class DSAdsInterstitial {
     ad.onPaidEvent = (ad, valueMicros, precision, currencyCode, appLovinDspName) {
       try {
         DSAdsManager.instance.onPaidEvent(ad, ad.mediation, location, valueMicros, precision, currencyCode,
-            DSAdSource.interstitial, appLovinDspName, attrs);
+            source, appLovinDspName, attrs);
       } catch (e, stack) {
         Fimber.e('$e', stacktrace: stack);
       }
