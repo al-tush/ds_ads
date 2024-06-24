@@ -30,6 +30,7 @@ enum DSAdSource {
   native2,
   rewarded,
   appOpen,
+  appOpenSplash,
 }
 
 enum DSAdMediation {

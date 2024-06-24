@@ -33,8 +33,9 @@ class DSAdsManager {
   final _adsInterstitial = DSAdsInterstitial(source: DSAdSource.interstitial);
   final _adsInterstitial2 = DSAdsInterstitial(source: DSAdSource.interstitial2);
   final _adsRewarded = DSAdsRewarded();
-  final _adsAppOpen = DSAdsAppOpen();
+  final _adsAppOpen = DSAdsAppOpen(source: DSAdSource.appOpen);
   DSAdsInterstitial? _splashInterstitial;
+  DSAdsAppOpen? _splashAppOpen;
 
   static bool get isInitialized => _instance != null;
 
@@ -53,19 +54,35 @@ class DSAdsManager {
 
   static DSAdsAppOpen get appOpen => instance._adsAppOpen;
 
+  static DSAdsAppOpen get splashAppOpen {
+    if (instance._splashAppOpen == null) {
+      Fimber.i('splash app open created');
+      instance._splashAppOpen = DSAdsAppOpen(source: DSAdSource.appOpenSplash);
+    }
+    return instance._splashAppOpen!;
+  }
+
   /// Is any full-screen ad shows
   static bool get isAdShowing =>
       isInitialized &&
           ({DSAdState.preShowing, DSAdState.showing}.contains(interstitial.adState) ||
               {DSAdState.preShowing, DSAdState.showing}.contains(instance._splashInterstitial?.adState) ||
               {DSAdState.preShowing, DSAdState.showing}.contains(rewarded.adState) ||
-              {DSAdState.preShowing, DSAdState.showing}.contains(appOpen.adState));
+              {DSAdState.preShowing, DSAdState.showing}.contains(appOpen.adState) ||
+              {DSAdState.preShowing, DSAdState.showing}.contains(instance._splashAppOpen?.adState));
 
   /// Stop loading splash interstitial and dispose [DSAdsManager.splashInterstitial] object
   void disposeSplashInterstitial() {
     _splashInterstitial?.dispose();
     _splashInterstitial = null;
     Fimber.i('splash interstitial disposed');
+  }
+
+  /// Stop loading splash app open and dispose [DSAdsManager.splashAppOpen] object
+  void disposeSplashAppOpen() {
+    _splashAppOpen?.dispose();
+    _splashAppOpen = null;
+    Fimber.i('splash app open disposed');
   }
 
   var _isAdAvailable = false;
@@ -95,6 +112,7 @@ class DSAdsManager {
   final String nativeGoogleUnitId;
   final String native2GoogleUnitId;
   final String appOpenGoogleUnitId;
+  final String appOpenSplashGoogleUnitId;
   final String rewardedGoogleUnitId;
   final String appLovinSDKKey;
   final String interstitialAppLovinUnitId;
@@ -103,6 +121,7 @@ class DSAdsManager {
   final String nativeAppLovinUnitId;
   final String native2AppLovinUnitId;
   final String appOpenAppLovinUnitId;
+  final String appOpenSplashAppLovinUnitId;
   final String rewardedAppLovinUnitId;
   final DSDurationCallback? interstitialFetchDelayCallback;
   final DSDurationCallback? interstitialShowLockCallback;
@@ -159,6 +178,7 @@ class DSAdsManager {
     this.nativeGoogleUnitId = '',
     this.native2GoogleUnitId = '',
     this.appOpenGoogleUnitId = '',
+    this.appOpenSplashGoogleUnitId = '',
     this.appLovinSDKKey = '',
     this.interstitialAppLovinUnitId = '',
     this.interstitialSplashAppLovinUnitId = '',
@@ -166,6 +186,7 @@ class DSAdsManager {
     this.nativeAppLovinUnitId = '',
     this.native2AppLovinUnitId = '',
     this.appOpenAppLovinUnitId = '',
+    this.appOpenSplashAppLovinUnitId = '',
     this.rewardedAppLovinUnitId = '',
     this.isAdAllowedCallback,
     this.nativeAdCustomBanners = const [],
@@ -337,6 +358,10 @@ class DSAdsManager {
         googleId = appOpenGoogleUnitId;
         appLovinId = appOpenAppLovinUnitId;
         break;
+      case DSAdSource.appOpenSplash:
+        googleId = appOpenSplashGoogleUnitId;
+        appLovinId = appOpenSplashAppLovinUnitId;
+        break;
     }
 
     if (mediationPriorities.contains(DSAdMediation.google)) {
@@ -476,8 +501,11 @@ class DSAdsManager {
 
   Future<void>? _appLovinInit;
 
+  @Deprecated('Use initAppLovin() instead')
+  Future<void> initAppLovine() => initAppLovin();
+
   /// Force init AppLovin dependency
-  Future<void> initAppLovine() async {
+  Future<void> initAppLovin() async {
     if (isMediationInitialized(DSAdMediation.appLovin)) return;
 
     _appLovinInit ??= () async {

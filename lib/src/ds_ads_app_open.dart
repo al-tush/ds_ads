@@ -31,6 +31,7 @@ class DSAdsAppOpen {
 
   var _lastLoadTime = DateTime(0);
 
+  final DSAdSource source;
   final Duration loadRetryDelay;
 
   DateTime get lastLoadTime => _lastLoadTime;
@@ -45,8 +46,9 @@ class DSAdsAppOpen {
   DSAdState get adState => _adState;
 
   DSAdsAppOpen({
+    required this.source,
     this.loadRetryDelay = const Duration(seconds: 1),
-  });
+  }) : assert({DSAdSource.appOpen, DSAdSource.appOpenSplash}.contains(source));
 
   @internal
   void dispose() {
@@ -75,13 +77,38 @@ class DSAdsAppOpen {
     }
   }
 
-  static String _adUnitId(DSAdMediation mediation) {
+  String _adUnitIdGoogle() {
+    switch (source) {
+      case DSAdSource.appOpen:
+        return DSAdsManager.instance.appOpenGoogleUnitId;
+      case DSAdSource.appOpenSplash:
+        return DSAdsManager.instance.appOpenSplashGoogleUnitId;
+      default:
+        throw Exception('Unsupported source $source');
+    }
+  }
+
+  String _adUnitIdAppLovin() {
+    switch (source) {
+      case DSAdSource.appOpen:
+        return DSAdsManager.instance.appOpenAppLovinUnitId;
+      case DSAdSource.appOpenSplash:
+        return DSAdsManager.instance.appOpenSplashAppLovinUnitId;
+      default:
+        throw Exception('Unsupported source $source');
+    }
+  }
+
+  String _adUnitId(DSAdMediation mediation) {
+    final String id;
     switch (mediation) {
       case DSAdMediation.google:
-        return DSAdsManager.instance.appOpenGoogleUnitId;
+        id = _adUnitIdGoogle();
       case DSAdMediation.appLovin:
-        return DSAdsManager.instance.appOpenAppLovinUnitId;
+        id = _adUnitIdAppLovin();
     }
+    assert(id.isNotEmpty, 'empty adsId for mediation=$mediation source=$source');
+    return id;
   }
 
   void _report(
@@ -102,7 +129,7 @@ class DSAdsAppOpen {
 
   static final _locationErrReports = <DSAdLocation>{};
 
-  static bool _isDisabled(DSAdLocation location) {
+  bool _isDisabled(DSAdLocation location) {
     if (!location.isInternal && DSAdsManager.instance.locations?.contains(location) == false) {
       final msg = '$_tag: location $location not in locations';
       assert(false, msg);
@@ -111,7 +138,7 @@ class DSAdsAppOpen {
         Fimber.e(msg, stacktrace: StackTrace.current);
       }
     }
-    if (DSAdsManager.instance.isAdAllowedCallback?.call(DSAdSource.appOpen, location) == false) {
+    if (DSAdsManager.instance.isAdAllowedCallback?.call(source, location) == false) {
       Fimber.i('$_tag: disabled (location: $location)');
       return true;
     }
@@ -136,7 +163,7 @@ class DSAdsAppOpen {
       return;
     }
 
-    DSAdsManager.instance.updateMediations(DSAdSource.appOpen);
+    DSAdsManager.instance.updateMediations(source);
 
     if (_isDisabled(location)) {
       then?.call();
@@ -162,7 +189,7 @@ class DSAdsAppOpen {
       return;
     }
 
-    final mediation = DSAdsManager.instance.currentMediation(DSAdSource.appOpen);
+    final mediation = DSAdsManager.instance.currentMediation(source);
     _mediation = mediation;
     if (mediation == null) {
       _report('$_tag: no mediation', location: location, mediation: mediation, attributes: customAttributes);
@@ -216,10 +243,10 @@ class DSAdsAppOpen {
           ...attrs,
           ...?customAttributes,
         });
-        final oldMediation = DSAdsManager.instance.currentMediation(DSAdSource.appOpen);
-        await DSAdsManager.instance.onLoadAdError(errCode, errDescription, mediation, DSAdSource.appOpen);
+        final oldMediation = DSAdsManager.instance.currentMediation(source);
+        await DSAdsManager.instance.onLoadAdError(errCode, errDescription, mediation, source);
         _loadConditions.add(DSAdsLoadCondition.error);
-        final newMediation = DSAdsManager.instance.currentMediation(DSAdSource.appOpen);
+        final newMediation = DSAdsManager.instance.currentMediation(source);
         if (newMediation != oldMediation) {
           _loadRetryCount = 0;
           if (newMediation == null) {
@@ -228,7 +255,7 @@ class DSAdsAppOpen {
             _loadConditions.add(DSAdsLoadCondition.mediationChanged);
           }
         }
-        if (_loadRetryCount < DSAdsManager.instance.getRetryMaxCount(DSAdSource.appOpen)) {
+        if (_loadRetryCount < DSAdsManager.instance.getRetryMaxCount(source)) {
           await Future.delayed(loadRetryDelay);
           if ({DSAdState.none, DSAdState.error}.contains(adState) && !_isDisposed) {
             _report('$_tag: retry loading', location: location, mediation: mediation, attributes: customAttributes);
@@ -371,7 +398,7 @@ class DSAdsAppOpen {
     ad.onPaidEvent = (ad, valueMicros, precision, currencyCode, appLovinDspName) {
       try {
         DSAdsManager.instance.onPaidEvent(ad, ad.mediation, location, valueMicros, precision, currencyCode,
-            DSAdSource.appOpen, appLovinDspName, attrs);
+            source, appLovinDspName, attrs);
       } catch (e, stack) {
         Fimber.e('$e', stacktrace: stack);
       }
