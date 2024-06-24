@@ -57,7 +57,7 @@ class DSAdsManager {
   static bool get isAdShowing =>
       isInitialized &&
           ({DSAdState.preShowing, DSAdState.showing}.contains(interstitial.adState) ||
-              {DSAdState.preShowing, DSAdState.showing}.contains(splashInterstitial.adState) ||
+              {DSAdState.preShowing, DSAdState.showing}.contains(instance._splashInterstitial?.adState) ||
               {DSAdState.preShowing, DSAdState.showing}.contains(rewarded.adState) ||
               {DSAdState.preShowing, DSAdState.showing}.contains(appOpen.adState));
 
