@@ -481,6 +481,7 @@ class DSAdsManager {
     if (isMediationInitialized(DSAdMediation.appLovin)) return;
 
     _appLovinInit ??= () async {
+      final start = DateTime.timestamp();
       onReportEvent?.call('ads_manager: AppLovin start initializing', {});
       if (appLovinSDKKey.isEmpty) {
         Fimber.e('AppLovin not initialized. SDKKey is empty', stacktrace: StackTrace.current);
@@ -488,7 +489,11 @@ class DSAdsManager {
       }
       await AppLovinMAX.initialize(appLovinSDKKey);
       _mediationInitialized.add(DSAdMediation.appLovin);
-      onReportEvent?.call('ads_manager: AppLovin initialized', {});
+      final time = DateTime.timestamp().difference(start);
+      onReportEvent?.call('ads_manager: AppLovin initialized', {
+        'ads_init_sec': time.inSeconds,
+        'ads_init_ms': time.inMilliseconds,
+      });
     } ();
 
     await _appLovinInit;
