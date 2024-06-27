@@ -1,3 +1,10 @@
+## 0.7.0
+- add DSAdsManager.splashAppOpen
+- fix call DSAdSource.interstitial as source instead of DSAdSource.interstitial2 and DSAdSource.interstitialSplash
+- fix recreating splashInterstitial on isAdShowing call
+- add duration to event ads_manager: AppLovin initialized
+- ads dependencies updated
+
 ## 0.6.1
 - add optional counter before interstitial
 
