@@ -16,9 +16,9 @@ dependencies:
   freezed_annotation: ^2.1.0
   collection: ^1.16.0
 
-  google_mobile_ads: ^5.0.0
+  google_mobile_ads: ^5.1.0
 
-  applovin_max: ^3.9.1
+  applovin_max: ^3.10.1
 
 dev_dependencies:
   flutter_test:
