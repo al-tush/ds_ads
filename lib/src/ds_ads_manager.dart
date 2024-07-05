@@ -430,7 +430,7 @@ class DSAdsManager {
             //await MobileAds.instance.initialize();
               break;
             case DSAdMediation.appLovin:
-              await initAppLovine();
+              await initAppLovin();
               break;
           }
           _mediationInitialized.add(next);
