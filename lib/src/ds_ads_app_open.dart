@@ -498,8 +498,9 @@ class DSAdsAppOpen {
     _showLockedUntilAppResumed = true;
   }
 
-  static void unlockUntilAppResume() {
+  static void unlockUntilAppResume({Duration? andLockFor}) {
     _showLockedUntilAppResumed = false;
+    andLockFor?.let((it) => lockShowFor(it));
   }
 
   static void lockShowFor(Duration duration) {
