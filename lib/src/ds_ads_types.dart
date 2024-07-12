@@ -27,7 +27,6 @@ enum DSAdSource {
   interstitialSplash,
   banner,
   native,
-  native2,
   rewarded,
   appOpen,
   appOpenSplash,

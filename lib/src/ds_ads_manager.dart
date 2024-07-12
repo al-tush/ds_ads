@@ -14,7 +14,6 @@ import 'package:flutter/widgets.dart';
 import 'package:freezed_annotation/freezed_annotation.dart';
 import 'package:google_mobile_ads/google_mobile_ads.dart';
 
-import 'ds_ads_native2_loader_mixin.dart';
 import 'ds_ads_types.dart';
 
 /// [DSAdsManager} is a root point to control ads
@@ -25,7 +24,7 @@ class DSAdsManager {
   static DSAdsManager? _instance;
 
   static DSAdsManager get instance {
-    assert(_instance != null, 'Call AdsManager(...) to initialize ads');
+    assert(_instance != null, 'Call DSAdsManager(...) to initialize ads');
     return _instance!;
   }
 
@@ -111,7 +110,6 @@ class DSAdsManager {
   final String interstitialSplashGoogleUnitId;
   final String interstitial2GoogleUnitId;
   final String nativeGoogleUnitId;
-  final String native2GoogleUnitId;
   final String appOpenGoogleUnitId;
   final String appOpenSplashGoogleUnitId;
   final String rewardedGoogleUnitId;
@@ -120,7 +118,6 @@ class DSAdsManager {
   final String interstitialSplashAppLovinUnitId;
   final String interstitial2AppLovinUnitId;
   final String nativeAppLovinUnitId;
-  final String native2AppLovinUnitId;
   final String appOpenAppLovinUnitId;
   final String appOpenSplashAppLovinUnitId;
   final String rewardedAppLovinUnitId;
@@ -129,7 +126,7 @@ class DSAdsManager {
   final DSDurationCallback? rewardedFetchDelayCallback;
   final DSDurationCallback? rewardedShowLockCallback;
   final DSNativeStyle nativeAdBannerDefStyle;
-  final List<NativeAdBanner> nativeAdCustomBanners;
+  final List<NativeAdBannerInterface> nativeAdCustomBanners;
   final DSIsAdAllowedCallback? isAdAllowedCallback;
   final DSRetryCountCallback? retryCountCallback;
   final ConsentDebugSettings? consentDebugSettings;
@@ -159,8 +156,7 @@ class DSAdsManager {
   /// [onLoadAdError] ToDo: TBD
   /// [onReportEvent] is an event handler for the ability to send events to analytics.
   /// [interstitialUnitId] is the default unitId for the interstitial.
-  /// [nativeUnitId] unitId for native block.
-  /// [nativeAdHeight] height of custom native ad blocks (not in [DSNativeAdBannerStyle])
+  /// [nativeGoogleUnitId], [nativeAppLovinUnitId] unitId for native block.
   /// [isAdAllowedCallback] allows you to dynamically determine whether an ad can be displayed.
   /// [interstitialFetchDelay] sets the minimum time after displaying an interstitial before the next interstitial is started to load.
   /// [interstitialShowLock] the time from the moment the user closes the interstitial for which the interstitials show are blocked.
@@ -177,7 +173,6 @@ class DSAdsManager {
     this.interstitial2GoogleUnitId = '',
     this.rewardedGoogleUnitId = '',
     this.nativeGoogleUnitId = '',
-    this.native2GoogleUnitId = '',
     this.appOpenGoogleUnitId = '',
     this.appOpenSplashGoogleUnitId = '',
     this.appLovinSDKKey = '',
@@ -185,7 +180,7 @@ class DSAdsManager {
     this.interstitialSplashAppLovinUnitId = '',
     this.interstitial2AppLovinUnitId = '',
     this.nativeAppLovinUnitId = '',
-    this.native2AppLovinUnitId = '',
+    this.nativeAppLovinUnitId = '',
     this.appOpenAppLovinUnitId = '',
     this.appOpenSplashAppLovinUnitId = '',
     this.rewardedAppLovinUnitId = '',
@@ -267,7 +262,6 @@ class DSAdsManager {
   Future<void> dismiss() async {
     _instance = null;
     await DSAdsNativeLoaderMixin.disposeClass();
-    await DSAdsNative2LoaderMixin.disposeClass();
   }
 
   /// Wait for initialize lib. [maxWait] define stop wait after this period (default 5 seconds)
@@ -388,10 +382,6 @@ class DSAdsManager {
       case DSAdSource.native:
         googleId = nativeGoogleUnitId;
         appLovinId = nativeAppLovinUnitId;
-        break;
-      case DSAdSource.native2:
-        googleId = native2GoogleUnitId;
-        appLovinId = native2AppLovinUnitId;
         break;
       case DSAdSource.rewarded:
         googleId = rewardedGoogleUnitId;
