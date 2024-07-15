@@ -4,8 +4,6 @@ import 'package:applovin_max/applovin_max.dart';
 import 'package:collection/collection.dart';
 import 'package:ds_ads/ds_ads.dart';
 import 'package:ds_ads/src/applovin_ads/ds_applovin_ad_widget.dart';
-import 'package:ds_ads/src/applovin_ads/ds_applovin_native_ad.dart';
-import 'package:ds_ads/src/ds_ads_types.dart';
 import 'package:fimber/fimber.dart';
 import 'package:flutter/material.dart';
 import 'package:freezed_annotation/freezed_annotation.dart';
