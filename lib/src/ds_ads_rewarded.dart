@@ -8,6 +8,7 @@ import 'package:ds_common/ds_common.dart';
 import 'package:fimber/fimber.dart';
 import 'package:freezed_annotation/freezed_annotation.dart';
 
+import 'ds_ads_app_open.dart';
 import 'ds_ads_types.dart';
 import 'ds_ads_types_internal.dart';
 
@@ -424,6 +425,8 @@ class DSAdsRewarded {
     };
     ad.onAdShown = (ad) {
       try {
+        DSAdsAppOpen.lockShowFor(const Duration(hours: 1));
+
         final eventAttrs = attrs.putShowAdInfo(
           startShowRequest: startTime,
           totalLoadDuration: _totalLoadDuration,
@@ -446,6 +449,7 @@ class DSAdsRewarded {
     };
     ad.onAdDismissed = (ad) {
       try {
+        DSAdsAppOpen.lockShowFor(const Duration(seconds: 5));
         _report('$_tag: full screen content dismissed',
             location: location, mediation: ad.mediation, adapter: ad.mediationAdapterClassName, attributes: attrs);
         ad.dispose();
@@ -462,6 +466,7 @@ class DSAdsRewarded {
     };
     ad.onAdFailedToShow = (ad, int errCode, String errText) {
       try {
+        DSAdsAppOpen.lockShowFor(const Duration(seconds: 5));
         _report('$_tag: showing canceled by error',
             location: location, mediation: ad.mediation, adapter: ad.mediationAdapterClassName, attributes: attrs);
         Fimber.e('$errText ($errCode)', stacktrace: StackTrace.current);
@@ -479,6 +484,7 @@ class DSAdsRewarded {
     };
     ad.onAdClicked = (ad) {
       try {
+        DSAdsAppOpen.lockShowFor(const Duration(hours: 1));
         _report('$_tag: ad clicked',
             location: location, mediation: ad.mediation, adapter: ad.mediationAdapterClassName, attributes: attrs);
       } catch (e, stack) {
