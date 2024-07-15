@@ -1,14 +1,18 @@
 import 'dart:async';
 
+import 'package:applovin_max/applovin_max.dart';
 import 'package:collection/collection.dart';
 import 'package:ds_ads/ds_ads.dart';
 import 'package:ds_ads/src/applovin_ads/ds_applovin_ad_widget.dart';
 import 'package:ds_ads/src/applovin_ads/ds_applovin_native_ad.dart';
+import 'package:ds_ads/src/ds_ads_types.dart';
 import 'package:fimber/fimber.dart';
 import 'package:flutter/material.dart';
 import 'package:freezed_annotation/freezed_annotation.dart';
 
 import 'google_ads/export.dart';
+
+export 'applovin_ads/ds_applovin_native_ad.dart';
 
 part 'ds_ads_native_loader_types.dart';
 
@@ -28,7 +32,7 @@ mixin DSAdsNativeLoaderMixin<T extends StatefulWidget> on State<T> {
   static const _loadingTimeout = Duration(minutes: 1);
   static const _loadedTimeout = Duration(hours: 4);
 
-  /// Реклама уже предзагружена или сейчас загружается
+  /// Ad is already preloaded or loading
   static bool hasPreloadedAd(DSAdLocation location) {
     final style = _getStyleByLocation(location);
     return _loadingAds.containsKey(style);
@@ -43,20 +47,35 @@ mixin DSAdsNativeLoaderMixin<T extends StatefulWidget> on State<T> {
     }
   }
 
+  NativeAdBannerInterface? _getNativeAdBanner() {
+    return DSAdsManager.instance.nativeAdCustomBanners.firstWhereOrNull((e) => e.location == nativeAdLocation);
+}
+
+  /// Return expected height of native banner
+  /// This call is not support [NativeAdBannerFlutter] natives (because they can setup size dinamically)
   double get nativeAdHeight {
-    var height =
-        DSAdsManager.instance.nativeAdCustomBanners.firstWhereOrNull((e) => e.location == nativeAdLocation)?.height;
-    if (height != null) return height;
-    // the same as in res/layout/native_ad_X_light.xml and res/layout/native_ad_X_dark.xml
-    switch (DSAdsManager.instance.nativeAdBannerDefStyle) {
-      case DSNativeAdBannerStyle.style1:
-        return 260;
-      case DSNativeAdBannerStyle.style2:
-        return 290;
-      default:
-        assert(false, 'nativeAdBannerDefStyle or nativeAdCustomBanners should be defined');
-        return 0;
+    final banner = _getNativeAdBanner();
+    if (banner == null) {
+      // the same as in res/layout/native_ad_X_light.xml and res/layout/native_ad_X_dark.xml
+      switch (DSAdsManager.instance.nativeAdBannerDefStyle) {
+        case DSNativeAdBannerStyle.style1:
+          return 260;
+        case DSNativeAdBannerStyle.style2:
+          return 290;
+        default:
+          assert(false, 'nativeAdBannerDefStyle or nativeAdCustomBanners should be defined');
+          return 0;
+      }
     }
+    if (banner is NativeAdBannerFlutter) {
+      final ad = _showedAds[this] as DSAppLovinNativeAdFlutter?;
+      if (ad == null) throw Exception('Bug. Create an issue');
+      return banner.heightCallback(ad);
+    }
+    if (banner is NativeAdBannerPlatform) {
+      return banner.height;
+    }
+    throw Exception('Unimplemented. Create an issue');
   }
 
   @override
@@ -74,6 +93,7 @@ mixin DSAdsNativeLoaderMixin<T extends StatefulWidget> on State<T> {
     super.dispose();
   }
 
+  /// Dispose all loading ads
   @internal
   static Future<void> disposeClass() async {
     while (_loadingAds.isNotEmpty) {
@@ -82,27 +102,27 @@ mixin DSAdsNativeLoaderMixin<T extends StatefulWidget> on State<T> {
   }
 
   static Future<void> _disposeOtherMediation() async {
-    final Type currentClass;
+    final Set<Type> currentClasses;
     switch (DSAdsManager.instance.currentMediation(DSAdSource.native)) {
       case DSAdMediation.google:
-        currentClass = DSGoogleNativeAd;
+        currentClasses = {DSGoogleNativeAd};
         break;
       case DSAdMediation.appLovin:
-        currentClass = DSAppLovinNativeAd;
+        currentClasses = {DSAppLovinNativeAd, DSAppLovinNativeAdFlutter};
         break;
       default:
-        currentClass = Object;
+        currentClasses = {Object};
         break;
     }
     _loadingAds.removeWhere((key, value) {
-      final del = value.runtimeType != currentClass;
+      final del = !currentClasses.contains(value.runtimeType);
       if (del) {
         unawaited(value.dispose());
       }
       return del;
     });
     _showedAds.removeWhere((key, value) {
-      final del = value.runtimeType != currentClass;
+      final del = !currentClasses.contains(value.runtimeType);
       if (del) {
         value.dispose();
       }
@@ -134,7 +154,11 @@ mixin DSAdsNativeLoaderMixin<T extends StatefulWidget> on State<T> {
   static DSNativeStyle _getStyleByLocation(DSAdLocation location) {
     String? style;
     if (!location.isInternal) {
-      style = DSAdsManager.instance.nativeAdCustomBanners.firstWhereOrNull((e) => e.location == location)?.style;
+      final banner = DSAdsManager.instance.nativeAdCustomBanners.firstWhereOrNull((e) => e.location == location);
+      if (banner != null && banner is! NativeAdBannerPlatform) {
+        throw Exception('Unexpected flow. Create an issue');
+      }
+      style = (banner as NativeAdBannerPlatform?)?.style;
     }
     style ??= DSAdsManager.instance.nativeAdBannerDefStyle;
     return style;
@@ -174,6 +198,8 @@ mixin DSAdsNativeLoaderMixin<T extends StatefulWidget> on State<T> {
     return false;
   }
 
+  /// Fetch native ad for [location]
+  /// This call is not support [NativeAdBannerFlutter] natives (preload is not implemented by AppLovin)
   static Future<void> fetchAd({
     required final DSAdLocation location,
   }) async {
@@ -359,7 +385,25 @@ mixin DSAdsNativeLoaderMixin<T extends StatefulWidget> on State<T> {
     return true;
   }
 
+  /// Reload current native banner
   void reloadAd() {
+    final banner = _getNativeAdBanner();
+    if (banner is NativeAdBannerFlutter) {
+      /// Flutter native banner processing
+      final ad = _showedAds[this] as DSAppLovinNativeAdFlutter?;
+      if (ad == null) return;
+      final mediation = DSAdsManager.instance.currentMediation(DSAdSource.native);
+      _report(
+        '$_tag: reloading',
+        location: nativeAdLocation,
+        mediation: mediation,
+        attributes: _showedAds[this]?.getReportAttributes(),
+      );
+      ad.viewController.loadAd();
+      return;
+    }
+
+    // Platform native banner processing
     if (isShowed) {
       final mediation = DSAdsManager.instance.currentMediation(DSAdSource.native);
       _report(
@@ -389,14 +433,110 @@ mixin DSAdsNativeLoaderMixin<T extends StatefulWidget> on State<T> {
     });
   }
 
+  DSAppLovinNativeAdFlutter? _createDSAppLovinNativeAdFlutter() {
+    final mediation = DSAdsManager.instance.currentMediation(DSAdSource.native);
+    if (mediation == null) return null;
+
+    Future<void> onAdLoaded(DSNativeAd ad) async {
+      try {
+        _report(
+          '$_tag: loaded',
+          location: nativeAdLocation,
+          mediation: ad.mediation,
+          adapter: ad.mediationAdapterClassName,
+          attributes: ad.getReportAttributes(),
+        );
+        DSAdsManager.instance.emitEvent(DSAdsNativeLoadedEvent._(ad: ad));
+        setState(() {});
+      } catch (e, stack) {
+        Fimber.e('$e', stacktrace: stack);
+      }
+    }
+
+    Future<void> onAdFailedToLoad(DSNativeAd ad, int code, String message) async {
+      try {
+        _report(
+          '$_tag: failed to load',
+          location: nativeAdLocation,
+          mediation: ad.mediation,
+          adapter: ad.mediationAdapterClassName,
+          attributes: {
+            ...ad.getReportAttributes(),
+            'error_text': message,
+            'error_code': '$code ($mediation)',
+          },
+        );
+        DSAdsManager.instance.emitEvent(const DSAdsNativeLoadFailed._());
+        await DSAdsManager.instance.onLoadAdError(code, message, mediation, DSAdSource.native);
+        setState(() {});
+      } catch (e, stack) {
+        Fimber.e('$e', stacktrace: stack);
+      }
+    }
+
+    Future<void> onPaidEvent(DSNativeAd ad, double valueMicros, DSPrecisionType precision, String currencyCode) async {
+      try {
+        DSAdsManager.instance.onPaidEvent(
+            ad, mediation, _getLocationByAd(ad), valueMicros, precision, currencyCode, DSAdSource.native, null, {});
+      } catch (e, stack) {
+        Fimber.e('$e', stacktrace: stack);
+      }
+    }
+
+    Future<void> onAdClicked(DSNativeAd ad) async {
+      try {
+        DSAdsManager.instance.emitEvent(const DSAdsNativeClickEvent._());
+        _report('$_tag: ad clicked',
+            location: _getLocationByAd(ad), mediation: ad.mediation, adapter: ad.mediationAdapterClassName);
+      } catch (e, stack) {
+        Fimber.e('$e', stacktrace: stack);
+      }
+    }
+
+    return DSAppLovinNativeAdFlutter(
+      adUnitId: _adUnitId(mediation),
+      onPaidEvent: onPaidEvent,
+      onAdLoaded: onAdLoaded,
+      onAdFailedToLoad: onAdFailedToLoad,
+      onAdClicked: onAdClicked,
+    );
+  }
+
   @protected
   Widget nativeAdWidget({
     final NativeAdBuilder? builder,
   }) {
     assert(!nativeAdLocation.isInternal);
-    if (!DSAdsManager.instance.isAdAvailable) return const SizedBox();
     if (DSAdsManager.instance.appState.isPremium) return const SizedBox();
     if (_isDisabled(nativeAdLocation)) return const SizedBox();
+
+    final banner = _getNativeAdBanner();
+    if (banner is NativeAdBannerFlutter) {
+      if (!isShowed) {
+        final ad = _createDSAppLovinNativeAdFlutter();
+        if (ad == null) return const SizedBox();
+        _showedAds[this] = ad;
+      }
+
+      final ad = _showedAds[this] as DSAppLovinNativeAdFlutter;
+      Widget child = MaxNativeAdView(
+          adUnitId: ad.adUnitId,
+          controller: ad.viewController,
+          listener: ad.viewListener,
+          child: banner.builder(context, ad),
+      );
+      child = SizedBox(
+        height: DSAdsManager.instance.isAdAvailable ? nativeAdHeight : 0,
+        child: child,
+      );
+      if (builder != null) {
+        return builder(context, isShowed, child);
+      } else {
+        return child;
+      }
+    }
+
+    if (!DSAdsManager.instance.isAdAvailable) return const SizedBox();
 
     Widget child;
     final ad = _showedAds[this];

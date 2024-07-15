@@ -180,7 +180,6 @@ class DSAdsManager {
     this.interstitialSplashAppLovinUnitId = '',
     this.interstitial2AppLovinUnitId = '',
     this.nativeAppLovinUnitId = '',
-    this.nativeAppLovinUnitId = '',
     this.appOpenAppLovinUnitId = '',
     this.appOpenSplashAppLovinUnitId = '',
     this.rewardedAppLovinUnitId = '',

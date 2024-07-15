@@ -1,7 +1,66 @@
+import 'package:applovin_max/applovin_max.dart';
 import 'package:ds_ads/ds_ads.dart';
 import 'package:fimber/fimber.dart';
 import 'package:flutter/services.dart';
-import 'package:google_mobile_ads/google_mobile_ads.dart';
+import 'package:google_mobile_ads/google_mobile_ads.dart' as g;
+
+class DSAppLovinNativeAdFlutter extends DSNativeAd {
+  var _isLoaded = false;
+  var _networkName = '';
+  var _mediaViewAspectRatio = 16/9;
+  double get mediaViewAspectRatio => _mediaViewAspectRatio;
+
+  final viewController = MaxNativeAdViewController();
+  late final NativeAdListener viewListener;
+
+  DSAppLovinNativeAdFlutter({
+    required super.adUnitId,
+    required super.onPaidEvent,
+    super.onAdLoaded,
+    super.onAdFailedToLoad,
+    super.onAdClicked,
+  }) : super(
+    factoryId: '',
+  ) {
+    viewListener = NativeAdListener(
+      onAdLoadedCallback: (ad) {
+        _isLoaded = true;
+        _networkName = ad.networkName;
+        _mediaViewAspectRatio = ad.nativeAd?.mediaContentAspectRatio ?? _mediaViewAspectRatio;
+        onAdLoaded?.call(this);
+      },
+      onAdLoadFailedCallback: (adUnitId, error) {
+        onAdFailedToLoad?.call(this, error.code, error.message);
+      },
+      onAdClickedCallback: (ad) {
+        onAdClicked?.call(this);
+      },
+      onAdRevenuePaidCallback: (ad) {
+        onPaidEvent(this, ad.revenue * 1000000, DSPrecisionType.unknown, 'USD');
+      },
+    );
+  }
+
+  @override
+  String get mediationAdapterClassName => _networkName;
+
+  @override
+  DSAdMediation get mediation => DSAdMediation.appLovin;
+
+  @override
+  bool get isLoaded => _isLoaded;
+
+  @override
+  Future<void> load() async {
+    viewController.loadAd();
+    startLoading();
+  }
+
+  @override
+  Future<void> dispose() async {
+    viewController.dispose();
+  }
+}
 
 class DSAppLovinNativeAd  extends DSNativeAd {
   var _isLoaded = false;
@@ -106,8 +165,8 @@ class ALInstanceManager {
             pType = DSPrecisionType.unknown;
             break;
           default:
-            pType = PrecisionType.unknown;
-            DSAdsManager.instance.onReportEvent?.call('AppLovin (ds_ads) unknown prcision type: $precision', {});
+            pType = g.PrecisionType.unknown;
+            DSAdsManager.instance.onReportEvent?.call('AppLovin (ds_ads) unknown precision type: $precision', {});
             break;
         }
         ad.onPaidEvent(ad, value * 1000000, pType, 'USD');

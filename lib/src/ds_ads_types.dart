@@ -2,6 +2,7 @@ import 'package:flutter/foundation.dart';
 import 'package:flutter/widgets.dart';
 import 'package:google_mobile_ads/google_mobile_ads.dart';
 
+import 'applovin_ads/ds_applovin_native_ad.dart';
 import 'generic_ads/export.dart';
 
 typedef OnReportEvent = void Function(String eventName, Map<String, Object> attributes);
@@ -57,24 +58,58 @@ class DSAdLocation {
 
 typedef DSNativeStyle = String;
 typedef NativeAdBuilder = Widget Function(BuildContext context, bool isLoaded, Widget child);
+typedef NativeAdBuilderFlutter = Widget Function(BuildContext context, DSAppLovinNativeAdFlutter ad);
 
 typedef BannerAdBuilder = Widget Function(BuildContext context, bool isLoaded, Widget child);
 
-class NativeAdBanner {
+sealed class NativeAdBannerInterface {
+  DSAdLocation get location;
+}
+
+/// Platform-specific native banner description
+class NativeAdBannerPlatform implements NativeAdBannerInterface {
+  @override
   final DSAdLocation location;
   final DSNativeStyle style;
   final double height;
 
-  NativeAdBanner({
+  NativeAdBannerPlatform({
     required this.location,
     required this.style,
     required this.height,
   });
 }
 
+/// Flutter defined native banner description (currently supported by AppLovin)
+class NativeAdBannerFlutter implements NativeAdBannerInterface {
+  @override
+  final DSAdLocation location;
+  final double Function(DSAppLovinNativeAdFlutter ad) heightCallback;
+  final NativeAdBuilderFlutter builder;
+
+  NativeAdBannerFlutter({
+    required this.location,
+    required this.heightCallback,
+    required this.builder,
+  });
+}
+
+/// Legacy
+@Deprecated('Use NativeAdBannerPlatform for Google or legacy natives or NativeAdBannerFlutter for AppLovin (https://developers.applovin.com/en/flutter/ad-formats/native-ads/)')
+class NativeAdBanner extends NativeAdBannerPlatform {
+  NativeAdBanner({
+    required super.location,
+    required super.style,
+    required super.height,
+  });
+}
+
 abstract class DSNativeAdBannerStyle {
+  /// not defined style
   static const DSNativeStyle notDefined = '';
-  static const DSNativeStyle style1 = 'adFactory1'; // top margin 16dp
+  /// top margin 16dp
+  static const DSNativeStyle style1 = 'adFactory1';
+  /// no margins
   static const DSNativeStyle style2 = 'adFactory2'; // no margins
 }
 

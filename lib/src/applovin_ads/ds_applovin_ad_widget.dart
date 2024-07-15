@@ -5,6 +5,7 @@ import 'package:flutter/rendering.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter/widgets.dart';
 
+// ToDo: delete after version 0.8 (migrate all code to Flutter widget)
 class DSAppLovinAdWidget extends StatefulWidget {
   /// Default constructor for [DSAppLovinAdWidget].
   ///
