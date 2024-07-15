@@ -200,7 +200,10 @@ class DSAdsManager {
 
     unawaited(() async {
       await for (final event in eventStream) {
-        if (event is DSAdsInterstitialLoadedEvent || event is DSAdsNativeLoadedEvent) {
+        if (event is DSAdsInterstitialLoadedEvent
+            || event is DSAdsAppOpenLoadedEvent
+            || event is DSAdsRewardedLoadedEvent
+            || event is DSAdsNativeLoadedEvent) {
           _isAdAvailable = true;
         }
       }
