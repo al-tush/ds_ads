@@ -1,3 +1,11 @@
+## 0.8.0
+- experimental support of AppLovin Flutter natives
+- experimental add consent support for iOS
+- remove native2 mixin (was in experimental status since version 0.4)
+- copy AppOpen block implementation from Interstitial to Rewarded ads (fix app open after rewarded ad issue)
+- add optional andLockFor parameter to unlockUntilAppResume
+- fix isAdAvailable
+
 ## 0.7.0
 - add DSAdsManager.splashAppOpen
 - fix call DSAdSource.interstitial as source instead of DSAdSource.interstitial2 and DSAdSource.interstitialSplash
