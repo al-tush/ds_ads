@@ -55,7 +55,7 @@ class _DSAdsOverlayScreenState extends State<DSAdsOverlayScreen> {
               mainAxisSize: MainAxisSize.min,
               children: [
                 const Text(
-                  'Advertising in', // ToDo: localize?
+                  'Ad in', // ToDo: localize?
                   style: TextStyle(
                     fontSize: 16,
                     color: Colors.white,
