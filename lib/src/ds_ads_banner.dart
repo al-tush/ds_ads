@@ -13,12 +13,13 @@ class DSAdsBanner extends StatefulWidget {
   final String googleUnitId;
   final String appLovinUnitId;
   final bool adaptive;
-  
+
   const DSAdsBanner({
     super.key,
     required this.location,
     this.googleUnitId = '',
     this.appLovinUnitId = '',
+    @Deprecated('Used by AppLovin. Now is not supported')
     this.adaptive = false,
     this.builder,
   }) : assert(googleUnitId != '' || appLovinUnitId != '');
@@ -288,7 +289,6 @@ class _DSAdsBannerState extends State<DSAdsBanner> {
         child = MaxAdView(
           adUnitId: _adUnitId(DSAdMediation.appLovin),
           adFormat: AdFormat.banner,
-          adaptiveBannerWidth: widget.adaptive ? MediaQuery.of(context).size.width : null,
           listener: AdViewAdListener(
             onAdLoadedCallback: (ad) {
               _isLoaded = true;
