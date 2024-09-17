@@ -1,3 +1,8 @@
+## 0.8.1
+- changed 'Advertising in' to 'Ad in'
+- updated dependencies
+- mark DSAdsBanner.adaptive property as not used
+
 ## 0.8.0
 - experimental support of AppLovin Flutter natives
 - experimental add consent support for iOS
