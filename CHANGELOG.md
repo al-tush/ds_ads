@@ -1,3 +1,6 @@
+## 0.8.2
+- downgrade AppLovin max to the last stable version - 3.10.1. 4.0.0 is bugly too
+
 ## 0.8.1
 - changed 'Advertising in' to 'Ad in'
 - updated dependencies
