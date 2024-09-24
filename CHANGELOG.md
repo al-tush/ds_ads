@@ -1,3 +1,6 @@
+## 0.8.3
+- add DSConsentStatus type to prevent google_mobile_ads import
+
 ## 0.8.2
 - downgrade AppLovin max to the last stable version - 3.10.1. 4.0.0 is bugly too
 
