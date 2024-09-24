@@ -1,3 +1,6 @@
+## 0.8.4
+- pinned applovin_max to 3.10.1
+
 ## 0.8.3
 - add DSConsentStatus type to prevent google_mobile_ads import
 
