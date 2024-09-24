@@ -90,7 +90,7 @@ class DSAdsManager {
   final _mediationInitialized = <DSAdMediation>{};
 
   ConsentForm? _consentForm;
-  ConsentStatus _lastConsentStatus = ConsentStatus.unknown;
+  DSConsentStatus _lastConsentStatus = DSConsentStatus.unknown;
 
   /// Was the ad successfully loaded at least once in this session
   bool get isAdAvailable => _isAdAvailable;
@@ -224,12 +224,12 @@ class DSAdsManager {
         ConsentInformation.instance.requestConsentInfoUpdate(
           params, () async {
           _lastConsentStatus = await ConsentInformation.instance.getConsentStatus();
-          AppLovinMAX.setHasUserConsent(_lastConsentStatus == ConsentStatus.obtained);
+          AppLovinMAX.setHasUserConsent(_lastConsentStatus == DSConsentStatus.obtained);
           DSMetrica.reportEvent('consent status', attributes: {
             'consent_status': '$_lastConsentStatus',
             'position': 'init',
           });
-          if ([ConsentStatus.notRequired, ConsentStatus.obtained].contains(_lastConsentStatus)) return;
+          if ([DSConsentStatus.notRequired, DSConsentStatus.obtained].contains(_lastConsentStatus)) return;
           if (await ConsentInformation.instance.isConsentFormAvailable()) {
             ConsentForm.loadConsentForm((ConsentForm consentForm) async {
               _consentForm = consentForm;
@@ -251,7 +251,7 @@ class DSAdsManager {
       if (Platform.isIOS) {
         final status = await DSAdjust.getATTStatus();
         _lastConsentStatus = _convertATTStatus(status);
-        AppLovinMAX.setHasUserConsent(_lastConsentStatus == ConsentStatus.obtained);
+        AppLovinMAX.setHasUserConsent(_lastConsentStatus == DSConsentStatus.obtained);
         DSMetrica.reportEvent('consent status', attributes: {
           'consent_status': '$_lastConsentStatus',
           'att_status': status,
@@ -279,19 +279,19 @@ class DSAdsManager {
     }
   }
 
-  ConsentStatus get consentStatus => _lastConsentStatus;
+  DSConsentStatus get consentStatus => _lastConsentStatus;
 
   /// return true if consent available (for Android only)
-  bool get isConsentAvailable => (consentStatus != ConsentStatus.notRequired);
+  bool get isConsentAvailable => (consentStatus != DSConsentStatus.notRequired);
 
-  ConsentStatus _convertATTStatus(int status) {
+  DSConsentStatus _convertATTStatus(int status) {
     return switch (status) {
     // ToDo: need refactoring
-      1 => ConsentStatus.required,
+      1 => DSConsentStatus.required,
     // ToDo: need refactoring
-      2 => ConsentStatus.required,
-      3 => ConsentStatus.obtained,
-      _ => ConsentStatus.unknown,
+      2 => DSConsentStatus.required,
+      3 => DSConsentStatus.obtained,
+      _ => DSConsentStatus.unknown,
     };
   }
   
@@ -319,7 +319,7 @@ class DSAdsManager {
             _consentForm = null;
             if (error == null) {
               _lastConsentStatus = await ConsentInformation.instance.getConsentStatus();
-              AppLovinMAX.setHasUserConsent(_lastConsentStatus == ConsentStatus.obtained);
+              AppLovinMAX.setHasUserConsent(_lastConsentStatus == DSConsentStatus.obtained);
               DSMetrica.reportEvent('consent status', attributes: {
                 'consent_status': '$_lastConsentStatus',
                 'position': 'after dialog',
@@ -337,7 +337,7 @@ class DSAdsManager {
       if (Platform.isIOS) {
         final status = await DSAdjust.requestATT();
         _lastConsentStatus = _convertATTStatus(status.toInt());
-        AppLovinMAX.setHasUserConsent(_lastConsentStatus == ConsentStatus.obtained);
+        AppLovinMAX.setHasUserConsent(_lastConsentStatus == DSConsentStatus.obtained);
         DSMetrica.reportEvent('consent status', attributes: {
           'consent_status': '$_lastConsentStatus',
           'att_status': status,

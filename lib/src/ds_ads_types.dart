@@ -20,6 +20,8 @@ typedef OnPaidEvent = void Function(
 typedef DSIsAdAllowedCallback = bool Function(DSAdSource source, DSAdLocation location);
 typedef DSRetryCountCallback = int Function(DSAdSource source);
 
+typedef DSConsentStatus = ConsentStatus;
+
 typedef DSDurationCallback = Duration Function();
 
 enum DSAdSource {
