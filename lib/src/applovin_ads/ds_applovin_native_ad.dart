@@ -89,16 +89,16 @@ class DSAppLovinNativeAd  extends DSNativeAd {
 
   @override
   Future<void> load() {
-    if (!DSAdsManager.instance.isMediationInitialized(DSAdMediation.appLovin)) {
+    if (!DSAdsManager.I.isMediationInitialized(DSAdMediation.appLovin)) {
       Fimber.e('AppLovin was not initialized', stacktrace: StackTrace.current);
     }
     startLoading();
-    return ALInstanceManager.instance.loadNativeAd(this);
+    return ALInstanceManager.I.loadNativeAd(this);
   }
 
   @override
   Future<void> dispose() {
-    return ALInstanceManager.instance.disposeAd(this);
+    return ALInstanceManager.I.disposeAd(this);
   }
 }
 
@@ -106,7 +106,7 @@ class DSAppLovinNativeAd  extends DSNativeAd {
 /// messages to platform code.
 class ALInstanceManager {
 
-  static final instance = ALInstanceManager(
+  static final I = ALInstanceManager(
     'pro.altush.ds_ads/app_lovin_ads',
   );
 
@@ -166,7 +166,7 @@ class ALInstanceManager {
             break;
           default:
             pType = g.PrecisionType.unknown;
-            DSAdsManager.instance.onReportEvent?.call('AppLovin (ds_ads) unknown precision type: $precision', {});
+            DSAdsManager.I.onReportEvent?.call('AppLovin (ds_ads) unknown precision type: $precision', {});
             break;
         }
         ad.onPaidEvent(ad, value * 1000000, pType, 'USD');

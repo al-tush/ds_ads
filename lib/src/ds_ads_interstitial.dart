@@ -31,7 +31,7 @@ class DSAdsInterstitial {
 
 
   DSAdMediation? _getMediation() {
-    final m = DSAdsManager.instance.currentMediation(source);
+    final m = DSAdsManager.I.currentMediation(source);
     if (m == null) return null;
     if (_adUnitIdGoogle().isNotEmpty && _adUnitIdAppLovin().isEmpty) {
       return DSAdMediation.google;
@@ -45,11 +45,11 @@ class DSAdsInterstitial {
   String _adUnitIdGoogle() {
     switch (source) {
       case DSAdSource.interstitial:
-        return DSAdsManager.instance.interstitialGoogleUnitId;
+        return DSAdsManager.I.interstitialGoogleUnitId;
       case DSAdSource.interstitialSplash:
-        return DSAdsManager.instance.interstitialSplashGoogleUnitId;
+        return DSAdsManager.I.interstitialSplashGoogleUnitId;
       case DSAdSource.interstitial2:
-        return DSAdsManager.instance.interstitial2GoogleUnitId;
+        return DSAdsManager.I.interstitial2GoogleUnitId;
       default:
         throw Exception('Unsupported source $source');
     }
@@ -58,11 +58,11 @@ class DSAdsInterstitial {
   String _adUnitIdAppLovin() {
     switch (source) {
       case DSAdSource.interstitial:
-        return DSAdsManager.instance.interstitialAppLovinUnitId;
+        return DSAdsManager.I.interstitialAppLovinUnitId;
       case DSAdSource.interstitialSplash:
-        return DSAdsManager.instance.interstitialSplashAppLovinUnitId;
+        return DSAdsManager.I.interstitialSplashAppLovinUnitId;
       case DSAdSource.interstitial2:
-        return DSAdsManager.instance.interstitial2AppLovinUnitId;
+        return DSAdsManager.I.interstitial2AppLovinUnitId;
       default:
         throw Exception('Unsupported source $source');
     }
@@ -110,7 +110,7 @@ class DSAdsInterstitial {
     String? adapter,
     Map<String, Object>? attributes,
   }) {
-    DSAdsManager.instance.onReportEvent?.call(eventName, {
+    DSAdsManager.I.onReportEvent?.call(eventName, {
       if (mediation != null) 'adUnitId': customAdId ?? _adUnitId(mediation),
       'location': location.val,
       'mediation': '$mediation',
@@ -122,7 +122,7 @@ class DSAdsInterstitial {
   static final _locationErrReports = <DSAdLocation>{};
 
   bool _isDisabled(DSAdLocation location) {
-    if (!location.isInternal && DSAdsManager.instance.locations?.contains(location) == false) {
+    if (!location.isInternal && DSAdsManager.I.locations?.contains(location) == false) {
       final msg = '$_tag: location $location not in locations';
       assert(false, msg);
       if (!_locationErrReports.contains(location)) {
@@ -130,7 +130,7 @@ class DSAdsInterstitial {
         Fimber.e(msg, stacktrace: StackTrace.current);
       }
     }
-    if (DSAdsManager.instance.isAdAllowedCallback?.call(source, location) == false) {
+    if (DSAdsManager.I.isAdAllowedCallback?.call(source, location) == false) {
       Fimber.i('$_tag: disabled (location: $location)');
       return true;
     }
@@ -154,12 +154,12 @@ class DSAdsInterstitial {
   }) {
     assert(_checkCustomAttributes(customAttributes), 'custom attributes must have custom_attr_ prefix');
 
-    if (DSAdsManager.instance.appState.isPremium || _isDisposed) {
+    if (DSAdsManager.I.appState.isPremium || _isDisposed) {
       then?.call();
       return;
     }
 
-    DSAdsManager.instance.updateMediations(source);
+    DSAdsManager.I.updateMediations(source);
 
     if (_isDisabled(location)) {
       then?.call();
@@ -179,7 +179,7 @@ class DSAdsInterstitial {
       return;
     }
 
-    final interstitialFetchDelay = DSAdsManager.instance.interstitialFetchDelayCallback?.call() ?? const Duration();
+    final interstitialFetchDelay = DSAdsManager.I.interstitialFetchDelayCallback?.call() ?? const Duration();
     if (DateTime.timestamp().difference(_lastShowTime) < interstitialFetchDelay) {
       then?.call();
       unawaited(() async {
@@ -222,7 +222,7 @@ class DSAdsInterstitial {
         _ad = ad;
         _loadRetryCount = 0;
         then?.call();
-        DSAdsManager.instance.emitEvent(DSAdsInterstitialLoadedEvent._(ad: ad));
+        DSAdsManager.I.emitEvent(DSAdsInterstitialLoadedEvent._(ad: ad));
       } catch (e, stack) {
         Fimber.e('$e', stacktrace: stack);
       }
@@ -247,7 +247,7 @@ class DSAdsInterstitial {
             ...?customAttributes,
           },
         );
-        await DSAdsManager.instance.onLoadAdError(errCode, errDescription, mediation, source);
+        await DSAdsManager.I.onLoadAdError(errCode, errDescription, mediation, source);
         _loadConditions.add(DSAdsLoadCondition.error);
         final newMediation = _getMediation();
         if (newMediation != _mediation) {
@@ -259,7 +259,7 @@ class DSAdsInterstitial {
           }
         }
         _mediation = null;
-        if (_loadRetryCount < DSAdsManager.instance.getRetryMaxCount(source)) {
+        if (_loadRetryCount < DSAdsManager.I.getRetryMaxCount(source)) {
           await Future.delayed(loadRetryDelay);
           if ({DSAdState.none, DSAdState.error}.contains(adState) && !_isDisposed) {
             _report('$_tag: retry loading',
@@ -270,7 +270,7 @@ class DSAdsInterstitial {
           Fimber.w('$errDescription ($errCode)', stacktrace: StackTrace.current);
           _adState = DSAdState.none;
           then?.call();
-          DSAdsManager.instance.emitEvent(DSAdsInterstitialLoadFailedEvent._(
+          DSAdsManager.I.emitEvent(DSAdsInterstitialLoadFailedEvent._(
             errCode: errCode,
             errText: errDescription,
           ));
@@ -332,7 +332,7 @@ class DSAdsInterstitial {
     assert(counterDelaySec == 0 || context != null, 'context must be assigned to show counter dialog before ad');
     assert(_checkCustomAttributes(customAttributes), 'custom attributes must have custom_attr_ prefix');
 
-    if (DSAdsManager.instance.appState.isPremium || _isDisposed) {
+    if (DSAdsManager.I.appState.isPremium || _isDisposed) {
       then?.call();
       return;
     }
@@ -344,7 +344,7 @@ class DSAdsInterstitial {
 
     final startTime = DateTime.timestamp();
 
-    if (!DSAdsManager.instance.isInForeground) {
+    if (!DSAdsManager.I.isInForeground) {
       _report('$_tag: app in background', location: location, mediation: _mediation, attributes: customAttributes);
       then?.call();
       fetchAd(location: location, customAttributes: customAttributes);
@@ -376,7 +376,7 @@ class DSAdsInterstitial {
           attributes: customAttributes,
         );
         then?.call();
-        DSAdsManager.instance.emitEvent(const DSAdsInterstitialShowErrorEvent._());
+        DSAdsManager.I.emitEvent(const DSAdsInterstitialShowErrorEvent._());
       } else {
         var processed = false;
         final timeout = calcDismissAdAfter();
@@ -408,13 +408,13 @@ class DSAdsInterstitial {
                 attributes: customAttributes,
               );
               then?.call();
-              DSAdsManager.instance.emitEvent(const DSAdsInterstitialShowErrorEvent._());
+              DSAdsManager.I.emitEvent(const DSAdsInterstitialShowErrorEvent._());
               return;
             }
             if (adState == DSAdState.none) {
               // Failed to fetch ad
               then?.call();
-              DSAdsManager.instance.emitEvent(const DSAdsInterstitialShowErrorEvent._());
+              DSAdsManager.I.emitEvent(const DSAdsInterstitialShowErrorEvent._());
               return;
             }
             await showAd(
@@ -432,7 +432,7 @@ class DSAdsInterstitial {
       return;
     }
 
-    final interstitialShowLock = DSAdsManager.instance.interstitialShowLockCallback?.call() ?? const Duration();
+    final interstitialShowLock = DSAdsManager.I.interstitialShowLockCallback?.call() ?? const Duration();
     if (DateTime.timestamp().difference(_lastShowTime) < interstitialShowLock) {
       _report(
         '$_tag: showing canceled: locked for ${interstitialShowLock.inSeconds}s',
@@ -451,7 +451,7 @@ class DSAdsInterstitial {
           location: location, mediation: _mediation, attributes: customAttributes);
       then?.call();
       cancelCurrentAd(location: location);
-      DSAdsManager.instance.emitEvent(const DSAdsInterstitialShowErrorEvent._());
+      DSAdsManager.I.emitEvent(const DSAdsInterstitialShowErrorEvent._());
       return;
     }
 
@@ -467,7 +467,7 @@ class DSAdsInterstitial {
     };
     ad.onPaidEvent = (ad, valueMicros, precision, currencyCode, appLovinDspName) {
       try {
-        DSAdsManager.instance.onPaidEvent(ad, ad.mediation, location, valueMicros, precision, currencyCode,
+        DSAdsManager.I.onPaidEvent(ad, ad.mediation, location, valueMicros, precision, currencyCode,
             source, appLovinDspName, attrs);
       } catch (e, stack) {
         Fimber.e('$e', stacktrace: stack);
@@ -491,7 +491,7 @@ class DSAdsInterstitial {
         }
         _adState = DSAdState.showing;
         onAdShow?.call();
-        DSAdsManager.instance.emitEvent(DSAdsInterstitialShowedEvent._(ad: ad));
+        DSAdsManager.I.emitEvent(DSAdsInterstitialShowedEvent._(ad: ad));
         then?.call();
       } catch (e, stack) {
         Fimber.e('$e', stacktrace: stack);
@@ -508,7 +508,7 @@ class DSAdsInterstitial {
         _ad = null;
         _adState = DSAdState.none;
         // если перенести then?.call() сюда, возникает краткий показ предыдущего экрана при закрытии интерстишла
-        DSAdsManager.instance.emitEvent(DSAdsInterstitialShowDismissedEvent._(ad: ad));
+        DSAdsManager.I.emitEvent(DSAdsInterstitialShowDismissedEvent._(ad: ad));
         onAdClosed?.call();
       } catch (e, stack) {
         Fimber.e('$e', stacktrace: stack);
@@ -527,7 +527,7 @@ class DSAdsInterstitial {
         _adState = DSAdState.none;
         onFailedToShow?.call(errCode, errText);
         then?.call();
-        DSAdsManager.instance.emitEvent(const DSAdsInterstitialShowErrorEvent._());
+        DSAdsManager.I.emitEvent(const DSAdsInterstitialShowErrorEvent._());
       } catch (e, stack) {
         Fimber.e('$e', stacktrace: stack);
       }
@@ -561,7 +561,7 @@ class DSAdsInterstitial {
       _report('$_tag: showing canceled: manager disposed',
           location: location, mediation: _mediation, attributes: attrs);
       then?.call();
-      DSAdsManager.instance.emitEvent(const DSAdsInterstitialShowErrorEvent._());
+      DSAdsManager.I.emitEvent(const DSAdsInterstitialShowErrorEvent._());
       return;
     }
 
@@ -574,7 +574,7 @@ class DSAdsInterstitial {
 
     updateLastShowTime();
     _adState = DSAdState.preShowing;
-    DSAdsManager.instance.emitEvent(DSAdsInterstitialPreShowingEvent._(ad: ad));
+    DSAdsManager.I.emitEvent(DSAdsInterstitialPreShowingEvent._(ad: ad));
 
     _showNum++;
     attrs['interstitial_show_num'] = _showNum;

@@ -23,7 +23,10 @@ import 'ds_ads_types.dart';
 class DSAdsManager {
   static DSAdsManager? _instance;
 
-  static DSAdsManager get instance {
+  /// Will be deprecated. Use DSAdsManager.I property instead
+  static DSAdsManager get instance => I;
+
+  static DSAdsManager get I {
     assert(_instance != null, 'Call DSAdsManager(...) to initialize ads');
     return _instance!;
   }
@@ -39,37 +42,37 @@ class DSAdsManager {
 
   static bool get isInitialized => _instance != null;
 
-  static DSAdsInterstitial get interstitial => instance._adsInterstitial;
-  static DSAdsInterstitial get interstitial2 => instance._adsInterstitial2;
+  static DSAdsInterstitial get interstitial => I._adsInterstitial;
+  static DSAdsInterstitial get interstitial2 => I._adsInterstitial2;
 
   static DSAdsInterstitial get splashInterstitial {
-    if (instance._splashInterstitial == null) {
+    if (I._splashInterstitial == null) {
       Fimber.i('splash interstitial created');
-      instance._splashInterstitial = DSAdsInterstitial(source: DSAdSource.interstitialSplash);
+      I._splashInterstitial = DSAdsInterstitial(source: DSAdSource.interstitialSplash);
     }
-    return instance._splashInterstitial!;
+    return I._splashInterstitial!;
   }
 
-  static DSAdsRewarded get rewarded => instance._adsRewarded;
+  static DSAdsRewarded get rewarded => I._adsRewarded;
 
-  static DSAdsAppOpen get appOpen => instance._adsAppOpen;
+  static DSAdsAppOpen get appOpen => I._adsAppOpen;
 
   static DSAdsAppOpen get splashAppOpen {
-    if (instance._splashAppOpen == null) {
+    if (I._splashAppOpen == null) {
       Fimber.i('splash app open created');
-      instance._splashAppOpen = DSAdsAppOpen(source: DSAdSource.appOpenSplash);
+      I._splashAppOpen = DSAdsAppOpen(source: DSAdSource.appOpenSplash);
     }
-    return instance._splashAppOpen!;
+    return I._splashAppOpen!;
   }
 
   /// Is any full-screen ad shows
   static bool get isAdShowing =>
       isInitialized &&
           ({DSAdState.preShowing, DSAdState.showing}.contains(interstitial.adState) ||
-              {DSAdState.preShowing, DSAdState.showing}.contains(instance._splashInterstitial?.adState) ||
+              {DSAdState.preShowing, DSAdState.showing}.contains(I._splashInterstitial?.adState) ||
               {DSAdState.preShowing, DSAdState.showing}.contains(rewarded.adState) ||
               {DSAdState.preShowing, DSAdState.showing}.contains(appOpen.adState) ||
-              {DSAdState.preShowing, DSAdState.showing}.contains(instance._splashAppOpen?.adState));
+              {DSAdState.preShowing, DSAdState.showing}.contains(I._splashAppOpen?.adState));
 
   /// Stop loading splash interstitial and dispose [DSAdsManager.splashInterstitial] object
   void disposeSplashInterstitial() {
@@ -462,7 +465,7 @@ class DSAdsManager {
           switch (next) {
             case DSAdMediation.google:
             // It seems that init just creates competition for other mediations
-            //await MobileAds.instance.initialize();
+            //await MobileAds.I.initialize();
               break;
             case DSAdMediation.appLovin:
               await initAppLovin();

@@ -28,12 +28,12 @@ class _DSAppLovinAdWidgetState extends State<DSAppLovinAdWidget> {
   @override
   void initState() {
     super.initState();
-    final adId = ALInstanceManager.instance.adIdFor(widget.ad);
+    final adId = ALInstanceManager.I.adIdFor(widget.ad);
     if (adId != null) {
-      if (ALInstanceManager.instance.isWidgetAdIdMounted(adId)) {
+      if (ALInstanceManager.I.isWidgetAdIdMounted(adId)) {
         _adIdAlreadyMounted = true;
       }
-      ALInstanceManager.instance.mountWidgetAdId(adId);
+      ALInstanceManager.I.mountWidgetAdId(adId);
     } else {
       _adLoadNotCalled = true;
     }
@@ -42,9 +42,9 @@ class _DSAppLovinAdWidgetState extends State<DSAppLovinAdWidget> {
   @override
   void dispose() {
     super.dispose();
-    final adId = ALInstanceManager.instance.adIdFor(widget.ad);
+    final adId = ALInstanceManager.I.adIdFor(widget.ad);
     if (adId != null) {
-      ALInstanceManager.instance.unmountWidgetAdId(adId);
+      ALInstanceManager.I.unmountWidgetAdId(adId);
     }
   }
 
@@ -85,7 +85,7 @@ class _DSAppLovinAdWidgetState extends State<DSAppLovinAdWidget> {
             id: params.id,
             viewType: viewType,
             layoutDirection: TextDirection.ltr,
-            creationParams: ALInstanceManager.instance.adIdFor(widget.ad),
+            creationParams: ALInstanceManager.I.adIdFor(widget.ad),
             creationParamsCodec: const StandardMessageCodec(),
           )
             ..addOnPlatformViewCreatedListener(params.onPlatformViewCreated)
@@ -97,7 +97,7 @@ class _DSAppLovinAdWidgetState extends State<DSAppLovinAdWidget> {
     // ToDo: implement for iOS
     return UiKitView(
       viewType: viewType,
-      creationParams: ALInstanceManager.instance.adIdFor(widget.ad),
+      creationParams: ALInstanceManager.I.adIdFor(widget.ad),
       creationParamsCodec: const StandardMessageCodec(),
     );
   }

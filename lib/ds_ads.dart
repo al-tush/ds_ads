@@ -3,6 +3,7 @@ export 'src/ds_ads_banner.dart';
 export 'src/ds_ads_interstitial.dart';
 export 'src/ds_ads_manager.dart';
 export 'src/ds_ads_native_loader_mixin.dart';
+export 'src/ds_ads_native_widgets.dart';
 export 'src/ds_ads_overlay_screen.dart';
 export 'src/ds_ads_rewarded.dart';
 export 'src/ds_ads_types.dart';

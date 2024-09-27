@@ -80,9 +80,9 @@ class DSAdsAppOpen {
   String _adUnitIdGoogle() {
     switch (source) {
       case DSAdSource.appOpen:
-        return DSAdsManager.instance.appOpenGoogleUnitId;
+        return DSAdsManager.I.appOpenGoogleUnitId;
       case DSAdSource.appOpenSplash:
-        return DSAdsManager.instance.appOpenSplashGoogleUnitId;
+        return DSAdsManager.I.appOpenSplashGoogleUnitId;
       default:
         throw Exception('Unsupported source $source');
     }
@@ -91,9 +91,9 @@ class DSAdsAppOpen {
   String _adUnitIdAppLovin() {
     switch (source) {
       case DSAdSource.appOpen:
-        return DSAdsManager.instance.appOpenAppLovinUnitId;
+        return DSAdsManager.I.appOpenAppLovinUnitId;
       case DSAdSource.appOpenSplash:
-        return DSAdsManager.instance.appOpenSplashAppLovinUnitId;
+        return DSAdsManager.I.appOpenSplashAppLovinUnitId;
       default:
         throw Exception('Unsupported source $source');
     }
@@ -118,7 +118,7 @@ class DSAdsAppOpen {
     String? adapter,
     Map<String, Object>? attributes,
   }) {
-    DSAdsManager.instance.onReportEvent?.call(eventName, {
+    DSAdsManager.I.onReportEvent?.call(eventName, {
       if (mediation != null) 'adUnitId': _adUnitId(mediation),
       'location': location.val,
       'mediation': '$mediation',
@@ -130,7 +130,7 @@ class DSAdsAppOpen {
   static final _locationErrReports = <DSAdLocation>{};
 
   bool _isDisabled(DSAdLocation location) {
-    if (!location.isInternal && DSAdsManager.instance.locations?.contains(location) == false) {
+    if (!location.isInternal && DSAdsManager.I.locations?.contains(location) == false) {
       final msg = '$_tag: location $location not in locations';
       assert(false, msg);
       if (!_locationErrReports.contains(location)) {
@@ -138,7 +138,7 @@ class DSAdsAppOpen {
         Fimber.e(msg, stacktrace: StackTrace.current);
       }
     }
-    if (DSAdsManager.instance.isAdAllowedCallback?.call(source, location) == false) {
+    if (DSAdsManager.I.isAdAllowedCallback?.call(source, location) == false) {
       Fimber.i('$_tag: disabled (location: $location)');
       return true;
     }
@@ -158,12 +158,12 @@ class DSAdsAppOpen {
   }) {
     assert(_checkCustomAttributes(customAttributes), 'custom attributes must have custom_attr_ prefix');
 
-    if (DSAdsManager.instance.appState.isPremium || _isDisposed) {
+    if (DSAdsManager.I.appState.isPremium || _isDisposed) {
       then?.call();
       return;
     }
 
-    DSAdsManager.instance.updateMediations(source);
+    DSAdsManager.I.updateMediations(source);
 
     if (_isDisabled(location)) {
       then?.call();
@@ -189,7 +189,7 @@ class DSAdsAppOpen {
       return;
     }
 
-    final mediation = DSAdsManager.instance.currentMediation(source);
+    final mediation = DSAdsManager.I.currentMediation(source);
     _mediation = mediation;
     if (mediation == null) {
       _report('$_tag: no mediation', location: location, mediation: mediation, attributes: customAttributes);
@@ -222,7 +222,7 @@ class DSAdsAppOpen {
         _loadRetryCount = 0;
 
         then?.call();
-        DSAdsManager.instance.emitEvent(DSAdsAppOpenLoadedEvent._(ad: ad));
+        DSAdsManager.I.emitEvent(DSAdsAppOpenLoadedEvent._(ad: ad));
       } catch (e, stack) {
         then?.call();
         Fimber.e('$e', stacktrace: stack);
@@ -243,10 +243,10 @@ class DSAdsAppOpen {
           ...attrs,
           ...?customAttributes,
         });
-        final oldMediation = DSAdsManager.instance.currentMediation(source);
-        await DSAdsManager.instance.onLoadAdError(errCode, errDescription, mediation, source);
+        final oldMediation = DSAdsManager.I.currentMediation(source);
+        await DSAdsManager.I.onLoadAdError(errCode, errDescription, mediation, source);
         _loadConditions.add(DSAdsLoadCondition.error);
-        final newMediation = DSAdsManager.instance.currentMediation(source);
+        final newMediation = DSAdsManager.I.currentMediation(source);
         if (newMediation != oldMediation) {
           _loadRetryCount = 0;
           if (newMediation == null) {
@@ -255,7 +255,7 @@ class DSAdsAppOpen {
             _loadConditions.add(DSAdsLoadCondition.mediationChanged);
           }
         }
-        if (_loadRetryCount < DSAdsManager.instance.getRetryMaxCount(source)) {
+        if (_loadRetryCount < DSAdsManager.I.getRetryMaxCount(source)) {
           await Future.delayed(loadRetryDelay);
           if ({DSAdState.none, DSAdState.error}.contains(adState) && !_isDisposed) {
             _report('$_tag: retry loading', location: location, mediation: mediation, attributes: customAttributes);
@@ -265,7 +265,7 @@ class DSAdsAppOpen {
           Fimber.w('$errDescription ($errCode)', stacktrace: StackTrace.current);
           _adState = DSAdState.none;
           then?.call();
-          DSAdsManager.instance.emitEvent(DSAdsAppOpenLoadFailedEvent._(
+          DSAdsManager.I.emitEvent(DSAdsAppOpenLoadFailedEvent._(
             errCode: errCode,
             errText: errDescription,
           ));
@@ -315,7 +315,7 @@ class DSAdsAppOpen {
     assert(!location.isInternal);
     assert(_checkCustomAttributes(customAttributes), 'custom attributes must have custom_attr_ prefix');
 
-    if (DSAdsManager.instance.appState.isPremium || _isDisposed) {
+    if (DSAdsManager.I.appState.isPremium || _isDisposed) {
       then?.call();
       return;
     }
@@ -333,7 +333,7 @@ class DSAdsAppOpen {
       return;
     }
 
-    if (!DSAdsManager.instance.isInForeground) {
+    if (!DSAdsManager.I.isInForeground) {
       _report('$_tag: app in background', location: location, mediation: _mediation, attributes: customAttributes);
       then?.call();
       // https://support.google.com/admob/answer/6201362#zippy=%2Cdisallowed-example-user-launches-app
@@ -397,7 +397,7 @@ class DSAdsAppOpen {
     };
     ad.onPaidEvent = (ad, valueMicros, precision, currencyCode, appLovinDspName) {
       try {
-        DSAdsManager.instance.onPaidEvent(ad, ad.mediation, location, valueMicros, precision, currencyCode,
+        DSAdsManager.I.onPaidEvent(ad, ad.mediation, location, valueMicros, precision, currencyCode,
             source, appLovinDspName, attrs);
       } catch (e, stack) {
         Fimber.e('$e', stacktrace: stack);
@@ -419,7 +419,7 @@ class DSAdsAppOpen {
         }
         _adState = DSAdState.showing;
         onAdShow?.call();
-        DSAdsManager.instance.emitEvent(DSAdsAppOpenShowedEvent._(ad: ad));
+        DSAdsManager.I.emitEvent(DSAdsAppOpenShowedEvent._(ad: ad));
         then?.call();
       } catch (e, stack) {
         Fimber.e('$e', stacktrace: stack);
@@ -434,7 +434,7 @@ class DSAdsAppOpen {
         _mediation = null;
         _adState = DSAdState.none;
         _lastLoadTime = DateTime(0);
-        DSAdsManager.instance.emitEvent(DSAdsAppOpenShowDismissedEvent._(ad: ad));
+        DSAdsManager.I.emitEvent(DSAdsAppOpenShowDismissedEvent._(ad: ad));
         onAdClosed?.call();
       } catch (e, stack) {
         Fimber.e('$e', stacktrace: stack);
@@ -454,7 +454,7 @@ class DSAdsAppOpen {
         _adState = DSAdState.none;
         onFailedToShow?.call(errCode, errText);
         then?.call();
-        DSAdsManager.instance.emitEvent(const DSAdsAppOpenShowErrorEvent._());
+        DSAdsManager.I.emitEvent(const DSAdsAppOpenShowErrorEvent._());
       } catch (e, stack) {
         Fimber.e('$e', stacktrace: stack);
       }
@@ -472,7 +472,7 @@ class DSAdsAppOpen {
       _report('$_tag: showing canceled: manager disposed',
           location: location, mediation: _mediation, attributes: attrs);
       then?.call();
-      DSAdsManager.instance.emitEvent(const DSAdsAppOpenShowErrorEvent._());
+      DSAdsManager.I.emitEvent(const DSAdsAppOpenShowErrorEvent._());
       return;
     }
 
@@ -480,12 +480,12 @@ class DSAdsAppOpen {
     if (!res) {
       _report('$_tag: showing canceled by caller', location: location, mediation: _mediation, attributes: attrs);
       then?.call();
-      DSAdsManager.instance.emitEvent(const DSAdsAppOpenShowErrorEvent._());
+      DSAdsManager.I.emitEvent(const DSAdsAppOpenShowErrorEvent._());
       return;
     }
 
     _adState = DSAdState.preShowing;
-    DSAdsManager.instance.emitEvent(DSAdsAppOpenPreShowingEvent._(ad: ad));
+    DSAdsManager.I.emitEvent(DSAdsAppOpenPreShowingEvent._(ad: ad));
 
     _showNum++;
     attrs['app_open_show_num'] = _showNum;

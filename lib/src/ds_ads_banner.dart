@@ -26,6 +26,9 @@ class DSAdsBanner extends StatefulWidget {
 
   @override
   State<DSAdsBanner> createState() => _DSAdsBannerState();
+
+  /// Wrapper of [AppLovinMAX.getAdaptiveBannerHeightForWidth]
+  static Future<double?> getAdaptiveBannerHeightForWidth(double width) => AppLovinMAX.getAdaptiveBannerHeightForWidth(width);
 }
 
 class _DSAdsBannerState extends State<DSAdsBanner> {
@@ -49,7 +52,7 @@ class _DSAdsBannerState extends State<DSAdsBanner> {
     String? adapter,
     Map<String, Object>? attributes,
   }) {
-    DSAdsManager.instance.onReportEvent?.call(eventName, {
+    DSAdsManager.I.onReportEvent?.call(eventName, {
       if (mediation != null) 'adUnitId': _adUnitId(mediation),
       'location': widget.location.val,
       'mediation': '$mediation',
@@ -61,8 +64,8 @@ class _DSAdsBannerState extends State<DSAdsBanner> {
   static final _locationErrReports = <DSAdLocation>{};
 
   bool _isDisabled(DSAdLocation location) {
-    if (DSAdsManager.instance.appState.isPremium) return true;
-    if (!location.isInternal && DSAdsManager.instance.locations?.contains(location) == false) {
+    if (DSAdsManager.I.appState.isPremium) return true;
+    if (!location.isInternal && DSAdsManager.I.locations?.contains(location) == false) {
       final msg = '$_tag: location $location not in locations';
       assert(false, msg);
       if (!_locationErrReports.contains(location)) {
@@ -70,11 +73,11 @@ class _DSAdsBannerState extends State<DSAdsBanner> {
         Fimber.e(msg, stacktrace: StackTrace.current);
       }
     }
-    if (DSAdsManager.instance.isAdAllowedCallback?.call(DSAdSource.banner, location) == false) {
+    if (DSAdsManager.I.isAdAllowedCallback?.call(DSAdSource.banner, location) == false) {
       Fimber.i('$_tag: disabled (location: $location)');
       return true;
     }
-    if (DSAdsManager.instance.currentMediation(DSAdSource.banner) == null) {
+    if (DSAdsManager.I.currentMediation(DSAdSource.banner) == null) {
       _report('$_tag: disabled (no mediation)', mediation: null);
       return true;
     }
@@ -100,7 +103,7 @@ class _DSAdsBannerState extends State<DSAdsBanner> {
 
     _isStartLoading = false;
     _isLoaded = false;
-    final mediation = DSAdsManager.instance.currentMediation(DSAdSource.banner);
+    final mediation = DSAdsManager.I.currentMediation(DSAdSource.banner);
     if (mediation == DSAdMediation.google) {
       unawaited(_loadGoogleAd());
     }
@@ -142,8 +145,8 @@ class _DSAdsBannerState extends State<DSAdsBanner> {
           'error_code': '$code ($mediation)',
         },
       );
-      await DSAdsManager.instance.onLoadAdError(code, message, mediation, DSAdSource.banner);
-      final newMediation = DSAdsManager.instance.currentMediation(DSAdSource.banner);
+      await DSAdsManager.I.onLoadAdError(code, message, mediation, DSAdSource.banner);
+      final newMediation = DSAdsManager.I.currentMediation(DSAdSource.banner);
       if (newMediation != mediation) {
         setState(() {});
       }
@@ -160,7 +163,7 @@ class _DSAdsBannerState extends State<DSAdsBanner> {
         adapter: adapter,
         mediation: mediation,
       );
-      DSAdsManager.instance.onPaidEvent(
+      DSAdsManager.I.onPaidEvent(
           ad, mediation, widget.location, valueMicros, precision, currencyCode, DSAdSource.banner, appLovinDspName, {});
     } catch (e, stack) {
       Fimber.e('$e', stacktrace: stack);
@@ -265,14 +268,14 @@ class _DSAdsBannerState extends State<DSAdsBanner> {
   Widget build(BuildContext context) {
     if (_isDisabled(widget.location)) return const SizedBox();
 
-    final mediation = DSAdsManager.instance.currentMediation(DSAdSource.banner)!;
+    final mediation = DSAdsManager.I.currentMediation(DSAdSource.banner)!;
 
     final Widget child;
     switch (mediation) {
       case DSAdMediation.google:
         if (_googleAd == null || !_isLoaded) return const SizedBox();
         child = Container(
-          color: switch (DSAdsManager.instance.appState.brightness) {
+          color: switch (DSAdsManager.I.appState.brightness) {
             Brightness.light => Colors.white,
             Brightness.dark => Colors.black,
           },

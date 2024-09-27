@@ -16,7 +16,7 @@ class DSAppLovinInterstitialAd extends DSInterstitialAd {
     required void Function(DSInterstitialAd ad) onAdLoaded,
     required DSOnAdFailedToLoad onAdFailedToLoad,
   }) async {
-    if (!DSAdsManager.instance.isMediationInitialized(DSAdMediation.appLovin)) {
+    if (!DSAdsManager.I.isMediationInitialized(DSAdMediation.appLovin)) {
       Fimber.e('AppLovin was not initialized', stacktrace: StackTrace.current);
     }
     AppLovinMAX.setInterstitialListener(InterstitialListener(
@@ -103,7 +103,7 @@ class DSAppLovinRewardedAd extends DSRewardedAd {
     required void Function(DSRewardedAd ad) onAdLoaded,
     required DSOnAdFailedToLoad onAdFailedToLoad,
   }) async {
-    if (!DSAdsManager.instance.isMediationInitialized(DSAdMediation.appLovin)) {
+    if (!DSAdsManager.I.isMediationInitialized(DSAdMediation.appLovin)) {
       Fimber.e('AppLovin was not initialized', stacktrace: StackTrace.current);
     }
     AppLovinMAX.setRewardedAdListener(RewardedAdListener(
@@ -189,7 +189,7 @@ class DSAppLovinAppOpenAd extends DSAppOpenAd {
     required void Function(DSAppOpenAd ad) onAdLoaded,
     required DSOnAdFailedToLoad onAdFailedToLoad,
   }) async {
-    if (!DSAdsManager.instance.isMediationInitialized(DSAdMediation.appLovin)) {
+    if (!DSAdsManager.I.isMediationInitialized(DSAdMediation.appLovin)) {
       Fimber.e('AppLovin was not initialized', stacktrace: StackTrace.current);
     }
     AppLovinMAX.setAppOpenAdListener(AppOpenAdListener(
