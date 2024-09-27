@@ -1,3 +1,7 @@
+## 0.8.5
+- prepare to prohibit direct links to google_mobile_ads and applovin_max from projects
+- add "I" property as the alias of "instance"
+
 ## 0.8.4
 - pinned applovin_max to 3.10.1
 
