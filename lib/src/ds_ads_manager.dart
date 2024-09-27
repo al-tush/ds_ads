@@ -562,6 +562,10 @@ class DSAdsManager {
     await _appLovinInit;
   }
 
+  void showAppLovinMediationDebugger() {
+    AppLovinMAX.showMediationDebugger();
+  }
+
   @internal
   int getRetryMaxCount(DSAdSource source) {
     return retryCountCallback?.call(source) ?? 3;

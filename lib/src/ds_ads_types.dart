@@ -83,6 +83,8 @@ class NativeAdBannerPlatform implements NativeAdBannerInterface {
 }
 
 /// Flutter defined native banner description (currently supported by AppLovin)
+/// Use DS-widgets to prevent direct access to applovin_max lib.
+/// For example DSMaxNativeAdIconView instead of MaxNativeAdIconView
 class NativeAdBannerFlutter implements NativeAdBannerInterface {
   @override
   final DSAdLocation location;
