@@ -1,3 +1,7 @@
+## 1.0.0
+- update dependencies
+- dart format applied
+
 ## 0.8.5
 - prepare to prohibit direct links to google_mobile_ads and applovin_max from projects
 - add "I" property as the alias of "instance"
