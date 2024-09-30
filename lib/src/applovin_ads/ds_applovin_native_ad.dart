@@ -7,7 +7,7 @@ import 'package:google_mobile_ads/google_mobile_ads.dart' as g;
 class DSAppLovinNativeAdFlutter extends DSNativeAd {
   var _isLoaded = false;
   var _networkName = '';
-  var _mediaViewAspectRatio = 16/9;
+  var _mediaViewAspectRatio = 16 / 9;
   double get mediaViewAspectRatio => _mediaViewAspectRatio;
 
   final viewController = MaxNativeAdViewController();
@@ -20,13 +20,14 @@ class DSAppLovinNativeAdFlutter extends DSNativeAd {
     super.onAdFailedToLoad,
     super.onAdClicked,
   }) : super(
-    factoryId: '',
-  ) {
+          factoryId: '',
+        ) {
     viewListener = NativeAdListener(
       onAdLoadedCallback: (ad) {
         _isLoaded = true;
         _networkName = ad.networkName;
-        _mediaViewAspectRatio = ad.nativeAd?.mediaContentAspectRatio ?? _mediaViewAspectRatio;
+        _mediaViewAspectRatio =
+            ad.nativeAd?.mediaContentAspectRatio ?? _mediaViewAspectRatio;
         onAdLoaded?.call(this);
       },
       onAdLoadFailedCallback: (adUnitId, error) {
@@ -62,7 +63,7 @@ class DSAppLovinNativeAdFlutter extends DSNativeAd {
   }
 }
 
-class DSAppLovinNativeAd  extends DSNativeAd {
+class DSAppLovinNativeAd extends DSNativeAd {
   var _isLoaded = false;
   var _networkName = '';
 
@@ -105,16 +106,15 @@ class DSAppLovinNativeAd  extends DSNativeAd {
 /// Maintains access to loaded [Ad] instances and handles sending/receiving
 /// messages to platform code.
 class ALInstanceManager {
-
   static final I = ALInstanceManager(
     'pro.altush.ds_ads/app_lovin_ads',
   );
 
   ALInstanceManager(String channelName)
       : channel = MethodChannel(
-    channelName,
-    const StandardMethodCodec(),
-  ) {
+          channelName,
+          const StandardMethodCodec(),
+        ) {
     channel.setMethodCallHandler((MethodCall call) async {
       final int adId = call.arguments['adId'];
 
@@ -122,7 +122,8 @@ class ALInstanceManager {
       if (ad != null) {
         _onAdEvent(ad, call.method, call.arguments);
       } else {
-        Fimber.e('ALNativeAd with id `$adId` is not available for ${call.method}.');
+        Fimber.e(
+            'ALNativeAd with id `$adId` is not available for ${call.method}.');
       }
     });
   }
@@ -133,7 +134,8 @@ class ALInstanceManager {
   /// Invokes load and dispose calls.
   final MethodChannel channel;
 
-  void _onAdEvent(DSAppLovinNativeAd ad, String eventName, Map<dynamic, dynamic> arguments) {
+  void _onAdEvent(DSAppLovinNativeAd ad, String eventName,
+      Map<dynamic, dynamic> arguments) {
     switch (eventName) {
       case 'onAdLoaded':
         ad._isLoaded = true;
@@ -166,7 +168,8 @@ class ALInstanceManager {
             break;
           default:
             pType = g.PrecisionType.unknown;
-            DSAdsManager.I.onReportEvent?.call('AppLovin (ds_ads) unknown precision type: $precision', {});
+            DSAdsManager.I.onReportEvent?.call(
+                'AppLovin (ds_ads) unknown precision type: $precision', {});
             break;
         }
         ad.onPaidEvent(ad, value * 1000000, pType, 'USD');
@@ -178,7 +181,8 @@ class ALInstanceManager {
         ad.onAdExpired?.call(ad);
         break;
       default:
-        Fimber.e('invalid ad event name: $eventName', stacktrace: StackTrace.current);
+        Fimber.e('invalid ad event name: $eventName',
+            stacktrace: StackTrace.current);
     }
   }
 
@@ -192,45 +196,44 @@ class ALInstanceManager {
     return res;
   }
 
-    final Set<int> _mountedWidgetAdIds = <int>{};
+  final Set<int> _mountedWidgetAdIds = <int>{};
 
-    /// Returns true if the [adId] is already mounted in a [WidgetAd].
-    bool isWidgetAdIdMounted(int adId) => _mountedWidgetAdIds.contains(adId);
+  /// Returns true if the [adId] is already mounted in a [WidgetAd].
+  bool isWidgetAdIdMounted(int adId) => _mountedWidgetAdIds.contains(adId);
 
-    /// Indicates that [adId] is mounted in widget tree.
-    void mountWidgetAdId(int adId) => _mountedWidgetAdIds.add(adId);
+  /// Indicates that [adId] is mounted in widget tree.
+  void mountWidgetAdId(int adId) => _mountedWidgetAdIds.add(adId);
 
-    /// Indicates that [adId] is unmounted from the widget tree.
-    void unmountWidgetAdId(int adId) => _mountedWidgetAdIds.remove(adId);
+  /// Indicates that [adId] is unmounted from the widget tree.
+  void unmountWidgetAdId(int adId) => _mountedWidgetAdIds.remove(adId);
 
-    /// Starts loading the ad if not previously loaded.
-    ///
-    /// Loading also terminates if ad is already in the process of loading.
-    Future<void> loadNativeAd(DSAppLovinNativeAd ad) {
-      if (adIdFor(ad) != null) {
-        return Future<void>.value();
-      }
-
-      final int adId = _nextAdId++;
-      _loadedAds[adId] = ad;
-      return channel.invokeMethod('loadNativeAd', {
-        'adId': adId,
-        'adUnitId': ad.adUnitId,
-        'factoryId': ad.factoryId,
-      });
+  /// Starts loading the ad if not previously loaded.
+  ///
+  /// Loading also terminates if ad is already in the process of loading.
+  Future<void> loadNativeAd(DSAppLovinNativeAd ad) {
+    if (adIdFor(ad) != null) {
+      return Future<void>.value();
     }
 
-    /// Free the plugin resources associated with this ad.
-    ///
-    /// Disposing a banner ad that's been shown removes it from the screen.
-    /// Interstitial ads can't be programmatically removed from view.
-    Future<void> disposeAd(DSAd ad) {
-      final int? adId = adIdFor(ad);
-      final DSAd? disposedAd = _loadedAds.remove(adId);
-      if (disposedAd == null) {
-        return Future<void>.value();
-      }
-      return channel.invokeMethod('disposeAd', {'adId': adId});
-    }
+    final int adId = _nextAdId++;
+    _loadedAds[adId] = ad;
+    return channel.invokeMethod('loadNativeAd', {
+      'adId': adId,
+      'adUnitId': ad.adUnitId,
+      'factoryId': ad.factoryId,
+    });
+  }
 
+  /// Free the plugin resources associated with this ad.
+  ///
+  /// Disposing a banner ad that's been shown removes it from the screen.
+  /// Interstitial ads can't be programmatically removed from view.
+  Future<void> disposeAd(DSAd ad) {
+    final int? adId = adIdFor(ad);
+    final DSAd? disposedAd = _loadedAds.remove(adId);
+    if (disposedAd == null) {
+      return Future<void>.value();
+    }
+    return channel.invokeMethod('disposeAd', {'adId': adId});
+  }
 }

@@ -55,7 +55,7 @@ class _DSAppLovinAdWidgetState extends State<DSAppLovinAdWidget> {
         ErrorSummary('This AdWidget is already in the Widget tree'),
         ErrorHint(
             'If you placed this AdWidget in a list, make sure you create a new instance '
-                'in the builder function with a unique ad object.'),
+            'in the builder function with a unique ad object.'),
         ErrorHint(
             'Make sure you are not using the same ad object in more than one AdWidget.'),
       ]);
