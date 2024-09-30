@@ -112,12 +112,12 @@ class DSAdsAppOpen {
   }
 
   void _report(
-    String eventName, {
-    required DSAdLocation location,
-    required DSAdMediation? mediation,
-    String? adapter,
-    Map<String, Object>? attributes,
-  }) {
+      String eventName, {
+        required DSAdLocation location,
+        required DSAdMediation? mediation,
+        String? adapter,
+        Map<String, Object>? attributes,
+      }) {
     DSAdsManager.I.onReportEvent?.call(eventName, {
       if (mediation != null) 'adUnitId': _adUnitId(mediation),
       'location': location.val,

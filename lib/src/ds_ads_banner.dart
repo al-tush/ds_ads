@@ -47,11 +47,11 @@ class _DSAdsBannerState extends State<DSAdsBanner> {
   }
 
   void _report(
-    String eventName, {
-    required DSAdMediation? mediation,
-    String? adapter,
-    Map<String, Object>? attributes,
-  }) {
+      String eventName, {
+        required DSAdMediation? mediation,
+        String? adapter,
+        Map<String, Object>? attributes,
+      }) {
     DSAdsManager.I.onReportEvent?.call(eventName, {
       if (mediation != null) 'adUnitId': _adUnitId(mediation),
       'location': widget.location.val,
@@ -218,7 +218,7 @@ class _DSAdsBannerState extends State<DSAdsBanner> {
     if (_isDisabled(widget.location)) return;
 
     final size =
-        await AdSize.getCurrentOrientationAnchoredAdaptiveBannerAdSize(MediaQuery.of(context).size.width.truncate());
+    await AdSize.getCurrentOrientationAnchoredAdaptiveBannerAdSize(MediaQuery.of(context).size.width.truncate());
     if (size == null) {
       Fimber.e('Unable to get height of ads_banner (${widget.location})');
       return;

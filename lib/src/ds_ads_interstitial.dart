@@ -103,13 +103,13 @@ class DSAdsInterstitial {
   }
 
   void _report(
-    String eventName, {
-    required DSAdLocation location,
-    required DSAdMediation? mediation,
-    String? customAdId,
-    String? adapter,
-    Map<String, Object>? attributes,
-  }) {
+      String eventName, {
+        required DSAdLocation location,
+        required DSAdMediation? mediation,
+        String? customAdId,
+        String? adapter,
+        Map<String, Object>? attributes,
+      }) {
     DSAdsManager.I.onReportEvent?.call(eventName, {
       if (mediation != null) 'adUnitId': customAdId ?? _adUnitId(mediation),
       'location': location.val,
@@ -201,7 +201,7 @@ class DSAdsInterstitial {
     if (_startLoadTime.year == 0) {
       _startLoadTime = DateTime.timestamp();
     }
-    
+
     Future<void> onAdLoaded(DSInterstitialAd ad) async {
       try {
         _totalLoadDuration = DateTime.timestamp().difference(_startLoadTime);
@@ -556,7 +556,7 @@ class DSAdsInterstitial {
       });
       await streamController.stream.first;
     }
-    
+
     if (_isDisposed) {
       _report('$_tag: showing canceled: manager disposed',
           location: location, mediation: _mediation, attributes: attrs);

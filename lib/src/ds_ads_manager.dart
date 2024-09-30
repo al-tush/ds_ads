@@ -297,7 +297,7 @@ class DSAdsManager {
       _ => DSConsentStatus.unknown,
     };
   }
-  
+
   /// Show consent window if consent available
   Future<bool> tryShowConsent() async {
     DSAdsAppOpen.lockUntilAppResume();

@@ -47,7 +47,7 @@ mixin DSAdsNativeLoaderMixin<T extends StatefulWidget> on State<T> {
 
   NativeAdBannerInterface? _getNativeAdBanner() {
     return DSAdsManager.I.nativeAdCustomBanners.firstWhereOrNull((e) => e.location == nativeAdLocation);
-}
+  }
 
   /// Return expected height of native banner
   /// This call is not support [NativeAdBannerFlutter] natives (because they can setup size dinamically)
@@ -129,12 +129,12 @@ mixin DSAdsNativeLoaderMixin<T extends StatefulWidget> on State<T> {
   }
 
   static void _report(
-    String eventName, {
-    required final DSAdLocation location,
-    required DSAdMediation? mediation,
-    String? adapter,
-    Map<String, Object>? attributes,
-  }) {
+      String eventName, {
+        required final DSAdLocation location,
+        required DSAdMediation? mediation,
+        String? adapter,
+        Map<String, Object>? attributes,
+      }) {
     DSAdsManager.I.onReportEvent?.call(eventName, {
       if (mediation != null) 'adUnitId': _adUnitId(mediation),
       'location': location.val,
@@ -518,10 +518,10 @@ mixin DSAdsNativeLoaderMixin<T extends StatefulWidget> on State<T> {
 
       final ad = _showedAds[this] as DSAppLovinNativeAdFlutter;
       Widget child = MaxNativeAdView(
-          adUnitId: ad.adUnitId,
-          controller: ad.viewController,
-          listener: ad.viewListener,
-          child: banner.builder(context, ad),
+        adUnitId: ad.adUnitId,
+        controller: ad.viewController,
+        listener: ad.viewListener,
+        child: banner.builder(context, ad),
       );
       child = SizedBox(
         height: DSAdsManager.I.isAdAvailable ? nativeAdHeight : 0,
