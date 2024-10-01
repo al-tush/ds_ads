@@ -1,3 +1,6 @@
+## 1.0.1
+- fix Flutter 3.24 release build
+
 ## 1.0.0
 - update dependencies
 - dart format applied
