@@ -566,6 +566,7 @@ class DSAdsManager {
     }
   }
 
+  /// Is [mediation] initialized
   bool isMediationInitialized(DSAdMediation mediation) =>
       _mediationInitialized.contains(mediation);
 
@@ -598,6 +599,7 @@ class DSAdsManager {
     await _appLovinInit;
   }
 
+  /// Show AppLovin debug interface. Do not use this method in production
   void showAppLovinMediationDebugger() {
     AppLovinMAX.showMediationDebugger();
   }

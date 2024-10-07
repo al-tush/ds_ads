@@ -8,10 +8,13 @@ import 'package:google_mobile_ads/google_mobile_ads.dart';
 
 /// Widget to show Google and AppLovin MAX banner ads
 class DSAdsBanner extends StatefulWidget {
+  /// Use [builder] to wrap banner widget to another widget. Eg. [Padding]
   final BannerAdBuilder? builder;
+  /// Define location. Allows to disable banners by location and see data in statistics ([DSAdsManager.onReportEvent])
   final DSAdLocation location;
   final String googleUnitId;
   final String appLovinUnitId;
+  /// Do not use it
   final bool adaptive;
 
   const DSAdsBanner({

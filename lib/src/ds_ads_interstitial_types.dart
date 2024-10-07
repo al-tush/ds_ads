@@ -1,9 +1,11 @@
 part of 'ds_ads_interstitial.dart';
 
+/// Root event for all Interstitial ad events. Do not use directly
 abstract class DSAdsInterstitialEvent extends DSAdsEvent {
   const DSAdsInterstitialEvent();
 }
 
+/// Generated when Interstitial ad successfully loaded
 class DSAdsInterstitialLoadedEvent extends DSAdsInterstitialEvent {
   final DSInterstitialAd ad;
 
@@ -12,6 +14,7 @@ class DSAdsInterstitialLoadedEvent extends DSAdsInterstitialEvent {
   });
 }
 
+/// Generated when Interstitial ad failed to load
 class DSAdsInterstitialLoadFailedEvent extends DSAdsInterstitialEvent {
   final int errCode;
   final String errText;
@@ -22,6 +25,7 @@ class DSAdsInterstitialLoadFailedEvent extends DSAdsInterstitialEvent {
   });
 }
 
+/// Generated when Interstitial ad ready to show (show method was called)
 class DSAdsInterstitialPreShowingEvent extends DSAdsInterstitialEvent {
   final DSInterstitialAd ad;
 
@@ -30,6 +34,7 @@ class DSAdsInterstitialPreShowingEvent extends DSAdsInterstitialEvent {
   });
 }
 
+/// Generated when Interstitial ad showed
 class DSAdsInterstitialShowedEvent extends DSAdsInterstitialEvent {
   final DSInterstitialAd ad;
 
@@ -44,6 +49,7 @@ class DSAdsInterstitialShowErrorEvent extends DSAdsInterstitialEvent {
   const DSAdsInterstitialShowErrorEvent._();
 }
 
+/// Generated when Interstitial ad was closed
 class DSAdsInterstitialShowDismissedEvent extends DSAdsInterstitialEvent {
   final DSInterstitialAd ad;
 
