@@ -118,33 +118,33 @@ class DSGoogleRewardedAd extends DSRewardedAd {
           };
           ad.fullScreenContentCallback = FullScreenContentCallback(
             onAdImpression: (ad) {
-              if (ad != _ad)
-                Fimber.e('ds_ads: assert error',
-                    stacktrace: StackTrace.current);
+              if (ad != _ad) {
+                Fimber.e('ds_ads: assert error', stacktrace: StackTrace.current);
+              }
               onAdImpression?.call(this);
             },
             onAdShowedFullScreenContent: (ad) {
-              if (ad != _ad)
-                Fimber.e('ds_ads: assert error',
-                    stacktrace: StackTrace.current);
+              if (ad != _ad) {
+                Fimber.e('ds_ads: assert error', stacktrace: StackTrace.current);
+              }
               onAdShown?.call(this);
             },
             onAdDismissedFullScreenContent: (RewardedAd ad) {
-              if (ad != _ad)
-                Fimber.e('ds_ads: assert error',
-                    stacktrace: StackTrace.current);
+              if (ad != _ad) {
+                Fimber.e('ds_ads: assert error', stacktrace: StackTrace.current);
+              }
               onAdDismissed?.call(this);
             },
             onAdFailedToShowFullScreenContent: (ad, error) {
-              if (ad != _ad)
-                Fimber.e('ds_ads: assert error',
-                    stacktrace: StackTrace.current);
+              if (ad != _ad) {
+                Fimber.e('ds_ads: assert error', stacktrace: StackTrace.current);
+              }
               onAdFailedToShow?.call(this, error.code, error.message);
             },
             onAdClicked: (ad) {
-              if (ad != _ad)
-                Fimber.e('ds_ads: assert error',
-                    stacktrace: StackTrace.current);
+              if (ad != _ad) {
+                Fimber.e('ds_ads: assert error', stacktrace: StackTrace.current);
+              }
               onAdClicked?.call(this);
             },
           );
@@ -161,8 +161,9 @@ class DSGoogleRewardedAd extends DSRewardedAd {
   Future<void> show() async {
     await _ad!.setImmersiveMode(true);
     await _ad!.show(onUserEarnedReward: (ad, reward) {
-      if (ad != _ad)
+      if (ad != _ad) {
         Fimber.e('ds_ads: assert error', stacktrace: StackTrace.current);
+      }
       onRewardEvent?.call(this, reward.amount, reward.type);
     });
   }
