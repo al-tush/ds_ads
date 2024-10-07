@@ -1,3 +1,6 @@
+## 1.0.3
+- pub.dev score minor improvements
+
 ## 1.0.2
 - fix external references to pro.altush.ads.ds_ads package
 
