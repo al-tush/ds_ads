@@ -5,7 +5,8 @@ import 'package:google_mobile_ads/google_mobile_ads.dart';
 import 'applovin_ads/ds_applovin_native_ad.dart';
 import 'generic_ads/export.dart';
 
-typedef OnReportEvent = void Function(String eventName, Map<String, Object> attributes);
+typedef OnReportEvent = void Function(
+    String eventName, Map<String, Object> attributes);
 typedef OnPaidEvent = void Function(
     DSAd ad,
     DSAdMediation mediation,
@@ -17,7 +18,8 @@ typedef OnPaidEvent = void Function(
     String? appLovinDspName,
     Map<String, Object> metricaAttrs);
 
-typedef DSIsAdAllowedCallback = bool Function(DSAdSource source, DSAdLocation location);
+typedef DSIsAdAllowedCallback = bool Function(
+    DSAdSource source, DSAdLocation location);
 typedef DSRetryCountCallback = int Function(DSAdSource source);
 
 typedef DSConsentStatus = ConsentStatus;
@@ -59,10 +61,13 @@ class DSAdLocation {
 }
 
 typedef DSNativeStyle = String;
-typedef NativeAdBuilder = Widget Function(BuildContext context, bool isLoaded, Widget child);
-typedef NativeAdBuilderFlutter = Widget Function(BuildContext context, DSAppLovinNativeAdFlutter ad);
+typedef NativeAdBuilder = Widget Function(
+    BuildContext context, bool isLoaded, Widget child);
+typedef NativeAdBuilderFlutter = Widget Function(
+    BuildContext context, DSAppLovinNativeAdFlutter ad);
 
-typedef BannerAdBuilder = Widget Function(BuildContext context, bool isLoaded, Widget child);
+typedef BannerAdBuilder = Widget Function(
+    BuildContext context, bool isLoaded, Widget child);
 
 sealed class NativeAdBannerInterface {
   DSAdLocation get location;
@@ -99,7 +104,8 @@ class NativeAdBannerFlutter implements NativeAdBannerInterface {
 }
 
 /// Legacy
-@Deprecated('Use NativeAdBannerPlatform for Google or legacy natives or NativeAdBannerFlutter for AppLovin (https://developers.applovin.com/en/flutter/ad-formats/native-ads/)')
+@Deprecated(
+    'Use NativeAdBannerPlatform for Google or legacy natives or NativeAdBannerFlutter for AppLovin (https://developers.applovin.com/en/flutter/ad-formats/native-ads/)')
 class NativeAdBanner extends NativeAdBannerPlatform {
   NativeAdBanner({
     required super.location,
@@ -111,8 +117,10 @@ class NativeAdBanner extends NativeAdBannerPlatform {
 abstract class DSNativeAdBannerStyle {
   /// not defined style
   static const DSNativeStyle notDefined = '';
+
   /// top margin 16dp
   static const DSNativeStyle style1 = 'adFactory1';
+
   /// no margins
   static const DSNativeStyle style2 = 'adFactory2'; // no margins
 }

@@ -18,11 +18,13 @@ extension Attrs on Map<String, Object> {
     if (loadConditions.isEmpty) {
       loadType = 'easy_load';
     } else {
-      loadType = loadConditions.map((e) => switch (e) {
-        DSAdsLoadCondition.error => 'error',
-        DSAdsLoadCondition.mediationChanged => 'mediation_changed',
-        DSAdsLoadCondition.mediationTimeout => 'mediation_timeout',
-      }).join(',');
+      loadType = loadConditions
+          .map((e) => switch (e) {
+                DSAdsLoadCondition.error => 'error',
+                DSAdsLoadCondition.mediationChanged => 'mediation_changed',
+                DSAdsLoadCondition.mediationTimeout => 'mediation_timeout',
+              })
+          .join(',');
     }
     return {
       ...this,
