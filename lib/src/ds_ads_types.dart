@@ -24,7 +24,7 @@ typedef DSRetryCountCallback = int Function(DSAdSource source);
 
 typedef DSConsentStatus = ConsentStatus;
 
-typedef DSDurationCallback = Duration Function();
+typedef DSDurationCallback = Duration Function({DSAdLocation? location});
 
 enum DSAdSource {
   interstitial,

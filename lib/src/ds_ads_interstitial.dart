@@ -352,6 +352,7 @@ class DSAdsInterstitial {
     final Function(int errCode, String errText)? onFailedToShow,
     final Function()? onAdClosed,
     final Function()? then,
+    final Function()? onShowLock,
     Map<String, Object>? customAttributes,
   }) async {
     assert(!location.isInternal);
@@ -478,7 +479,7 @@ class DSAdsInterstitial {
         mediation: _mediation,
         attributes: customAttributes,
       );
-      then?.call();
+      onShowLock?.call();
       return;
     }
 
