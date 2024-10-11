@@ -352,6 +352,7 @@ class DSAdsInterstitial {
     final Function(int errCode, String errText)? onFailedToShow,
     final Function()? onAdClosed,
     final Function()? then,
+    final Function()? onShowLock,
     Map<String, Object>? customAttributes,
   }) async {
     assert(!location.isInternal);
@@ -470,7 +471,7 @@ class DSAdsInterstitial {
     }
 
     final interstitialShowLock =
-        DSAdsManager.I.interstitialShowLockCallback?.call() ?? const Duration();
+        DSAdsManager.I.interstitialShowLockedProc(location);
     if (DateTime.timestamp().difference(_lastShowTime) < interstitialShowLock) {
       _report(
         '$_tag: showing canceled: locked for ${interstitialShowLock.inSeconds}s',
@@ -478,7 +479,10 @@ class DSAdsInterstitial {
         mediation: _mediation,
         attributes: customAttributes,
       );
+      onShowLock?.call();
       then?.call();
+      DSAdsManager.I
+          .emitEvent(const DSAdsInterstitialShowLockEvent._());
       return;
     }
 

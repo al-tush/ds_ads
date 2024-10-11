@@ -26,6 +26,8 @@ typedef DSConsentStatus = ConsentStatus;
 
 typedef DSDurationCallback = Duration Function();
 
+typedef DSLocatedDurationCallback = Duration Function(DSAdLocation location);
+
 enum DSAdSource {
   interstitial,
   interstitial2,
