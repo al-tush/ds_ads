@@ -134,7 +134,7 @@ class DSAdsManager {
   final DSDurationCallback? interstitialFetchDelayCallback;
   late final DSLocatedDurationCallback interstitialShowLockedProc;
   final DSDurationCallback? rewardedFetchDelayCallback;
-  final DSDurationCallback? rewardedShowLockCallback;
+  late final DSLocatedDurationCallback rewardedShowLockedProc;
   final DSNativeStyle nativeAdBannerDefStyle;
   final List<NativeAdBannerInterface> nativeAdCustomBanners;
   final DSIsAdAllowedCallback? isAdAllowedCallback;
@@ -202,11 +202,15 @@ class DSAdsManager {
     DSDurationCallback? interstitialShowLockCallback,
     DSLocatedDurationCallback? interstitialShowLockedCallback,
     this.rewardedFetchDelayCallback,
-    this.rewardedShowLockCallback,
+    @Deprecated('Use rewardedShowLockedCallback(location) instead')
+    DSDurationCallback? rewardedShowLockCallback,
+    DSLocatedDurationCallback? rewardedShowLockedCallback,
     this.retryCountCallback,
     this.consentDebugSettings,
 }) :  assert(interstitialShowLockCallback == null || interstitialShowLockedCallback == null,
-          'Use interstitialShowLockedCallback only'),
+            'Use interstitialShowLockedCallback only'),
+        assert(rewardedShowLockCallback == null || rewardedShowLockedCallback == null,
+            'Use rewardedShowLockedCallback only'),
         assert(_instance == null, 'dismiss previous Ads instance before init new'),
         assert(_widgetsObserver != null, 'call DSAdsManager.preInit() before') {
     _instance = this;
@@ -214,6 +218,13 @@ class DSAdsManager {
       var res =  interstitialShowLockedCallback?.call(location);
       if (res != null) return res;
       res =  interstitialShowLockCallback?.call();
+      if (res != null) return res;
+      return Duration();
+    };
+    rewardedShowLockedProc = (DSAdLocation location) {
+      var res =  rewardedShowLockedCallback?.call(location);
+      if (res != null) return res;
+      res =  rewardedShowLockCallback?.call();
       if (res != null) return res;
       return Duration();
     };
