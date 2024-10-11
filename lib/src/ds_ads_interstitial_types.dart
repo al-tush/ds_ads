@@ -49,6 +49,11 @@ class DSAdsInterstitialShowErrorEvent extends DSAdsInterstitialEvent {
   const DSAdsInterstitialShowErrorEvent._();
 }
 
+/// The ad was not displayed due to a timer lock
+class DSAdsInterstitialShowLockEvent extends DSAdsInterstitialEvent {
+  const DSAdsInterstitialShowLockEvent._();
+}
+
 /// Generated when Interstitial ad was closed
 class DSAdsInterstitialShowDismissedEvent extends DSAdsInterstitialEvent {
   final DSInterstitialAd ad;

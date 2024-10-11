@@ -132,7 +132,7 @@ class DSAdsManager {
   final String appOpenSplashAppLovinUnitId;
   final String rewardedAppLovinUnitId;
   final DSDurationCallback? interstitialFetchDelayCallback;
-  final DSDurationCallback? interstitialShowLockCallback;
+  late final DSLocatedDurationCallback interstitialShowLockedProc;
   final DSDurationCallback? rewardedFetchDelayCallback;
   final DSDurationCallback? rewardedShowLockCallback;
   final DSNativeStyle nativeAdBannerDefStyle;
@@ -198,15 +198,25 @@ class DSAdsManager {
     this.isAdAllowedCallback,
     this.nativeAdCustomBanners = const [],
     this.interstitialFetchDelayCallback,
-    this.interstitialShowLockCallback,
+    @Deprecated('Use interstitialShowLockedCallback(location) instead')
+    DSDurationCallback? interstitialShowLockCallback,
+    DSLocatedDurationCallback? interstitialShowLockedCallback,
     this.rewardedFetchDelayCallback,
     this.rewardedShowLockCallback,
     this.retryCountCallback,
     this.consentDebugSettings,
-  })  : assert(
-            _instance == null, 'dismiss previous Ads instance before init new'),
+}) :  assert(interstitialShowLockCallback == null || interstitialShowLockedCallback == null,
+          'Use interstitialShowLockedCallback only'),
+        assert(_instance == null, 'dismiss previous Ads instance before init new'),
         assert(_widgetsObserver != null, 'call DSAdsManager.preInit() before') {
     _instance = this;
+    interstitialShowLockedProc = (DSAdLocation location) {
+      var res =  interstitialShowLockedCallback?.call(location);
+      if (res != null) return res;
+      res =  interstitialShowLockCallback?.call();
+      if (res != null) return res;
+      return Duration();
+    };
     for (final t in DSAdSource.values) {
       _tryNextMediation(t, true);
     }

@@ -471,7 +471,7 @@ class DSAdsInterstitial {
     }
 
     final interstitialShowLock =
-        DSAdsManager.I.interstitialShowLockCallback?.call() ?? const Duration();
+        DSAdsManager.I.interstitialShowLockedProc(location);
     if (DateTime.timestamp().difference(_lastShowTime) < interstitialShowLock) {
       _report(
         '$_tag: showing canceled: locked for ${interstitialShowLock.inSeconds}s',
@@ -480,6 +480,8 @@ class DSAdsInterstitial {
         attributes: customAttributes,
       );
       onShowLock?.call();
+      DSAdsManager.I
+          .emitEvent(const DSAdsInterstitialShowLockEvent._());
       return;
     }
 
