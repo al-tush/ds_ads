@@ -480,6 +480,7 @@ class DSAdsInterstitial {
         attributes: customAttributes,
       );
       onShowLock?.call();
+      then?.call();
       DSAdsManager.I
           .emitEvent(const DSAdsInterstitialShowLockEvent._());
       return;
