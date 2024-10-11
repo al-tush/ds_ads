@@ -44,6 +44,11 @@ class DSAdsRewardedShowErrorEvent extends DSAdsRewardedEvent {
   const DSAdsRewardedShowErrorEvent._();
 }
 
+/// The ad was not displayed due to a timer lock
+class DSAdsRewardedShowLockEvent extends DSAdsRewardedEvent {
+  const DSAdsRewardedShowLockEvent._();
+}
+
 class DSAdsRewardedShowDismissedEvent extends DSAdsRewardedEvent {
   final DSRewardedAd ad;
 

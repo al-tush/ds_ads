@@ -293,6 +293,7 @@ class DSAdsRewarded {
     final Function(int errCode, String errText)? onFailedToShow,
     final Function()? onAdClosed,
     final Function()? then,
+    final Function()? onShowLock,
     Map<String, Object>? customAttributes,
   }) async {
     assert(!location.isInternal);
@@ -410,7 +411,7 @@ class DSAdsRewarded {
     }
 
     final rewardedShowLock =
-        DSAdsManager.I.rewardedShowLockCallback?.call() ?? const Duration();
+        DSAdsManager.I.rewardedShowLockedProc(location);
     if (DateTime.timestamp().difference(_lastShowTime) < (rewardedShowLock)) {
       _report(
         '$_tag: showing canceled: locked for ${rewardedShowLock.inSeconds}s',
@@ -418,7 +419,10 @@ class DSAdsRewarded {
         mediation: _mediation,
         attributes: customAttributes,
       );
+      onShowLock?.call();
       then?.call();
+      DSAdsManager.I
+          .emitEvent(const DSAdsRewardedShowLockEvent._());
       return;
     }
 
