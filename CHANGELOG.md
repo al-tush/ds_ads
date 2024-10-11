@@ -1,3 +1,9 @@
+## 1.1.0
+- allow to use location in interstitialShowLockedCallback (instead of legacy interstitialShowLockCallback)
+- allow to use location in rewardedShowLockedCallback (instead of legacy rewardedShowLockCallback)
+- add onShowLock callback for interstitial and rewarded ads
+- set Flutter 3.24 as minimum supported version (no any reason to use 2.22 but no problem with this)
+
 ## 1.0.3
 - pub.dev score minor improvements
 
