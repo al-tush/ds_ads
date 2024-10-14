@@ -1,8 +1,8 @@
 # ds_ads
 
-Ads components for sect.dev (https://sect.dev/)
+Ads wrapper components.
 
-Supports interstitial and native ads on Android.
+Supports interstitial, native and other ads by Google Ads and AppLovin.
 
 ## Getting started
 
