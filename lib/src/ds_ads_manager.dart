@@ -10,6 +10,7 @@ import 'package:ds_ads/src/ds_ads_rewarded.dart';
 import 'package:ds_common/core/ds_adjust.dart';
 import 'package:ds_common/ds_common.dart';
 import 'package:fimber/fimber.dart';
+import 'package:flutter/foundation.dart';
 import 'package:flutter/widgets.dart';
 import 'package:freezed_annotation/freezed_annotation.dart';
 import 'package:google_mobile_ads/google_mobile_ads.dart';
@@ -137,7 +138,7 @@ class DSAdsManager {
   late final DSLocatedDurationCallback rewardedShowLockedProc;
   final DSNativeStyle nativeAdBannerDefStyle;
   final List<NativeAdBannerInterface> nativeAdCustomBanners;
-  final DSIsAdAllowedCallback? isAdAllowedCallback;
+  late final DSIsAdAllowedCallback isAdAllowedCallbackProc;
   final DSRetryCountCallback? retryCountCallback;
   final ConsentDebugSettings? consentDebugSettings;
 
@@ -170,6 +171,7 @@ class DSAdsManager {
   /// [interstitialUnitId] is the default unitId for the interstitial.
   /// [nativeGoogleUnitId], [nativeAppLovinUnitId] unitId for native block.
   /// [isAdAllowedCallback] allows you to dynamically determine whether an ad can be displayed.
+  /// [disabledInDebugMode] for [kDebugMode] all ads disabled
   /// [interstitialFetchDelay] sets the minimum time after displaying an interstitial before the next interstitial is started to load.
   /// [interstitialShowLock] the time from the moment the user closes the interstitial for which the interstitials show are blocked.
   /// [consentDebugSettings] settings for UMP Consent for internal app builds (by default debugGeography: DebugGeography.debugGeographyEea)
@@ -195,16 +197,17 @@ class DSAdsManager {
     this.appOpenAppLovinUnitId = '',
     this.appOpenSplashAppLovinUnitId = '',
     this.rewardedAppLovinUnitId = '',
-    this.isAdAllowedCallback,
+    final DSIsAdAllowedCallback? isAdAllowedCallback,
+    final bool disabledInDebugMode = false,
     this.nativeAdCustomBanners = const [],
     this.interstitialFetchDelayCallback,
     @Deprecated('Use interstitialShowLockedCallback(location) instead')
-    DSDurationCallback? interstitialShowLockCallback,
-    DSLocatedDurationCallback? interstitialShowLockedCallback,
+    final DSDurationCallback? interstitialShowLockCallback,
+    final DSLocatedDurationCallback? interstitialShowLockedCallback,
     this.rewardedFetchDelayCallback,
     @Deprecated('Use rewardedShowLockedCallback(location) instead')
-    DSDurationCallback? rewardedShowLockCallback,
-    DSLocatedDurationCallback? rewardedShowLockedCallback,
+    final DSDurationCallback? rewardedShowLockCallback,
+    final DSLocatedDurationCallback? rewardedShowLockedCallback,
     this.retryCountCallback,
     this.consentDebugSettings,
 }) :  assert(interstitialShowLockCallback == null || interstitialShowLockedCallback == null,
@@ -227,6 +230,10 @@ class DSAdsManager {
       res =  rewardedShowLockCallback?.call();
       if (res != null) return res;
       return Duration();
+    };
+    isAdAllowedCallbackProc = (DSAdSource source, DSAdLocation location) {
+      if (kDebugMode && disabledInDebugMode) return false;
+      return isAdAllowedCallback?.call(source, location) ?? true;
     };
     for (final t in DSAdSource.values) {
       _tryNextMediation(t, true);

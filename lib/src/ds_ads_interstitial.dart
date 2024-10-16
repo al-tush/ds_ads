@@ -135,7 +135,7 @@ class DSAdsInterstitial {
         Fimber.e(msg, stacktrace: StackTrace.current);
       }
     }
-    if (DSAdsManager.I.isAdAllowedCallback?.call(source, location) == false) {
+    if (DSAdsManager.I.isAdAllowedCallbackProc(source, location) == false) {
       Fimber.i('$_tag: disabled (location: $location)');
       return true;
     }

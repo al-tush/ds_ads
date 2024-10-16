@@ -83,9 +83,7 @@ class DSAdsRewarded {
         Fimber.e(msg, stacktrace: StackTrace.current);
       }
     }
-    if (DSAdsManager.I.isAdAllowedCallback
-            ?.call(DSAdSource.rewarded, location) ==
-        false) {
+    if (DSAdsManager.I.isAdAllowedCallbackProc(DSAdSource.rewarded, location) == false) {
       Fimber.i('$_tag: disabled (location: $location)');
       return true;
     }

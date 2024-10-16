@@ -77,7 +77,7 @@ class _DSAdsBannerState extends State<DSAdsBanner> {
         Fimber.e(msg, stacktrace: StackTrace.current);
       }
     }
-    if (DSAdsManager.I.isAdAllowedCallback?.call(DSAdSource.banner, location) ==
+    if (DSAdsManager.I.isAdAllowedCallbackProc(DSAdSource.banner, location) ==
         false) {
       Fimber.i('$_tag: disabled (location: $location)');
       return true;

@@ -190,7 +190,7 @@ mixin DSAdsNativeLoaderMixin<T extends StatefulWidget> on State<T> {
         Fimber.e(msg, stacktrace: StackTrace.current);
       }
     }
-    if (DSAdsManager.I.isAdAllowedCallback?.call(DSAdSource.native, location) ==
+    if (DSAdsManager.I.isAdAllowedCallbackProc(DSAdSource.native, location) ==
         false) {
       Fimber.i('$_tag: disabled (location: $location)');
       return true;
