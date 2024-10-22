@@ -324,7 +324,7 @@ class _DSAdsBannerState extends State<DSAdsBanner> {
               _onAdLoaded(mediation, ad.networkName);
             },
             onAdLoadFailedCallback: (adUnitId, error) {
-              _onAdFailedToLoad(error.code, error.message, mediation, null);
+              _onAdFailedToLoad(error.code.value, error.message, mediation, null);
             },
             onAdClickedCallback: (ad) {
               _onAdClicked(mediation, ad.networkName);

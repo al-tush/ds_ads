@@ -27,7 +27,7 @@ class DSAppLovinInterstitialAd extends DSInterstitialAd {
       },
       onAdLoadFailedCallback: (adUnitId, error) {
         setLoadFailed();
-        onAdFailedToLoad(this, error.code, error.message);
+        onAdFailedToLoad(this, error.code.value, error.message);
       },
       onAdDisplayedCallback: (ad) {
         onAdShown?.call(this);
@@ -43,7 +43,7 @@ class DSAppLovinInterstitialAd extends DSInterstitialAd {
             'USD', ad.dspName);
       },
       onAdDisplayFailedCallback: (ad, error) {
-        onAdFailedToShow?.call(this, error.code, error.message);
+        onAdFailedToShow?.call(this, error.code.value, error.message);
       },
       onAdClickedCallback: (ad) {
         onAdClicked?.call(this);
@@ -116,7 +116,7 @@ class DSAppLovinRewardedAd extends DSRewardedAd {
       },
       onAdLoadFailedCallback: (adUnitId, error) {
         setLoadFailed();
-        onAdFailedToLoad(this, error.code, error.message);
+        onAdFailedToLoad(this, error.code.value, error.message);
       },
       onAdDisplayedCallback: (ad) {
         onAdShown?.call(this);
@@ -127,7 +127,7 @@ class DSAppLovinRewardedAd extends DSRewardedAd {
             'USD', ad.dspName);
       },
       onAdDisplayFailedCallback: (ad, error) {
-        onAdFailedToShow?.call(this, error.code, error.message);
+        onAdFailedToShow?.call(this, error.code.value, error.message);
       },
       onAdClickedCallback: (ad) {
         onAdClicked?.call(this);
@@ -203,13 +203,13 @@ class DSAppLovinAppOpenAd extends DSAppOpenAd {
       },
       onAdLoadFailedCallback: (adUnitId, error) {
         setLoadFailed();
-        onAdFailedToLoad(this, error.code, error.message);
+        onAdFailedToLoad(this, error.code.value, error.message);
       },
       onAdDisplayedCallback: (ad) {
         onAdShown?.call(this);
       },
       onAdDisplayFailedCallback: (ad, error) {
-        onAdFailedToShow?.call(this, error.code, error.message);
+        onAdFailedToShow?.call(this, error.code.value, error.message);
       },
       onAdClickedCallback: (ad) {
         onAdClicked?.call(this);

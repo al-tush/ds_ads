@@ -31,7 +31,7 @@ class DSAppLovinNativeAdFlutter extends DSNativeAd {
         onAdLoaded?.call(this);
       },
       onAdLoadFailedCallback: (adUnitId, error) {
-        onAdFailedToLoad?.call(this, error.code, error.message);
+        onAdFailedToLoad?.call(this, error.code.value, error.message);
       },
       onAdClickedCallback: (ad) {
         onAdClicked?.call(this);
