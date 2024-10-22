@@ -83,7 +83,8 @@ class DSAdsRewarded {
         Fimber.e(msg, stacktrace: StackTrace.current);
       }
     }
-    if (DSAdsManager.I.isAdAllowedCallbackProc(DSAdSource.rewarded, location) == false) {
+    if (DSAdsManager.I.isAdAllowedCallbackProc(DSAdSource.rewarded, location) ==
+        false) {
       Fimber.i('$_tag: disabled (location: $location)');
       return true;
     }
@@ -408,8 +409,7 @@ class DSAdsRewarded {
       return;
     }
 
-    final rewardedShowLock =
-        DSAdsManager.I.rewardedShowLockedProc(location);
+    final rewardedShowLock = DSAdsManager.I.rewardedShowLockedProc(location);
     if (DateTime.timestamp().difference(_lastShowTime) < (rewardedShowLock)) {
       _report(
         '$_tag: showing canceled: locked for ${rewardedShowLock.inSeconds}s',
@@ -419,8 +419,7 @@ class DSAdsRewarded {
       );
       onShowLock?.call();
       then?.call();
-      DSAdsManager.I
-          .emitEvent(const DSAdsRewardedShowLockEvent._());
+      DSAdsManager.I.emitEvent(const DSAdsRewardedShowLockEvent._());
       return;
     }
 

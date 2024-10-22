@@ -10,10 +10,12 @@ import 'package:google_mobile_ads/google_mobile_ads.dart';
 class DSAdsBanner extends StatefulWidget {
   /// Use [builder] to wrap banner widget to another widget. Eg. [Padding]
   final BannerAdBuilder? builder;
+
   /// Define location. Allows to disable banners by location and see data in statistics ([DSAdsManager.onReportEvent])
   final DSAdLocation location;
   final String googleUnitId;
   final String appLovinUnitId;
+
   /// Do not use it
   final bool adaptive;
 
@@ -324,7 +326,8 @@ class _DSAdsBannerState extends State<DSAdsBanner> {
               _onAdLoaded(mediation, ad.networkName);
             },
             onAdLoadFailedCallback: (adUnitId, error) {
-              _onAdFailedToLoad(error.code.value, error.message, mediation, null);
+              _onAdFailedToLoad(
+                  error.code.value, error.message, mediation, null);
             },
             onAdClickedCallback: (ad) {
               _onAdClicked(mediation, ad.networkName);

@@ -210,24 +210,29 @@ class DSAdsManager {
     final DSLocatedDurationCallback? rewardedShowLockedCallback,
     this.retryCountCallback,
     this.consentDebugSettings,
-}) :  assert(interstitialShowLockCallback == null || interstitialShowLockedCallback == null,
+  })  : assert(
+            interstitialShowLockCallback == null ||
+                interstitialShowLockedCallback == null,
             'Use interstitialShowLockedCallback only'),
-        assert(rewardedShowLockCallback == null || rewardedShowLockedCallback == null,
+        assert(
+            rewardedShowLockCallback == null ||
+                rewardedShowLockedCallback == null,
             'Use rewardedShowLockedCallback only'),
-        assert(_instance == null, 'dismiss previous Ads instance before init new'),
+        assert(
+            _instance == null, 'dismiss previous Ads instance before init new'),
         assert(_widgetsObserver != null, 'call DSAdsManager.preInit() before') {
     _instance = this;
     interstitialShowLockedProc = (DSAdLocation location) {
-      var res =  interstitialShowLockedCallback?.call(location);
+      var res = interstitialShowLockedCallback?.call(location);
       if (res != null) return res;
-      res =  interstitialShowLockCallback?.call();
+      res = interstitialShowLockCallback?.call();
       if (res != null) return res;
       return Duration();
     };
     rewardedShowLockedProc = (DSAdLocation location) {
-      var res =  rewardedShowLockedCallback?.call(location);
+      var res = rewardedShowLockedCallback?.call(location);
       if (res != null) return res;
-      res =  rewardedShowLockCallback?.call();
+      res = rewardedShowLockCallback?.call();
       if (res != null) return res;
       return Duration();
     };
