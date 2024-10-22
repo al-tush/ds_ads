@@ -1,3 +1,6 @@
+## 1.2.1
+- pub.dev score improved (dart format applied)
+
 ## 1.2.0
 - add DSAdsManager.disabledInDebugMode flag (makes app debug easier without ads)
 - applovin_max and google_mobile_ads updated. For Android tested with this adapters versions:
