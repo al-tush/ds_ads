@@ -1,3 +1,22 @@
+## 1.2.0
+- add DSAdsManager.disabledInDebugMode flag (makes app debug easier without ads)
+- applovin_max and google_mobile_ads updated. For Android tested with this adapters versions:
+```groovy
+    implementation 'com.applovin.mediation:fyber-adapter:8.3.1.1'
+    implementation 'com.applovin.mediation:google-ad-manager-adapter:23.4.0.1'
+    implementation 'com.applovin.mediation:google-adapter:23.4.0.1'
+    implementation 'com.applovin.mediation:inmobi-adapter:10.7.7.2'
+    implementation 'com.squareup.picasso:picasso:2.71828'
+    implementation 'androidx.recyclerview:recyclerview:1.2.1'
+    implementation 'com.applovin.mediation:ironsource-adapter:8.4.0.0.0'
+    implementation 'com.applovin.mediation:vungle-adapter:7.4.1.2'
+    implementation 'com.applovin.mediation:facebook-adapter:6.18.0.0'
+    implementation 'com.applovin.mediation:mintegral-adapter:16.8.51.2'
+    implementation 'com.applovin.mediation:bytedance-adapter:6.2.0.7.0'
+    implementation 'com.applovin.mediation:unityads-adapter:4.12.3.0'
+    implementation 'com.google.android.gms:play-services-ads-lite:23.4.0'
+```
+
 ## 1.1.0
 - allow to use location in interstitialShowLockedCallback (instead of legacy interstitialShowLockCallback)
 - allow to use location in rewardedShowLockedCallback (instead of legacy rewardedShowLockCallback)
