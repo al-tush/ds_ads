@@ -198,6 +198,7 @@ class DSAdsManager {
     this.appOpenSplashAppLovinUnitId = '',
     this.rewardedAppLovinUnitId = '',
     final DSIsAdAllowedCallback? isAdAllowedCallback,
+    @Deprecated("Use appState.adsDisabledInDebugMode instead")
     final bool disabledInDebugMode = false,
     this.nativeAdCustomBanners = const [],
     this.interstitialFetchDelayCallback,
@@ -237,7 +238,7 @@ class DSAdsManager {
       return Duration();
     };
     isAdAllowedCallbackProc = (DSAdSource source, DSAdLocation location) {
-      if (kDebugMode && disabledInDebugMode) return false;
+      if (kDebugMode && (disabledInDebugMode || appState.adsDisabledInDebugMode)) return false;
       return isAdAllowedCallback?.call(source, location) ?? true;
     };
     for (final t in DSAdSource.values) {

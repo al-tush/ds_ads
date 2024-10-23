@@ -133,6 +133,9 @@ abstract class DSAppAdsState {
 
   // Current brightness for native banners style
   Brightness get brightness;
+
+  // if true for [kDebugMode] all ads disabled (this location makes switch easier in hot reload)
+  bool get adsDisabledInDebugMode => false;
 }
 
 enum DSAdState {
