@@ -1,3 +1,6 @@
+## 1.2.2
+- flag appState.adsDisabledInDebugMode added
+
 ## 1.2.1
 - pub.dev score improved (dart format applied)
 
