@@ -1,3 +1,7 @@
+## 1.2.3
+- fix non-blocked Back hardware button for Flutter 3.24
+- flag appState.adsDisabledInDebugMode added to DSAppAdsStateMixin for backward capability
+
 ## 1.2.2
 - flag appState.adsDisabledInDebugMode added
 
@@ -27,7 +31,7 @@
 - allow to use location in interstitialShowLockedCallback (instead of legacy interstitialShowLockCallback)
 - allow to use location in rewardedShowLockedCallback (instead of legacy rewardedShowLockCallback)
 - add onShowLock callback for interstitial and rewarded ads
-- set Flutter 3.24 as minimum supported version (no any reason to use 2.22 but no problem with this)
+- set Flutter 3.24 as minimum supported version (no any reason to use Flutter 3.22 but no problem with this)
 
 ## 1.0.3
 - pub.dev score minor improvements
