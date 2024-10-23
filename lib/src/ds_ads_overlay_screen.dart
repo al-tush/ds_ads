@@ -47,29 +47,32 @@ class _DSAdsOverlayScreenState extends State<DSAdsOverlayScreen> {
       backgroundColor: Colors.black.withOpacity(0.3),
       body: PopScope(
         canPop: false,
-        child: Container(
-          constraints: const BoxConstraints.expand(),
-          color: const Color(0x99000000),
-          child: Center(
-            child: Column(
-              mainAxisSize: MainAxisSize.min,
-              children: [
-                const Text(
-                  'Ad in', // ToDo: localize?
-                  style: TextStyle(
-                    fontSize: 16,
-                    color: Colors.white,
+        child: BackButtonListener(
+          onBackButtonPressed: () async => true,
+          child: Container(
+            constraints: const BoxConstraints.expand(),
+            color: const Color(0x99000000),
+            child: Center(
+              child: Column(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  const Text(
+                    'Ad in', // ToDo: localize?
+                    style: TextStyle(
+                      fontSize: 16,
+                      color: Colors.white,
+                    ),
                   ),
-                ),
-                const SizedBox(height: 16),
-                Text(
-                  '$_counter',
-                  style: const TextStyle(
-                    fontSize: 64,
-                    color: Colors.white,
+                  const SizedBox(height: 16),
+                  Text(
+                    '$_counter',
+                    style: const TextStyle(
+                      fontSize: 64,
+                      color: Colors.white,
+                    ),
                   ),
-                ),
-              ],
+                ],
+              ),
             ),
           ),
         ),
