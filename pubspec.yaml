@@ -1,6 +1,6 @@
 name: ds_ads
 description: Ads SectDev components for Flutter projects (https://sect.dev/). Supports AdMob and AppLovin mediations
-version: 1.2.3
+version: 1.2.4
 repository: https://github.com/al-tush/ds_ads
 
 environment:

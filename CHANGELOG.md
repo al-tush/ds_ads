@@ -1,3 +1,6 @@
+## 1.2.4
+- flag appState.adsDisabledInDebugMode added to DSAppAdsStateMixin for backward capability
+
 ## 1.2.3
 - fix non-blocked Back hardware button for Flutter 3.24
 - flag appState.adsDisabledInDebugMode added to DSAppAdsStateMixin for backward capability
