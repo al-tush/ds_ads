@@ -31,3 +31,5 @@ flutter:
       android:
         package: pro.altush.ads.ds_ads
         pluginClass: DsAdsPlugin
+      ios:
+        pluginClass: DsAdsPlugin
