@@ -111,7 +111,8 @@ class DSAdsManager {
 
   Stream<DSAdsEvent> get eventStream => _eventController.stream;
 
-  DSAppAdsStateMixin? get appStateMixin => appState as DSAppAdsStateMixin?;
+  DSAppAdsStateMixin? get appStateMixin =>
+      appState is DSAppAdsStateMixin ? appState as DSAppAdsStateMixin : null;
 
   final List<DSAdMediation> Function(DSAdSource source)
       mediationPrioritiesCallback;
@@ -241,7 +242,8 @@ class DSAdsManager {
     };
     isAdAllowedCallbackProc = (DSAdSource source, DSAdLocation location) {
       if (kDebugMode &&
-          (disabledInDebugMode || appStateMixin?.adsDisabledInDebugMode == true)) {
+          (disabledInDebugMode ||
+              appStateMixin?.adsDisabledInDebugMode == true)) {
         return false;
       }
       return isAdAllowedCallback?.call(source, location) ?? true;
