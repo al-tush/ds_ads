@@ -1,3 +1,6 @@
+## 1.2.5
+- add environment of last ads to YandexMetrica error report
+
 ## 1.2.4
 - flag appState.adsDisabledInDebugMode added to DSAppAdsStateMixin for backward capability
 
