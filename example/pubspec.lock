@@ -143,15 +143,15 @@ packages:
       path: ".."
       relative: true
     source: path
-    version: "1.2.4"
+    version: "1.2.6"
   ds_common:
     dependency: transitive
     description:
       name: ds_common
-      sha256: f6e853d0f1d84de60015ef8c5c24895e9ff74a288ba3a301116a20c0d0c148e6
+      sha256: c24619ba3bf1d77d5249a1620bd6f86d01c25cac1b6cf3def2e0902140697f84
       url: "https://pub.dev"
     source: hosted
-    version: "1.0.9"
+    version: "1.1.0"
   fake_async:
     dependency: transitive
     description:
@@ -176,14 +176,6 @@ packages:
       url: "https://pub.dev"
     source: hosted
     version: "7.0.0"
-  fimber:
-    dependency: transitive
-    description:
-      name: fimber
-      sha256: "42fcfa33acd43556c1e7ebfc12c2b03893418bc04a07931368c3573e228af2f0"
-      url: "https://pub.dev"
-    source: hosted
-    version: "0.7.0"
   firebase_analytics:
     dependency: transitive
     description:

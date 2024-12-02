@@ -9,7 +9,6 @@ import 'package:ds_ads/src/ds_ads_native_loader_mixin.dart';
 import 'package:ds_ads/src/ds_ads_rewarded.dart';
 import 'package:ds_common/core/ds_adjust.dart';
 import 'package:ds_common/ds_common.dart';
-import 'package:fimber/fimber.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/widgets.dart';
 import 'package:freezed_annotation/freezed_annotation.dart';
@@ -49,8 +48,7 @@ class DSAdsManager {
   static DSAdsInterstitial get splashInterstitial {
     if (I._splashInterstitial == null) {
       Fimber.i('splash interstitial created');
-      I._splashInterstitial =
-          DSAdsInterstitial(source: DSAdSource.interstitialSplash);
+      I._splashInterstitial = DSAdsInterstitial(source: DSAdSource.interstitialSplash);
     }
     return I._splashInterstitial!;
   }
@@ -70,15 +68,11 @@ class DSAdsManager {
   /// Is any full-screen ad shows
   static bool get isAdShowing =>
       isInitialized &&
-      ({DSAdState.preShowing, DSAdState.showing}
-              .contains(interstitial.adState) ||
-          {DSAdState.preShowing, DSAdState.showing}
-              .contains(I._splashInterstitial?.adState) ||
-          {DSAdState.preShowing, DSAdState.showing}
-              .contains(rewarded.adState) ||
+      ({DSAdState.preShowing, DSAdState.showing}.contains(interstitial.adState) ||
+          {DSAdState.preShowing, DSAdState.showing}.contains(I._splashInterstitial?.adState) ||
+          {DSAdState.preShowing, DSAdState.showing}.contains(rewarded.adState) ||
           {DSAdState.preShowing, DSAdState.showing}.contains(appOpen.adState) ||
-          {DSAdState.preShowing, DSAdState.showing}
-              .contains(I._splashAppOpen?.adState));
+          {DSAdState.preShowing, DSAdState.showing}.contains(I._splashAppOpen?.adState));
 
   /// Stop loading splash interstitial and dispose [DSAdsManager.splashInterstitial] object
   void disposeSplashInterstitial() {
@@ -104,18 +98,15 @@ class DSAdsManager {
   /// Was the ad successfully loaded at least once in this session
   bool get isAdAvailable => _isAdAvailable;
 
-  DSAdMediation? currentMediation(DSAdSource source) =>
-      _currentMediation[source];
+  DSAdMediation? currentMediation(DSAdSource source) => _currentMediation[source];
 
   final _eventController = StreamController<DSAdsEvent>.broadcast();
 
   Stream<DSAdsEvent> get eventStream => _eventController.stream;
 
-  DSAppAdsStateMixin? get appStateMixin =>
-      appState is DSAppAdsStateMixin ? appState as DSAppAdsStateMixin : null;
+  DSAppAdsStateMixin? get appStateMixin => appState is DSAppAdsStateMixin ? appState as DSAppAdsStateMixin : null;
 
-  final List<DSAdMediation> Function(DSAdSource source)
-      mediationPrioritiesCallback;
+  final List<DSAdMediation> Function(DSAdSource source) mediationPrioritiesCallback;
   final OnPaidEvent onPaidEvent;
   final DSAppAdsState appState;
   final OnReportEvent? onReportEvent;
@@ -147,8 +138,7 @@ class DSAdsManager {
 
   /// App is in foreground
   @internal
-  bool get isInForeground =>
-      _widgetsObserver!.appLifecycleState! == AppLifecycleState.resumed;
+  bool get isInForeground => _widgetsObserver!.appLifecycleState! == AppLifecycleState.resumed;
 
   static _WidgetsObserver? _widgetsObserver;
 
@@ -158,8 +148,7 @@ class DSAdsManager {
 
     _widgetsObserver = _WidgetsObserver();
     WidgetsBinding.instance.addObserver(_widgetsObserver!);
-    _widgetsObserver!.appLifecycleState =
-        WidgetsBinding.instance.lifecycleState;
+    _widgetsObserver!.appLifecycleState = WidgetsBinding.instance.lifecycleState;
   }
 
   /// Initializes ads in the app
@@ -201,29 +190,22 @@ class DSAdsManager {
     this.appOpenSplashAppLovinUnitId = '',
     this.rewardedAppLovinUnitId = '',
     final DSIsAdAllowedCallback? isAdAllowedCallback,
-    @Deprecated('Use appState.adsDisabledInDebugMode instead')
-    final bool disabledInDebugMode = false,
+    @Deprecated('Use appState.adsDisabledInDebugMode instead') final bool disabledInDebugMode = false,
     this.nativeAdCustomBanners = const [],
     this.interstitialFetchDelayCallback,
     @Deprecated('Use interstitialShowLockedCallback(location) instead')
     final DSDurationCallback? interstitialShowLockCallback,
     final DSLocatedDurationCallback? interstitialShowLockedCallback,
     this.rewardedFetchDelayCallback,
-    @Deprecated('Use rewardedShowLockedCallback(location) instead')
-    final DSDurationCallback? rewardedShowLockCallback,
+    @Deprecated('Use rewardedShowLockedCallback(location) instead') final DSDurationCallback? rewardedShowLockCallback,
     final DSLocatedDurationCallback? rewardedShowLockedCallback,
     this.retryCountCallback,
     this.consentDebugSettings,
-  })  : assert(
-            interstitialShowLockCallback == null ||
-                interstitialShowLockedCallback == null,
+  })  : assert(interstitialShowLockCallback == null || interstitialShowLockedCallback == null,
             'Use interstitialShowLockedCallback only'),
-        assert(
-            rewardedShowLockCallback == null ||
-                rewardedShowLockedCallback == null,
+        assert(rewardedShowLockCallback == null || rewardedShowLockedCallback == null,
             'Use rewardedShowLockedCallback only'),
-        assert(
-            _instance == null, 'dismiss previous Ads instance before init new'),
+        assert(_instance == null, 'dismiss previous Ads instance before init new'),
         assert(_widgetsObserver != null, 'call DSAdsManager.preInit() before') {
     _instance = this;
     interstitialShowLockedProc = (DSAdLocation location) {
@@ -241,9 +223,7 @@ class DSAdsManager {
       return Duration();
     };
     isAdAllowedCallbackProc = (DSAdSource source, DSAdLocation location) {
-      if (kDebugMode &&
-          (disabledInDebugMode ||
-              appStateMixin?.adsDisabledInDebugMode == true)) {
+      if (kDebugMode && (disabledInDebugMode || appStateMixin?.adsDisabledInDebugMode == true)) {
         return false;
       }
       return isAdAllowedCallback?.call(source, location) ?? true;
@@ -279,24 +259,20 @@ class DSAdsManager {
         ConsentInformation.instance.requestConsentInfoUpdate(
           params,
           () async {
-            _lastConsentStatus =
-                await ConsentInformation.instance.getConsentStatus();
-            AppLovinMAX.setHasUserConsent(
-                _lastConsentStatus == DSConsentStatus.obtained);
+            _lastConsentStatus = await ConsentInformation.instance.getConsentStatus();
+            AppLovinMAX.setHasUserConsent(_lastConsentStatus == DSConsentStatus.obtained);
             DSMetrica.reportEvent('consent status', attributes: {
               'consent_status': '$_lastConsentStatus',
               'position': 'init',
             });
-            if ([DSConsentStatus.notRequired, DSConsentStatus.obtained]
-                .contains(_lastConsentStatus)) return;
+            if ([DSConsentStatus.notRequired, DSConsentStatus.obtained].contains(_lastConsentStatus)) return;
             if (await ConsentInformation.instance.isConsentFormAvailable()) {
               ConsentForm.loadConsentForm(
                 (ConsentForm consentForm) async {
                   _consentForm = consentForm;
                 },
-                (FormError error) => Fimber.e(
-                    'Consent error: ${error.message} (${error.errorCode})',
-                    stacktrace: StackTrace.current),
+                (FormError error) =>
+                    Fimber.e('Consent error: ${error.message} (${error.errorCode})', stacktrace: StackTrace.current),
               );
             } else {
               DSMetrica.reportEvent('consent status', attributes: {
@@ -305,17 +281,15 @@ class DSAdsManager {
               });
             }
           },
-          (FormError error) => Fimber.e(
-              'Consent error: ${error.message} (${error.errorCode})',
-              stacktrace: StackTrace.current),
+          (FormError error) =>
+              Fimber.e('Consent error: ${error.message} (${error.errorCode})', stacktrace: StackTrace.current),
         );
       }
       // IOS CONSENT
       if (Platform.isIOS) {
         final status = await DSAdjust.getATTStatus();
         _lastConsentStatus = _convertATTStatus(status);
-        AppLovinMAX.setHasUserConsent(
-            _lastConsentStatus == DSConsentStatus.obtained);
+        AppLovinMAX.setHasUserConsent(_lastConsentStatus == DSConsentStatus.obtained);
         DSMetrica.reportEvent('consent status', attributes: {
           'consent_status': '$_lastConsentStatus',
           'att_status': status,
@@ -331,8 +305,7 @@ class DSAdsManager {
   }
 
   /// Wait for initialize lib. [maxWait] define stop wait after this period (default 5 seconds)
-  static Future<void> waitForInit(
-      {final maxWait = const Duration(seconds: 5)}) async {
+  static Future<void> waitForInit({final maxWait = const Duration(seconds: 5)}) async {
     final start = DateTime.now();
     while (true) {
       if (isInitialized) break;
@@ -370,8 +343,7 @@ class DSAdsManager {
           ConsentForm.loadConsentForm((ConsentForm consentForm) async {
             completerForm.complete(consentForm);
           }, (FormError error) {
-            Fimber.e('Consent error: ${error.message} (${error.errorCode})',
-                stacktrace: StackTrace.current);
+            Fimber.e('Consent error: ${error.message} (${error.errorCode})', stacktrace: StackTrace.current);
             completerForm.complete(null);
           });
           _consentForm = await completerForm.future;
@@ -384,18 +356,15 @@ class DSAdsManager {
           (FormError? error) async {
             _consentForm = null;
             if (error == null) {
-              _lastConsentStatus =
-                  await ConsentInformation.instance.getConsentStatus();
-              AppLovinMAX.setHasUserConsent(
-                  _lastConsentStatus == DSConsentStatus.obtained);
+              _lastConsentStatus = await ConsentInformation.instance.getConsentStatus();
+              AppLovinMAX.setHasUserConsent(_lastConsentStatus == DSConsentStatus.obtained);
               DSMetrica.reportEvent('consent status', attributes: {
                 'consent_status': '$_lastConsentStatus',
                 'position': 'after dialog',
               });
               completer.complete(true);
             } else {
-              Fimber.e('Consent error: ${error.message} (${error.errorCode})',
-                  stacktrace: StackTrace.current);
+              Fimber.e('Consent error: ${error.message} (${error.errorCode})', stacktrace: StackTrace.current);
               completer.complete(false);
             }
           },
@@ -406,8 +375,7 @@ class DSAdsManager {
       if (Platform.isIOS) {
         final status = await DSAdjust.requestATT();
         _lastConsentStatus = _convertATTStatus(status.toInt());
-        AppLovinMAX.setHasUserConsent(
-            _lastConsentStatus == DSConsentStatus.obtained);
+        AppLovinMAX.setHasUserConsent(_lastConsentStatus == DSConsentStatus.obtained);
         DSMetrica.reportEvent('consent status', attributes: {
           'consent_status': '$_lastConsentStatus',
           'att_status': status,
@@ -479,8 +447,8 @@ class DSAdsManager {
     if (mediationPriorities.contains(DSAdMediation.appLovin)) {
       if (appLovinSDKKey.isEmpty) {
         mediationPriorities.remove(DSAdMediation.appLovin);
-        assert(false,
-            'setup appLovinSDKKey or remove DSAdMediation.appLovin from mediationPrioritiesCallack ($source)');
+        assert(
+            false, 'setup appLovinSDKKey or remove DSAdMediation.appLovin from mediationPrioritiesCallack ($source)');
       }
       if (appLovinId.isEmpty) {
         mediationPriorities.remove(DSAdMediation.appLovin);
@@ -510,9 +478,7 @@ class DSAdsManager {
       if (_currentMediation[source] == mediationPriorities.last) {
         _lockMediationTill = DateTime.timestamp().add(_nextMediationWait);
         _currentMediation[source] = null;
-        onReportEvent?.call(
-            'ads_manager: no next mediation, waiting ${_nextMediationWait.inSeconds}s',
-            {});
+        onReportEvent?.call('ads_manager: no next mediation, waiting ${_nextMediationWait.inSeconds}s', {});
         Timer(_nextMediationWait, () async {
           if (currentMediation(source) == null) {
             _tryNextMediation(source, false);
@@ -567,8 +533,7 @@ class DSAdsManager {
         reloadMediation();
         return true;
       }
-      final isSame = const IterableEquality()
-          .equals(mediationPriorities, _prevMediationPriorities[source]);
+      final isSame = const IterableEquality().equals(mediationPriorities, _prevMediationPriorities[source]);
       if (!isSame) {
         if (mediationPriorities.first != currentMediation(source)) {
           reloadMediation();
@@ -583,8 +548,7 @@ class DSAdsManager {
   }
 
   @internal
-  Future<void> onLoadAdError(int errCode, String errText,
-      DSAdMediation mediation, DSAdSource source) async {
+  Future<void> onLoadAdError(int errCode, String errText, DSAdMediation mediation, DSAdSource source) async {
     if (mediation != currentMediation(source)) return;
     if (mediationPrioritiesCallback(source).length <= 1) return;
     switch (mediation) {
@@ -608,8 +572,7 @@ class DSAdsManager {
   }
 
   /// Is [mediation] initialized
-  bool isMediationInitialized(DSAdMediation mediation) =>
-      _mediationInitialized.contains(mediation);
+  bool isMediationInitialized(DSAdMediation mediation) => _mediationInitialized.contains(mediation);
 
   Future<void>? _appLovinInit;
 
@@ -624,8 +587,7 @@ class DSAdsManager {
       final start = DateTime.timestamp();
       onReportEvent?.call('ads_manager: AppLovin start initializing', {});
       if (appLovinSDKKey.isEmpty) {
-        Fimber.e('AppLovin not initialized. SDKKey is empty',
-            stacktrace: StackTrace.current);
+        Fimber.e('AppLovin not initialized. SDKKey is empty', stacktrace: StackTrace.current);
         return;
       }
       await AppLovinMAX.initialize(appLovinSDKKey);

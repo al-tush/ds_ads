@@ -1,6 +1,6 @@
 import 'package:applovin_max/applovin_max.dart';
 import 'package:ds_ads/ds_ads.dart';
-import 'package:fimber/fimber.dart';
+import 'package:ds_common/core/fimber/ds_fimber_base.dart';
 import 'package:flutter/services.dart';
 import 'package:google_mobile_ads/google_mobile_ads.dart' as g;
 
@@ -26,8 +26,7 @@ class DSAppLovinNativeAdFlutter extends DSNativeAd {
       onAdLoadedCallback: (ad) {
         _isLoaded = true;
         _networkName = ad.networkName;
-        _mediaViewAspectRatio =
-            ad.nativeAd?.mediaContentAspectRatio ?? _mediaViewAspectRatio;
+        _mediaViewAspectRatio = ad.nativeAd?.mediaContentAspectRatio ?? _mediaViewAspectRatio;
         onAdLoaded?.call(this);
       },
       onAdLoadFailedCallback: (adUnitId, error) {
@@ -122,8 +121,7 @@ class ALInstanceManager {
       if (ad != null) {
         _onAdEvent(ad, call.method, call.arguments);
       } else {
-        Fimber.e(
-            'ALNativeAd with id `$adId` is not available for ${call.method}.');
+        Fimber.e('ALNativeAd with id `$adId` is not available for ${call.method}.');
       }
     });
   }
@@ -134,8 +132,7 @@ class ALInstanceManager {
   /// Invokes load and dispose calls.
   final MethodChannel channel;
 
-  void _onAdEvent(DSAppLovinNativeAd ad, String eventName,
-      Map<dynamic, dynamic> arguments) {
+  void _onAdEvent(DSAppLovinNativeAd ad, String eventName, Map<dynamic, dynamic> arguments) {
     switch (eventName) {
       case 'onAdLoaded':
         ad._isLoaded = true;
@@ -168,8 +165,7 @@ class ALInstanceManager {
             break;
           default:
             pType = g.PrecisionType.unknown;
-            DSAdsManager.I.onReportEvent?.call(
-                'AppLovin (ds_ads) unknown precision type: $precision', {});
+            DSAdsManager.I.onReportEvent?.call('AppLovin (ds_ads) unknown precision type: $precision', {});
             break;
         }
         ad.onPaidEvent(ad, value * 1000000, pType, 'USD');
@@ -181,8 +177,7 @@ class ALInstanceManager {
         ad.onAdExpired?.call(ad);
         break;
       default:
-        Fimber.e('invalid ad event name: $eventName',
-            stacktrace: StackTrace.current);
+        Fimber.e('invalid ad event name: $eventName', stacktrace: StackTrace.current);
     }
   }
 

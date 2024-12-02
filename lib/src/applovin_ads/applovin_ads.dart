@@ -1,6 +1,6 @@
 import 'package:applovin_max/applovin_max.dart';
 import 'package:ds_ads/ds_ads.dart';
-import 'package:fimber/fimber.dart';
+import 'package:ds_common/core/fimber/ds_fimber_base.dart';
 
 class DSAppLovinInterstitialAd extends DSInterstitialAd {
   MaxAd? _ad;
@@ -39,8 +39,7 @@ class DSAppLovinInterstitialAd extends DSInterstitialAd {
           Fimber.w('AppLovin revenue error', stacktrace: StackTrace.current);
           return;
         }
-        onPaidEvent?.call(this, ad.revenue * 1000000, DSPrecisionType.unknown,
-            'USD', ad.dspName);
+        onPaidEvent?.call(this, ad.revenue * 1000000, DSPrecisionType.unknown, 'USD', ad.dspName);
       },
       onAdDisplayFailedCallback: (ad, error) {
         onAdFailedToShow?.call(this, error.code.value, error.message);
@@ -61,8 +60,7 @@ class DSAppLovinInterstitialAd extends DSInterstitialAd {
   Future<void> show() async {
     final isReady = await AppLovinMAX.isInterstitialReady(adUnitId);
     if (isReady != true) {
-      Fimber.e('AppLovin interstitial not ready: $adUnitId',
-          stacktrace: StackTrace.current);
+      Fimber.e('AppLovin interstitial not ready: $adUnitId', stacktrace: StackTrace.current);
       return;
     }
     AppLovinMAX.showInterstitial(adUnitId);
@@ -78,8 +76,7 @@ class DSAppLovinInterstitialAd extends DSInterstitialAd {
   @override
   void Function(DSInterstitialAd ad)? onAdDismissed;
   @override
-  void Function(DSInterstitialAd ad, int errCode, String errText)?
-      onAdFailedToShow;
+  void Function(DSInterstitialAd ad, int errCode, String errText)? onAdFailedToShow;
   @override
   void Function(DSInterstitialAd ad)? onAdShown;
   @override
@@ -123,8 +120,7 @@ class DSAppLovinRewardedAd extends DSRewardedAd {
       },
       onAdRevenuePaidCallback: (ad) {
         onAdImpression?.call(this);
-        onPaidEvent?.call(this, ad.revenue * 1000000, DSPrecisionType.unknown,
-            'USD', ad.dspName);
+        onPaidEvent?.call(this, ad.revenue * 1000000, DSPrecisionType.unknown, 'USD', ad.dspName);
       },
       onAdDisplayFailedCallback: (ad, error) {
         onAdFailedToShow?.call(this, error.code.value, error.message);
@@ -147,8 +143,7 @@ class DSAppLovinRewardedAd extends DSRewardedAd {
   Future<void> show() async {
     final isReady = await AppLovinMAX.isRewardedAdReady(adUnitId);
     if (isReady != true) {
-      Fimber.e('AppLovin rewarded not ready: $adUnitId',
-          stacktrace: StackTrace.current);
+      Fimber.e('AppLovin rewarded not ready: $adUnitId', stacktrace: StackTrace.current);
       return;
     }
     AppLovinMAX.showRewardedAd(adUnitId);
@@ -224,8 +219,7 @@ class DSAppLovinAppOpenAd extends DSAppOpenAd {
           Fimber.w('AppLovin revenue error', stacktrace: StackTrace.current);
           return;
         }
-        onPaidEvent?.call(this, ad.revenue * 1000000, DSPrecisionType.unknown,
-            'USD', ad.dspName);
+        onPaidEvent?.call(this, ad.revenue * 1000000, DSPrecisionType.unknown, 'USD', ad.dspName);
       },
     ));
     startLoading();
@@ -236,8 +230,7 @@ class DSAppLovinAppOpenAd extends DSAppOpenAd {
   Future<void> show() async {
     final isReady = await AppLovinMAX.isAppOpenAdReady(adUnitId);
     if (isReady != true) {
-      Fimber.e('AppLovin app open not ready: $adUnitId',
-          stacktrace: StackTrace.current);
+      Fimber.e('AppLovin app open not ready: $adUnitId', stacktrace: StackTrace.current);
       return;
     }
     AppLovinMAX.showAppOpenAd(adUnitId);

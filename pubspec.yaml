@@ -11,8 +11,7 @@ dependencies:
   flutter:
     sdk: flutter
 
-  fimber: ^0.7.0
-  ds_common: ^1.0.3
+  ds_common: ^1.1.0
   freezed_annotation: ^2.1.0
   collection: ^1.16.0
 

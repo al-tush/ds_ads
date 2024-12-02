@@ -1,6 +1,6 @@
 import 'package:ds_ads/src/generic_ads/export.dart';
-import 'package:fimber/fimber.dart';
-import 'package:flutter/cupertino.dart';
+import 'package:ds_common/core/fimber/ds_fimber_base.dart';
+import 'package:flutter/material.dart';
 import 'package:google_mobile_ads/google_mobile_ads.dart';
 
 import '../ds_ads_types.dart';
@@ -25,8 +25,7 @@ class DSGoogleInterstitialAd extends DSInterstitialAd {
       adLoadCallback: InterstitialAdLoadCallback(
         onAdLoaded: (ad) async {
           _ad = ad;
-          ad.onPaidEvent = (Ad ad, double valueMicros, PrecisionType precision,
-              String currencyCode) {
+          ad.onPaidEvent = (Ad ad, double valueMicros, PrecisionType precision, String currencyCode) {
             assert(_ad == ad);
             onPaidEvent?.call(this, valueMicros, precision, currencyCode, null);
           };
@@ -77,8 +76,7 @@ class DSGoogleInterstitialAd extends DSInterstitialAd {
   @override
   void Function(DSInterstitialAd ad)? onAdDismissed;
   @override
-  void Function(DSInterstitialAd ad, int errCode, String errText)?
-      onAdFailedToShow;
+  void Function(DSInterstitialAd ad, int errCode, String errText)? onAdFailedToShow;
   @override
   void Function(DSInterstitialAd ad)? onAdShown;
   @override
@@ -87,8 +85,7 @@ class DSGoogleInterstitialAd extends DSInterstitialAd {
   void Function(DSInterstitialAd ad)? onAdImpression;
 
   @override
-  String get mediationAdapterClassName =>
-      '${_ad?.responseInfo?.mediationAdapterClassName}';
+  String get mediationAdapterClassName => '${_ad?.responseInfo?.mediationAdapterClassName}';
 }
 
 class DSGoogleRewardedAd extends DSRewardedAd {
@@ -111,44 +108,38 @@ class DSGoogleRewardedAd extends DSRewardedAd {
       rewardedAdLoadCallback: RewardedAdLoadCallback(
         onAdLoaded: (ad) async {
           _ad = ad;
-          ad.onPaidEvent = (Ad ad, double valueMicros, PrecisionType precision,
-              String currencyCode) {
+          ad.onPaidEvent = (Ad ad, double valueMicros, PrecisionType precision, String currencyCode) {
             assert(_ad == ad);
             onPaidEvent?.call(this, valueMicros, precision, currencyCode, null);
           };
           ad.fullScreenContentCallback = FullScreenContentCallback(
             onAdImpression: (ad) {
               if (ad != _ad) {
-                Fimber.e('ds_ads: assert error',
-                    stacktrace: StackTrace.current);
+                Fimber.e('ds_ads: assert error', stacktrace: StackTrace.current);
               }
               onAdImpression?.call(this);
             },
             onAdShowedFullScreenContent: (ad) {
               if (ad != _ad) {
-                Fimber.e('ds_ads: assert error',
-                    stacktrace: StackTrace.current);
+                Fimber.e('ds_ads: assert error', stacktrace: StackTrace.current);
               }
               onAdShown?.call(this);
             },
             onAdDismissedFullScreenContent: (RewardedAd ad) {
               if (ad != _ad) {
-                Fimber.e('ds_ads: assert error',
-                    stacktrace: StackTrace.current);
+                Fimber.e('ds_ads: assert error', stacktrace: StackTrace.current);
               }
               onAdDismissed?.call(this);
             },
             onAdFailedToShowFullScreenContent: (ad, error) {
               if (ad != _ad) {
-                Fimber.e('ds_ads: assert error',
-                    stacktrace: StackTrace.current);
+                Fimber.e('ds_ads: assert error', stacktrace: StackTrace.current);
               }
               onAdFailedToShow?.call(this, error.code, error.message);
             },
             onAdClicked: (ad) {
               if (ad != _ad) {
-                Fimber.e('ds_ads: assert error',
-                    stacktrace: StackTrace.current);
+                Fimber.e('ds_ads: assert error', stacktrace: StackTrace.current);
               }
               onAdClicked?.call(this);
             },
@@ -195,8 +186,7 @@ class DSGoogleRewardedAd extends DSRewardedAd {
   void Function(DSRewardedAd ad)? onAdImpression;
 
   @override
-  String get mediationAdapterClassName =>
-      '${_ad!.responseInfo?.mediationAdapterClassName}';
+  String get mediationAdapterClassName => '${_ad!.responseInfo?.mediationAdapterClassName}';
 }
 
 class DSGoogleNativeAd extends DSNativeAd {
@@ -243,8 +233,7 @@ class DSGoogleNativeAd extends DSNativeAd {
         onAdImpression: (ad) {
           onAdImpression?.call(this);
         },
-        onPaidEvent: (Ad ad, double valueMicros, PrecisionType precision,
-            String currencyCode) {
+        onPaidEvent: (Ad ad, double valueMicros, PrecisionType precision, String currencyCode) {
           onPaidEvent(this, valueMicros, precision, currencyCode);
         },
       ),
@@ -253,8 +242,7 @@ class DSGoogleNativeAd extends DSNativeAd {
   }
 
   @override
-  String get mediationAdapterClassName =>
-      '${_ad?.responseInfo?.mediationAdapterClassName}';
+  String get mediationAdapterClassName => '${_ad?.responseInfo?.mediationAdapterClassName}';
 
   @override
   DSAdMediation get mediation => DSAdMediation.google;
@@ -310,8 +298,7 @@ class DSGoogleAppOpenAd extends DSAppOpenAd {
         onAdLoaded: (ad) async {
           _ad = ad;
           setLoaded();
-          ad.onPaidEvent = (Ad ad, double valueMicros, PrecisionType precision,
-              String currencyCode) {
+          ad.onPaidEvent = (Ad ad, double valueMicros, PrecisionType precision, String currencyCode) {
             assert(_ad == ad);
             onPaidEvent?.call(this, valueMicros, precision, currencyCode, null);
           };
@@ -372,6 +359,5 @@ class DSGoogleAppOpenAd extends DSAppOpenAd {
   void Function(DSAppOpenAd ad)? onAdImpression;
 
   @override
-  String get mediationAdapterClassName =>
-      '${_ad!.responseInfo?.mediationAdapterClassName}';
+  String get mediationAdapterClassName => '${_ad!.responseInfo?.mediationAdapterClassName}';
 }

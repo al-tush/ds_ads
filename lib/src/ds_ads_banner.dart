@@ -2,7 +2,7 @@ import 'dart:async';
 
 import 'package:applovin_max/applovin_max.dart';
 import 'package:ds_ads/ds_ads.dart';
-import 'package:fimber/fimber.dart';
+import 'package:ds_common/core/fimber/ds_fimber_base.dart';
 import 'package:flutter/material.dart';
 import 'package:google_mobile_ads/google_mobile_ads.dart';
 
@@ -70,8 +70,7 @@ class _DSAdsBannerState extends State<DSAdsBanner> {
 
   bool _isDisabled(DSAdLocation location) {
     if (DSAdsManager.I.appState.isPremium) return true;
-    if (!location.isInternal &&
-        DSAdsManager.I.locations?.contains(location) == false) {
+    if (!location.isInternal && DSAdsManager.I.locations?.contains(location) == false) {
       final msg = '$_tag: location $location not in locations';
       assert(false, msg);
       if (!_locationErrReports.contains(location)) {
@@ -79,8 +78,7 @@ class _DSAdsBannerState extends State<DSAdsBanner> {
         Fimber.e(msg, stacktrace: StackTrace.current);
       }
     }
-    if (DSAdsManager.I.isAdAllowedCallbackProc(DSAdSource.banner, location) ==
-        false) {
+    if (DSAdsManager.I.isAdAllowedCallbackProc(DSAdSource.banner, location) == false) {
       Fimber.i('$_tag: disabled (location: $location)');
       return true;
     }
@@ -100,8 +98,7 @@ class _DSAdsBannerState extends State<DSAdsBanner> {
     super.initState();
     if (widget.appLovinUnitId.isNotEmpty) {
       // https://dash.applovin.com/documentation/mediation/flutter/ad-formats/banners#adaptive-banners
-      AppLovinMAX.setBannerExtraParameter(
-          widget.appLovinUnitId, 'adaptive_banner', 'false');
+      AppLovinMAX.setBannerExtraParameter(widget.appLovinUnitId, 'adaptive_banner', 'false');
     }
   }
 
@@ -142,8 +139,7 @@ class _DSAdsBannerState extends State<DSAdsBanner> {
     }
   }
 
-  Future<void> _onAdFailedToLoad(int code, String message,
-      DSAdMediation mediation, String? adapter) async {
+  Future<void> _onAdFailedToLoad(int code, String message, DSAdMediation mediation, String? adapter) async {
     try {
       _report(
         '$_tag: failed to load',
@@ -154,8 +150,7 @@ class _DSAdsBannerState extends State<DSAdsBanner> {
           'error_code': '$code ($mediation)',
         },
       );
-      await DSAdsManager.I
-          .onLoadAdError(code, message, mediation, DSAdSource.banner);
+      await DSAdsManager.I.onLoadAdError(code, message, mediation, DSAdSource.banner);
       final newMediation = DSAdsManager.I.currentMediation(DSAdSource.banner);
       if (newMediation != mediation) {
         setState(() {});
@@ -165,21 +160,16 @@ class _DSAdsBannerState extends State<DSAdsBanner> {
     }
   }
 
-  Future<void> _onPaidEvent(
-      DSAdMediation mediation,
-      String? adapter,
-      double valueMicros,
-      DSPrecisionType precision,
-      String currencyCode,
-      String? appLovinDspName) async {
+  Future<void> _onPaidEvent(DSAdMediation mediation, String? adapter, double valueMicros, DSPrecisionType precision,
+      String currencyCode, String? appLovinDspName) async {
     try {
       final ad = _DSBannerAdStub(
         adUnitId: _adUnitId(mediation),
         adapter: adapter,
         mediation: mediation,
       );
-      DSAdsManager.I.onPaidEvent(ad, mediation, widget.location, valueMicros,
-          precision, currencyCode, DSAdSource.banner, appLovinDspName, {});
+      DSAdsManager.I.onPaidEvent(
+          ad, mediation, widget.location, valueMicros, precision, currencyCode, DSAdSource.banner, appLovinDspName, {});
     } catch (e, stack) {
       Fimber.e('$e', stacktrace: stack);
     }
@@ -205,8 +195,7 @@ class _DSAdsBannerState extends State<DSAdsBanner> {
     }
   }
 
-  Future<void> _onAdWillDismiss(
-      DSAdMediation mediation, String? adapter) async {
+  Future<void> _onAdWillDismiss(DSAdMediation mediation, String? adapter) async {
     try {
       _report(
         '$_tag: ad will dismiss screen',
@@ -233,8 +222,8 @@ class _DSAdsBannerState extends State<DSAdsBanner> {
   Future<void> _loadGoogleAd() async {
     if (_isDisabled(widget.location)) return;
 
-    final size = await AdSize.getCurrentOrientationAnchoredAdaptiveBannerAdSize(
-        MediaQuery.of(context).size.width.truncate());
+    final size =
+        await AdSize.getCurrentOrientationAnchoredAdaptiveBannerAdSize(MediaQuery.of(context).size.width.truncate());
     if (size == null) {
       Fimber.e('Unable to get height of ads_banner (${widget.location})');
       return;
@@ -245,45 +234,33 @@ class _DSAdsBannerState extends State<DSAdsBanner> {
       request: const AdRequest(),
       listener: BannerAdListener(
         onAdImpression: (Ad ad) {
-          _onAdImpression(
-              DSAdMediation.google, ad.responseInfo?.mediationAdapterClassName);
+          _onAdImpression(DSAdMediation.google, ad.responseInfo?.mediationAdapterClassName);
         },
         onAdLoaded: (Ad ad) {
-          _onAdLoaded(
-              DSAdMediation.google, ad.responseInfo?.mediationAdapterClassName);
+          _onAdLoaded(DSAdMediation.google, ad.responseInfo?.mediationAdapterClassName);
           _googleAd = ad as BannerAd;
           setState(() {});
         },
         onAdFailedToLoad: (Ad ad, LoadAdError error) {
-          _onAdFailedToLoad(error.code, error.message, DSAdMediation.google,
-              ad.responseInfo?.mediationAdapterClassName);
+          _onAdFailedToLoad(
+              error.code, error.message, DSAdMediation.google, ad.responseInfo?.mediationAdapterClassName);
           ad.dispose();
         },
         onAdOpened: (Ad ad) {
-          _onAdOpened(
-              DSAdMediation.google, ad.responseInfo?.mediationAdapterClassName);
+          _onAdOpened(DSAdMediation.google, ad.responseInfo?.mediationAdapterClassName);
         },
         onAdClicked: (Ad ad) {
-          _onAdClicked(
-              DSAdMediation.google, ad.responseInfo?.mediationAdapterClassName);
+          _onAdClicked(DSAdMediation.google, ad.responseInfo?.mediationAdapterClassName);
         },
         onAdClosed: (Ad ad) {
-          _onAdClosed(
-              DSAdMediation.google, ad.responseInfo?.mediationAdapterClassName);
+          _onAdClosed(DSAdMediation.google, ad.responseInfo?.mediationAdapterClassName);
         },
-        onPaidEvent: (Ad ad, double valueMicros, PrecisionType precision,
-            String currencyCode) {
-          _onPaidEvent(
-              DSAdMediation.google,
-              ad.responseInfo?.mediationAdapterClassName,
-              valueMicros,
-              precision,
-              currencyCode,
-              null);
+        onPaidEvent: (Ad ad, double valueMicros, PrecisionType precision, String currencyCode) {
+          _onPaidEvent(DSAdMediation.google, ad.responseInfo?.mediationAdapterClassName, valueMicros, precision,
+              currencyCode, null);
         },
         onAdWillDismissScreen: (Ad ad) {
-          _onAdWillDismiss(
-              DSAdMediation.google, ad.responseInfo?.mediationAdapterClassName);
+          _onAdWillDismiss(DSAdMediation.google, ad.responseInfo?.mediationAdapterClassName);
         },
       ),
     );
@@ -326,8 +303,7 @@ class _DSAdsBannerState extends State<DSAdsBanner> {
               _onAdLoaded(mediation, ad.networkName);
             },
             onAdLoadFailedCallback: (adUnitId, error) {
-              _onAdFailedToLoad(
-                  error.code.value, error.message, mediation, null);
+              _onAdFailedToLoad(error.code.value, error.message, mediation, null);
             },
             onAdClickedCallback: (ad) {
               _onAdClicked(mediation, ad.networkName);
@@ -342,12 +318,10 @@ class _DSAdsBannerState extends State<DSAdsBanner> {
               _onAdImpression(mediation, ad.networkName);
               // https://dash.applovin.com/documentation/mediation/android/getting-started/advanced-settings#impression-level-user-revenue-api
               if (ad.revenue < 0) {
-                Fimber.w('AppLovin revenue error',
-                    stacktrace: StackTrace.current);
+                Fimber.w('AppLovin revenue error', stacktrace: StackTrace.current);
                 return;
               }
-              _onPaidEvent(mediation, ad.networkName, ad.revenue * 1000000,
-                  DSPrecisionType.unknown, 'USD', ad.dspName);
+              _onPaidEvent(mediation, ad.networkName, ad.revenue * 1000000, DSPrecisionType.unknown, 'USD', ad.dspName);
             },
           ),
         );

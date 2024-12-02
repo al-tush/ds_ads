@@ -5,7 +5,7 @@ import 'package:collection/collection.dart';
 import 'package:ds_ads/ds_ads.dart';
 import 'package:ds_ads/src/applovin_ads/ds_applovin_ad_widget.dart';
 import 'package:ds_common/core/ds_metrica.dart';
-import 'package:fimber/fimber.dart';
+import 'package:ds_common/core/fimber/ds_fimber_base.dart';
 import 'package:flutter/material.dart';
 import 'package:freezed_annotation/freezed_annotation.dart';
 
@@ -47,8 +47,7 @@ mixin DSAdsNativeLoaderMixin<T extends StatefulWidget> on State<T> {
   }
 
   NativeAdBannerInterface? _getNativeAdBanner() {
-    return DSAdsManager.I.nativeAdCustomBanners
-        .firstWhereOrNull((e) => e.location == nativeAdLocation);
+    return DSAdsManager.I.nativeAdCustomBanners.firstWhereOrNull((e) => e.location == nativeAdLocation);
   }
 
   /// Return expected height of native banner
@@ -63,8 +62,7 @@ mixin DSAdsNativeLoaderMixin<T extends StatefulWidget> on State<T> {
         case DSNativeAdBannerStyle.style2:
           return 290;
         default:
-          assert(false,
-              'nativeAdBannerDefStyle or nativeAdCustomBanners should be defined');
+          assert(false, 'nativeAdBannerDefStyle or nativeAdCustomBanners should be defined');
           return 0;
       }
     }
@@ -88,8 +86,7 @@ mixin DSAdsNativeLoaderMixin<T extends StatefulWidget> on State<T> {
   @override
   void dispose() {
     final ad = _showedAds.remove(this);
-    _report('$_tag: dispose (isShowed: ${ad != null})',
-        location: nativeAdLocation, mediation: ad?.mediation);
+    _report('$_tag: dispose (isShowed: ${ad != null})', location: nativeAdLocation, mediation: ad?.mediation);
     ad?.dispose();
     unawaited(fetchAd(location: const DSAdLocation('internal_dispose')));
     super.dispose();
@@ -156,8 +153,7 @@ mixin DSAdsNativeLoaderMixin<T extends StatefulWidget> on State<T> {
   static DSNativeStyle _getStyleByLocation(DSAdLocation location) {
     String? style;
     if (!location.isInternal) {
-      final banner = DSAdsManager.I.nativeAdCustomBanners
-          .firstWhereOrNull((e) => e.location == location);
+      final banner = DSAdsManager.I.nativeAdCustomBanners.firstWhereOrNull((e) => e.location == location);
       if (banner != null && banner is! NativeAdBannerPlatform) {
         throw Exception('Unexpected flow. Create an issue');
       }
@@ -182,8 +178,7 @@ mixin DSAdsNativeLoaderMixin<T extends StatefulWidget> on State<T> {
   static final _locationErrReports = <DSAdLocation>{};
 
   static bool _isDisabled(DSAdLocation location) {
-    if (!location.isInternal &&
-        DSAdsManager.I.locations?.contains(location) == false) {
+    if (!location.isInternal && DSAdsManager.I.locations?.contains(location) == false) {
       final msg = '$_tag: location $location not in locations';
       assert(false, msg);
       if (!_locationErrReports.contains(location)) {
@@ -191,14 +186,12 @@ mixin DSAdsNativeLoaderMixin<T extends StatefulWidget> on State<T> {
         Fimber.e(msg, stacktrace: StackTrace.current);
       }
     }
-    if (DSAdsManager.I.isAdAllowedCallbackProc(DSAdSource.native, location) ==
-        false) {
+    if (DSAdsManager.I.isAdAllowedCallbackProc(DSAdSource.native, location) == false) {
       Fimber.i('$_tag: disabled (location: $location)');
       return true;
     }
     if (DSAdsManager.I.currentMediation(DSAdSource.native) == null) {
-      _report('$_tag: disabled (no mediation)',
-          location: location, mediation: null);
+      _report('$_tag: disabled (no mediation)', location: location, mediation: null);
       return true;
     }
     return false;
@@ -218,19 +211,12 @@ mixin DSAdsNativeLoaderMixin<T extends StatefulWidget> on State<T> {
     final style = _getStyleByLocation(location);
     if (_loadingAds.containsKey(style)) {
       if (_loadingAds[style]?.isLoaded == true) {
-        if (_loadingAds[style]!
-            .created
-            .add(_loadedTimeout)
-            .isAfter(DateTime.timestamp())) {
+        if (_loadingAds[style]!.created.add(_loadedTimeout).isAfter(DateTime.timestamp())) {
           Fimber.i('$_tag: banner already loaded (location: $location)');
           return;
         }
       } else {
-        if (_loadingAds[style]
-                ?.created
-                .add(_loadingTimeout)
-                .isAfter(DateTime.timestamp()) ==
-            true) {
+        if (_loadingAds[style]?.created.add(_loadingTimeout).isAfter(DateTime.timestamp()) == true) {
           Fimber.i('$_tag: banner is already loading (location: $location)');
           return;
         }
@@ -240,8 +226,7 @@ mixin DSAdsNativeLoaderMixin<T extends StatefulWidget> on State<T> {
     }
     final factoryId = _getFactoryId(location: location);
     if (style.isEmpty) {
-      assert(
-          location.isInternal, 'DSAdsManager.I.nativeAd... should be defined');
+      assert(location.isInternal, 'DSAdsManager.I.nativeAd... should be defined');
       return;
     }
 
@@ -257,9 +242,7 @@ mixin DSAdsNativeLoaderMixin<T extends StatefulWidget> on State<T> {
         unawaited(DSMetrica.putErrorEnvironmentValue('ads_native_adapter', ad.mediationAdapterClassName));
 
         _report('$_tag: impression',
-            location: _getLocationByAd(ad),
-            mediation: ad.mediation,
-            adapter: ad.mediationAdapterClassName);
+            location: _getLocationByAd(ad), mediation: ad.mediation, adapter: ad.mediationAdapterClassName);
       } catch (e, stack) {
         Fimber.e('$e', stacktrace: stack);
       }
@@ -284,8 +267,7 @@ mixin DSAdsNativeLoaderMixin<T extends StatefulWidget> on State<T> {
       }
     }
 
-    Future<void> onAdFailedToLoad(
-        DSNativeAd ad, int code, String message) async {
+    Future<void> onAdFailedToLoad(DSNativeAd ad, int code, String message) async {
       try {
         unawaited(DSMetrica.putErrorEnvironmentValue('ads_last_action', 'native_loading_failed'));
         unawaited(DSMetrica.putErrorEnvironmentValue('ads_native_adapter', ad.mediationAdapterClassName));
@@ -304,8 +286,7 @@ mixin DSAdsNativeLoaderMixin<T extends StatefulWidget> on State<T> {
         );
         DSAdsManager.I.emitEvent(const DSAdsNativeLoadFailed._());
         await ad.dispose();
-        await DSAdsManager.I
-            .onLoadAdError(code, message, mediation, DSAdSource.native);
+        await DSAdsManager.I.onLoadAdError(code, message, mediation, DSAdSource.native);
         final newMediation = DSAdsManager.I.currentMediation(DSAdSource.native);
         if (newMediation != mediation) {
           await fetchAd(location: location);
@@ -315,11 +296,10 @@ mixin DSAdsNativeLoaderMixin<T extends StatefulWidget> on State<T> {
       }
     }
 
-    Future<void> onPaidEvent(DSNativeAd ad, double valueMicros,
-        DSPrecisionType precision, String currencyCode) async {
+    Future<void> onPaidEvent(DSNativeAd ad, double valueMicros, DSPrecisionType precision, String currencyCode) async {
       try {
-        DSAdsManager.I.onPaidEvent(ad, mediation, _getLocationByAd(ad),
-            valueMicros, precision, currencyCode, DSAdSource.native, null, {});
+        DSAdsManager.I.onPaidEvent(
+            ad, mediation, _getLocationByAd(ad), valueMicros, precision, currencyCode, DSAdSource.native, null, {});
       } catch (e, stack) {
         Fimber.e('$e', stacktrace: stack);
       }
@@ -329,9 +309,7 @@ mixin DSAdsNativeLoaderMixin<T extends StatefulWidget> on State<T> {
       try {
         DSAdsManager.I.emitEvent(const DSAdsNativeOpenedEvent._());
         _report('$_tag: ad opened',
-            location: _getLocationByAd(ad),
-            mediation: ad.mediation,
-            adapter: ad.mediationAdapterClassName);
+            location: _getLocationByAd(ad), mediation: ad.mediation, adapter: ad.mediationAdapterClassName);
       } catch (e, stack) {
         Fimber.e('$e', stacktrace: stack);
       }
@@ -341,9 +319,7 @@ mixin DSAdsNativeLoaderMixin<T extends StatefulWidget> on State<T> {
       try {
         DSAdsManager.I.emitEvent(const DSAdsNativeClickEvent._());
         _report('$_tag: ad clicked',
-            location: _getLocationByAd(ad),
-            mediation: ad.mediation,
-            adapter: ad.mediationAdapterClassName);
+            location: _getLocationByAd(ad), mediation: ad.mediation, adapter: ad.mediationAdapterClassName);
       } catch (e, stack) {
         Fimber.e('$e', stacktrace: stack);
       }
@@ -353,9 +329,7 @@ mixin DSAdsNativeLoaderMixin<T extends StatefulWidget> on State<T> {
       try {
         DSAdsManager.I.emitEvent(const DSAdsNativeClosedEvent._());
         _report('$_tag: ad closed',
-            location: _getLocationByAd(ad),
-            mediation: ad.mediation,
-            adapter: ad.mediationAdapterClassName);
+            location: _getLocationByAd(ad), mediation: ad.mediation, adapter: ad.mediationAdapterClassName);
       } catch (e, stack) {
         Fimber.e('$e', stacktrace: stack);
       }
@@ -364,9 +338,7 @@ mixin DSAdsNativeLoaderMixin<T extends StatefulWidget> on State<T> {
     Future<void> onAdExpired(DSNativeAd ad) async {
       try {
         _report('$_tag: ad expired',
-            location: _getLocationByAd(ad),
-            mediation: ad.mediation,
-            adapter: ad.mediationAdapterClassName);
+            location: _getLocationByAd(ad), mediation: ad.mediation, adapter: ad.mediationAdapterClassName);
       } catch (e, stack) {
         Fimber.e('$e', stacktrace: stack);
       }
@@ -412,8 +384,7 @@ mixin DSAdsNativeLoaderMixin<T extends StatefulWidget> on State<T> {
     _showedAds[this] = readyAd;
     _loadingAds.remove(style);
     final mediation = DSAdsManager.I.currentMediation(DSAdSource.native);
-    _report('$_tag: assigned',
-        location: nativeAdLocation, mediation: mediation);
+    _report('$_tag: assigned', location: nativeAdLocation, mediation: mediation);
     unawaited(() async {
       // to prevent empty transparent rect instead banner
       await Future.delayed(const Duration(milliseconds: 500));
@@ -490,8 +461,7 @@ mixin DSAdsNativeLoaderMixin<T extends StatefulWidget> on State<T> {
       }
     }
 
-    Future<void> onAdFailedToLoad(
-        DSNativeAd ad, int code, String message) async {
+    Future<void> onAdFailedToLoad(DSNativeAd ad, int code, String message) async {
       try {
         _report(
           '$_tag: failed to load',
@@ -505,19 +475,17 @@ mixin DSAdsNativeLoaderMixin<T extends StatefulWidget> on State<T> {
           },
         );
         DSAdsManager.I.emitEvent(const DSAdsNativeLoadFailed._());
-        await DSAdsManager.I
-            .onLoadAdError(code, message, mediation, DSAdSource.native);
+        await DSAdsManager.I.onLoadAdError(code, message, mediation, DSAdSource.native);
         setState(() {});
       } catch (e, stack) {
         Fimber.e('$e', stacktrace: stack);
       }
     }
 
-    Future<void> onPaidEvent(DSNativeAd ad, double valueMicros,
-        DSPrecisionType precision, String currencyCode) async {
+    Future<void> onPaidEvent(DSNativeAd ad, double valueMicros, DSPrecisionType precision, String currencyCode) async {
       try {
-        DSAdsManager.I.onPaidEvent(ad, mediation, _getLocationByAd(ad),
-            valueMicros, precision, currencyCode, DSAdSource.native, null, {});
+        DSAdsManager.I.onPaidEvent(
+            ad, mediation, _getLocationByAd(ad), valueMicros, precision, currencyCode, DSAdSource.native, null, {});
       } catch (e, stack) {
         Fimber.e('$e', stacktrace: stack);
       }
@@ -527,9 +495,7 @@ mixin DSAdsNativeLoaderMixin<T extends StatefulWidget> on State<T> {
       try {
         DSAdsManager.I.emitEvent(const DSAdsNativeClickEvent._());
         _report('$_tag: ad clicked',
-            location: _getLocationByAd(ad),
-            mediation: ad.mediation,
-            adapter: ad.mediationAdapterClassName);
+            location: _getLocationByAd(ad), mediation: ad.mediation, adapter: ad.mediationAdapterClassName);
       } catch (e, stack) {
         Fimber.e('$e', stacktrace: stack);
       }
