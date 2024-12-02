@@ -167,6 +167,8 @@ class DSAdsRewarded {
 
     Future<void> onAdLoaded(DSRewardedAd ad) async {
       try {
+        unawaited(DSMetrica.putErrorEnvironmentValue('ads_last_action', 'rewarded_loaded'));
+        unawaited(DSMetrica.putErrorEnvironmentValue('ads_rewarded_adapter', ad.mediationAdapterClassName));
         _totalLoadDuration = DateTime.timestamp().difference(_startLoadTime);
         _startLoadTime = DateTime(0);
         _report(
@@ -199,6 +201,8 @@ class DSAdsRewarded {
         _ad = null;
         _adState = DSAdState.error;
         _loadRetryCount++;
+        unawaited(DSMetrica.putErrorEnvironmentValue('ads_last_action', 'rewarded_loading_failed'));
+        unawaited(DSMetrica.putErrorEnvironmentValue('ads_rewarded_adapter', ad.mediationAdapterClassName));
         _report(
           '$_tag: failed to load',
           location: location,
@@ -443,6 +447,8 @@ class DSAdsRewarded {
 
     ad.onAdImpression = (ad) {
       try {
+        unawaited(DSMetrica.putErrorEnvironmentValue('ads_last_action', 'rewarded_impression'));
+        unawaited(DSMetrica.putErrorEnvironmentValue('ads_rewarded_adapter', ad.mediationAdapterClassName));
         _report('$_tag: impression',
             location: location,
             mediation: ad.mediation,

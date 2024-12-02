@@ -214,6 +214,8 @@ class DSAdsAppOpen {
       try {
         _totalLoadDuration = DateTime.timestamp().difference(_startLoadTime);
         _startLoadTime = DateTime(0);
+        unawaited(DSMetrica.putErrorEnvironmentValue('ads_last_action', 'app_open_loaded'));
+        unawaited(DSMetrica.putErrorEnvironmentValue('ads_app_open_adapter', ad.mediationAdapterClassName));
         _report(
           '$_tag: loaded',
           location: location,
@@ -247,6 +249,8 @@ class DSAdsAppOpen {
         _lastLoadTime = DateTime(0);
         _adState = DSAdState.error;
         _loadRetryCount++;
+        unawaited(DSMetrica.putErrorEnvironmentValue('ads_last_action', 'app_open_loading_failed'));
+        unawaited(DSMetrica.putErrorEnvironmentValue('ads_app_open_adapter', ad.mediationAdapterClassName));
         _report('$_tag: failed to load',
             location: location,
             mediation: mediation,
@@ -426,6 +430,8 @@ class DSAdsAppOpen {
 
     ad.onAdImpression = (ad) {
       try {
+        unawaited(DSMetrica.putErrorEnvironmentValue('ads_last_action', 'app_open_impression'));
+        unawaited(DSMetrica.putErrorEnvironmentValue('ads_app_open_adapter', ad.mediationAdapterClassName));
         _report('$_tag: impression',
             location: location,
             mediation: ad.mediation,

@@ -222,6 +222,8 @@ class DSAdsInterstitial {
       try {
         _totalLoadDuration = DateTime.timestamp().difference(_startLoadTime);
         _startLoadTime = DateTime(0);
+        unawaited(DSMetrica.putErrorEnvironmentValue('ads_last_action', 'inter_loaded'));
+        unawaited(DSMetrica.putErrorEnvironmentValue('ads_inter_adapter', ad.mediationAdapterClassName));
         _report(
           '$_tag: loaded',
           location: location,
@@ -252,6 +254,9 @@ class DSAdsInterstitial {
         _ad = null;
         _adState = DSAdState.error;
         _loadRetryCount++;
+        unawaited(DSMetrica.putErrorEnvironmentValue('ads_last_action', 'inter_loading_failed'));
+        unawaited(DSMetrica.putErrorEnvironmentValue('ads_inter_adapter', ad.mediationAdapterClassName));
+
         _report(
           '$_tag: failed to load',
           location: location,
@@ -503,6 +508,8 @@ class DSAdsInterstitial {
 
     ad.onAdImpression = (ad) {
       try {
+        unawaited(DSMetrica.putErrorEnvironmentValue('ads_last_action', 'inter_impression'));
+        unawaited(DSMetrica.putErrorEnvironmentValue('ads_inter_adapter', ad.mediationAdapterClassName));
         _report('$_tag: impression',
             location: location,
             mediation: ad.mediation,

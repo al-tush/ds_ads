@@ -4,6 +4,7 @@ import 'package:applovin_max/applovin_max.dart';
 import 'package:collection/collection.dart';
 import 'package:ds_ads/ds_ads.dart';
 import 'package:ds_ads/src/applovin_ads/ds_applovin_ad_widget.dart';
+import 'package:ds_common/core/ds_metrica.dart';
 import 'package:fimber/fimber.dart';
 import 'package:flutter/material.dart';
 import 'package:freezed_annotation/freezed_annotation.dart';
@@ -252,6 +253,9 @@ mixin DSAdsNativeLoaderMixin<T extends StatefulWidget> on State<T> {
 
     Future<void> onAdImpression(DSNativeAd ad) async {
       try {
+        unawaited(DSMetrica.putErrorEnvironmentValue('ads_last_action', 'native_impression'));
+        unawaited(DSMetrica.putErrorEnvironmentValue('ads_native_adapter', ad.mediationAdapterClassName));
+
         _report('$_tag: impression',
             location: _getLocationByAd(ad),
             mediation: ad.mediation,
@@ -263,6 +267,9 @@ mixin DSAdsNativeLoaderMixin<T extends StatefulWidget> on State<T> {
 
     Future<void> onAdLoaded(DSNativeAd ad) async {
       try {
+        unawaited(DSMetrica.putErrorEnvironmentValue('ads_last_action', 'native_loaded'));
+        unawaited(DSMetrica.putErrorEnvironmentValue('ads_native_adapter', ad.mediationAdapterClassName));
+
         _loadingAds[style] = ad;
         _report(
           '$_tag: loaded',
@@ -280,6 +287,9 @@ mixin DSAdsNativeLoaderMixin<T extends StatefulWidget> on State<T> {
     Future<void> onAdFailedToLoad(
         DSNativeAd ad, int code, String message) async {
       try {
+        unawaited(DSMetrica.putErrorEnvironmentValue('ads_last_action', 'native_loading_failed'));
+        unawaited(DSMetrica.putErrorEnvironmentValue('ads_native_adapter', ad.mediationAdapterClassName));
+
         _loadingAds.remove(style);
         _report(
           '$_tag: failed to load',
