@@ -1,3 +1,6 @@
+## 1.2.6
+- remove Fimber dependency
+
 ## 1.2.5
 - add environment of last ads to YandexMetrica error report
 
