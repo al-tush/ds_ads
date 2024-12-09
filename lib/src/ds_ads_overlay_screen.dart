@@ -6,23 +6,25 @@ class DSAdsOverlayScreen extends StatefulWidget {
   const DSAdsOverlayScreen({
     super.key,
     required this.counterDoneCallback,
-    required this.delaySec,
+    required this.delayIntervals,
+    required this.intervalDuration,
   });
 
   final void Function() counterDoneCallback;
-  final int delaySec;
+  final int delayIntervals;
+  final Duration intervalDuration;
 
   @override
   State<DSAdsOverlayScreen> createState() => _DSAdsOverlayScreenState();
 }
 
 class _DSAdsOverlayScreenState extends State<DSAdsOverlayScreen> {
-  late var _counter = widget.delaySec;
+  late var _counter = widget.delayIntervals;
 
   @override
   void initState() {
     super.initState();
-    Timer.periodic(const Duration(seconds: 1), (timer) {
+    Timer.periodic(widget.intervalDuration, (timer) {
       _counter--;
       if (_counter < 1) {
         // One second delay to show ad

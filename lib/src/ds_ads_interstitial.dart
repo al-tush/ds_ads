@@ -316,13 +316,16 @@ class DSAdsInterstitial {
   /// [allowFetchNext] allows start fetching after show interstitial ad.
   /// [location] sets location attribute to report (any string allowed)
   /// [beforeAdShow] allows to cancel ad by return false
-  /// [counterDelaySec] show counter before ad. If positive [context] must be assigned
+  /// [counterIntervals] show counter before ad (0 if hide counter, [counterDuration] is interval of counter). If positive [context] must be assigned
   Future<void> showAd({
     required final DSAdLocation location,
     BuildContext? context,
     final Duration dismissAdAfter = const Duration(),
     final Duration Function()? dismissAdAfterCallback,
+    @Deprecated('Use counterDelay instead')
     final int counterDelaySec = 0,
+    final int counterIntervals = 0,
+    final Duration counterDuration = const Duration(milliseconds: 670),
     final Future<bool> Function()? beforeAdShow,
     final Function()? onAdShow,
     final Function(int errCode, String errText)? onFailedToShow,
@@ -333,6 +336,7 @@ class DSAdsInterstitial {
   }) async {
     assert(!location.isInternal);
     assert(counterDelaySec == 0 || context != null, 'context must be assigned to show counter dialog before ad');
+    assert(counterIntervals == 0 || context != null, 'context must be assigned to show counter dialog before ad');
     assert(_checkCustomAttributes(customAttributes), 'custom attributes must have custom_attr_ prefix');
 
     if (DSAdsManager.I.appState.isPremium || _isDisposed) {
@@ -549,14 +553,15 @@ class DSAdsInterstitial {
       }
     };
 
-    if (counterDelaySec > 0) {
+    if (counterDelaySec > 0 || counterIntervals > 0) {
       final streamController = StreamController();
       unawaitedCatch(() async {
         await showDialog(
           context: context!,
           builder: (context) => DSAdsOverlayScreen(
             counterDoneCallback: () => streamController.add(null),
-            delaySec: counterDelaySec,
+            delayIntervals: counterDelaySec > 0 ? counterDelaySec : counterIntervals,
+            intervalDuration: counterDelaySec > 0 ? const Duration(seconds: 1) : counterDuration,
           ),
         );
         await streamController.close();
