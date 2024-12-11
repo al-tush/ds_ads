@@ -1,3 +1,7 @@
+## 1.3.0
+- 3-2-1 counter customised by counterIntervals and counterDuration parameters
+- dependencies updated
+
 ## 1.2.6
 - remove Fimber dependency
 
