@@ -21,10 +21,10 @@ packages:
     dependency: transitive
     description:
       name: applovin_max
-      sha256: "3dfb9759f80510c1f1c8dfc09f78628e11922d324b511469e37b30dc246b36fb"
+      sha256: "4e1498eb095489ee22f03fcef5f6c3d297d55c2f29d1872cadddbf0fe4b9864d"
       url: "https://pub.dev"
     source: hosted
-    version: "4.0.1"
+    version: "4.1.1"
   appmetrica_plugin:
     dependency: transitive
     description:
