@@ -30,11 +30,11 @@ dependencies:
     );
 ```
 
-NB! You should process exceptions by Fimber. For example:
+NB! You should process exceptions by Fimber from [ds_common](https://pub.dev/packages/ds_common) library. For example:
 ```
 Fimber.plantTree(DebugTree());
 ```
-See details at [Fimber](https://pub.dev/packages/fimber).
+See details at root [Fimber](https://pub.dev/packages/fimber) project.
 
 ### Preload ads
 ```dart
