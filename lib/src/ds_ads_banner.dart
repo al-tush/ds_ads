@@ -69,7 +69,7 @@ class _DSAdsBannerState extends State<DSAdsBanner> {
   static final _locationErrReports = <DSAdLocation>{};
 
   bool _isDisabled(DSAdLocation location) {
-    if (DSAdsManager.I.appState.isPremium) return true;
+    if (DSAdsManager.I.isPremium) return true;
     if (!location.isInternal && DSAdsManager.I.locations?.contains(location) == false) {
       final msg = '$_tag: location $location not in locations';
       assert(false, msg);
@@ -271,71 +271,77 @@ class _DSAdsBannerState extends State<DSAdsBanner> {
 
   @override
   Widget build(BuildContext context) {
-    if (_isDisabled(widget.location)) return const SizedBox();
+    return ListenableBuilder(
+      listenable: DSAdsManager.I,
+      builder: (BuildContext context, _) {
+        if (_isDisabled(widget.location)) return const SizedBox();
 
-    final mediation = DSAdsManager.I.currentMediation(DSAdSource.banner)!;
+        final mediation = DSAdsManager.I.currentMediation(DSAdSource.banner)!;
 
-    final Widget child;
-    switch (mediation) {
-      case DSAdMediation.google:
-        if (_googleAd == null || !_isLoaded) return const SizedBox();
-        child = Container(
-          color: switch (DSAdsManager.I.appState.brightness) {
-            Brightness.light => Colors.white,
-            Brightness.dark => Colors.black,
-          },
-          width: _googleAd!.size.width.toDouble(),
-          height: _googleAd!.size.height.toDouble(),
-          child: AdWidget(ad: _googleAd!),
-        );
-        break;
-      case DSAdMediation.appLovin:
-        if (!_isStartLoading) {
-          _isStartLoading = true;
-          _report('$_tag: start loading', mediation: DSAdMediation.appLovin);
+        final Widget child;
+        switch (mediation) {
+          case DSAdMediation.google:
+            if (_googleAd == null || !_isLoaded) return const SizedBox();
+            child = Container(
+              color: switch (DSAdsManager.I.appState.brightness) {
+                Brightness.light => Colors.white,
+                Brightness.dark => Colors.black,
+              },
+              width: _googleAd!.size.width.toDouble(),
+              height: _googleAd!.size.height.toDouble(),
+              child: AdWidget(ad: _googleAd!),
+            );
+            break;
+          case DSAdMediation.appLovin:
+            if (!_isStartLoading) {
+              _isStartLoading = true;
+              _report('$_tag: start loading', mediation: DSAdMediation.appLovin);
+            }
+            child = MaxAdView(
+              adUnitId: _adUnitId(DSAdMediation.appLovin),
+              adFormat: AdFormat.banner,
+              listener: AdViewAdListener(
+                onAdLoadedCallback: (ad) {
+                  _isLoaded = true;
+                  _onAdLoaded(mediation, ad.networkName);
+                },
+                onAdLoadFailedCallback: (adUnitId, error) {
+                  _onAdFailedToLoad(error.code.value, error.message, mediation, null);
+                },
+                onAdClickedCallback: (ad) {
+                  _onAdClicked(mediation, ad.networkName);
+                },
+                onAdExpandedCallback: (ad) {
+                  Fimber.i('ad expanded', stacktrace: StackTrace.current);
+                },
+                onAdCollapsedCallback: (ad) {
+                  Fimber.i('ad collapsed', stacktrace: StackTrace.current);
+                },
+                onAdRevenuePaidCallback: (ad) {
+                  _onAdImpression(mediation, ad.networkName);
+                  // https://dash.applovin.com/documentation/mediation/android/getting-started/advanced-settings#impression-level-user-revenue-api
+                  if (ad.revenue < 0) {
+                    Fimber.w('AppLovin revenue error', stacktrace: StackTrace.current);
+                    return;
+                  }
+                  _onPaidEvent(
+                      mediation, ad.networkName, ad.revenue * 1000000, DSPrecisionType.unknown, 'USD', ad.dspName);
+                },
+              ),
+            );
+            break;
         }
-        child = MaxAdView(
-          adUnitId: _adUnitId(DSAdMediation.appLovin),
-          adFormat: AdFormat.banner,
-          listener: AdViewAdListener(
-            onAdLoadedCallback: (ad) {
-              _isLoaded = true;
-              _onAdLoaded(mediation, ad.networkName);
-            },
-            onAdLoadFailedCallback: (adUnitId, error) {
-              _onAdFailedToLoad(error.code.value, error.message, mediation, null);
-            },
-            onAdClickedCallback: (ad) {
-              _onAdClicked(mediation, ad.networkName);
-            },
-            onAdExpandedCallback: (ad) {
-              Fimber.i('ad expanded', stacktrace: StackTrace.current);
-            },
-            onAdCollapsedCallback: (ad) {
-              Fimber.i('ad collapsed', stacktrace: StackTrace.current);
-            },
-            onAdRevenuePaidCallback: (ad) {
-              _onAdImpression(mediation, ad.networkName);
-              // https://dash.applovin.com/documentation/mediation/android/getting-started/advanced-settings#impression-level-user-revenue-api
-              if (ad.revenue < 0) {
-                Fimber.w('AppLovin revenue error', stacktrace: StackTrace.current);
-                return;
-              }
-              _onPaidEvent(mediation, ad.networkName, ad.revenue * 1000000, DSPrecisionType.unknown, 'USD', ad.dspName);
-            },
-          ),
-        );
-        break;
-    }
 
-    // ToDo: переделать на вызов билдера и для случая, когда isShowed == false
-    Widget res;
-    if (widget.builder != null) {
-      res = widget.builder!(context, true, child);
-    } else {
-      res = child;
-    }
-    return res;
+        // ToDo: переделать на вызов билдера и для случая, когда isShowed == false
+        Widget res;
+        if (widget.builder != null) {
+          res = widget.builder!(context, true, child);
+        } else {
+          res = child;
+        }
+        return res;
+      },
+    );
   }
 }
 

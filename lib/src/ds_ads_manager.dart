@@ -20,7 +20,7 @@ import 'ds_ads_types.dart';
 /// Call [DSAdsManager.preInit] before create application
 /// Call constructor for init ds_ads library
 /// Read README.md file for more information
-class DSAdsManager {
+class DSAdsManager extends ChangeNotifier {
   static DSAdsManager? _instance;
 
   /// Will be deprecated. Use DSAdsManager.I property instead
@@ -520,6 +520,8 @@ class DSAdsManager {
   @internal
   bool updateMediations(DSAdSource source) {
     if (currentMediation(source) == null) return false;
+    if (isPremium) return false;
+
     final mediationPriorities = mediationPrioritiesCallback(source);
     try {
       void reloadMediation() {
@@ -611,6 +613,20 @@ class DSAdsManager {
   int getRetryMaxCount(DSAdSource source) {
     return retryCountCallback?.call(source) ?? 3;
   }
+
+  var _prevIsPremium = false;
+
+  @internal
+  bool get isPremium {
+    final res = appState.isPremium;
+    if (res != _prevIsPremium) {
+      _prevIsPremium = res;
+      Timer.run(() async {
+        notifyListeners();
+      });
+    }
+    return res;
+  }
 }
 
 class _WidgetsObserver with WidgetsBindingObserver {
@@ -622,5 +638,9 @@ class _WidgetsObserver with WidgetsBindingObserver {
     final old = appLifecycleState;
     appLifecycleState = state;
     DSAdsManager._instance?._adsAppOpen.appLifecycleChanged(old, state);
+    if (state == AppLifecycleState.resumed) {
+      // force notify listeners if isPremium changed
+      DSAdsManager.I.isPremium;
+    }
   }
 }

@@ -152,7 +152,7 @@ class DSAdsInterstitial {
   }) {
     assert(_checkCustomAttributes(customAttributes), 'custom attributes must have custom_attr_ prefix');
 
-    if (DSAdsManager.I.appState.isPremium || _isDisposed) {
+    if (DSAdsManager.I.isPremium || _isDisposed) {
       then?.call();
       return;
     }
@@ -339,7 +339,7 @@ class DSAdsInterstitial {
     assert(counterIntervals == 0 || context != null, 'context must be assigned to show counter dialog before ad');
     assert(_checkCustomAttributes(customAttributes), 'custom attributes must have custom_attr_ prefix');
 
-    if (DSAdsManager.I.appState.isPremium || _isDisposed) {
+    if (DSAdsManager.I.isPremium || _isDisposed) {
       then?.call();
       return;
     }

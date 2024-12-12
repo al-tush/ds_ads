@@ -105,7 +105,7 @@ class DSAdsRewarded {
   }) {
     assert(_checkCustomAttributes(customAttributes), 'custom attributes must have custom_attr_ prefix');
 
-    if (DSAdsManager.I.appState.isPremium || _isDisposed) {
+    if (DSAdsManager.I.isPremium || _isDisposed) {
       then?.call();
       return;
     }
@@ -276,7 +276,7 @@ class DSAdsRewarded {
     assert(!location.isInternal);
     assert(_checkCustomAttributes(customAttributes), 'custom attributes must have custom_attr_ prefix');
 
-    if (DSAdsManager.I.appState.isPremium || _isDisposed) {
+    if (DSAdsManager.I.isPremium || _isDisposed) {
       then?.call();
       return;
     }

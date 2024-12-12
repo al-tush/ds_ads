@@ -178,6 +178,8 @@ mixin DSAdsNativeLoaderMixin<T extends StatefulWidget> on State<T> {
   static final _locationErrReports = <DSAdLocation>{};
 
   static bool _isDisabled(DSAdLocation location) {
+    if (DSAdsManager.I.isPremium) return true;
+
     if (!location.isInternal && DSAdsManager.I.locations?.contains(location) == false) {
       final msg = '$_tag: location $location not in locations';
       assert(false, msg);
@@ -378,6 +380,7 @@ mixin DSAdsNativeLoaderMixin<T extends StatefulWidget> on State<T> {
 
   bool _assignAdToMe() {
     if (isShowed) return false;
+    if (_isDisabled(nativeAdLocation)) return false;
     final style = _getStyleByLocation(nativeAdLocation);
     final readyAd = _loadingAds[style];
     if (readyAd == null || !readyAd.isLoaded) return false;
@@ -515,58 +518,64 @@ mixin DSAdsNativeLoaderMixin<T extends StatefulWidget> on State<T> {
     final NativeAdBuilder? builder,
   }) {
     assert(!nativeAdLocation.isInternal);
-    if (DSAdsManager.I.appState.isPremium) return const SizedBox();
-    if (_isDisabled(nativeAdLocation)) return const SizedBox();
 
-    final banner = _getNativeAdBanner();
-    if (banner is NativeAdBannerFlutter) {
-      if (!isShowed) {
-        final ad = _createDSAppLovinNativeAdFlutter();
-        if (ad == null) return const SizedBox();
-        _showedAds[this] = ad;
-      }
+    return ListenableBuilder(
+      listenable: DSAdsManager.I,
+      builder: (BuildContext context, _) {
+        if (DSAdsManager.I.isPremium) return const SizedBox();
+        if (_isDisabled(nativeAdLocation)) return const SizedBox();
 
-      final ad = _showedAds[this] as DSAppLovinNativeAdFlutter;
-      Widget child = MaxNativeAdView(
-        adUnitId: ad.adUnitId,
-        controller: ad.viewController,
-        listener: ad.viewListener,
-        child: banner.builder(context, ad),
-      );
-      child = SizedBox(
-        height: DSAdsManager.I.isAdAvailable ? nativeAdHeight : 0,
-        child: child,
-      );
-      if (builder != null) {
-        return builder(context, isShowed, child);
-      } else {
-        return child;
-      }
-    }
+        final banner = _getNativeAdBanner();
+        if (banner is NativeAdBannerFlutter) {
+          if (!isShowed) {
+            final ad = _createDSAppLovinNativeAdFlutter();
+            if (ad == null) return const SizedBox();
+            _showedAds[this] = ad;
+          }
 
-    if (!DSAdsManager.I.isAdAvailable) return const SizedBox();
+          final ad = _showedAds[this] as DSAppLovinNativeAdFlutter;
+          Widget child = MaxNativeAdView(
+            adUnitId: ad.adUnitId,
+            controller: ad.viewController,
+            listener: ad.viewListener,
+            child: banner.builder(context, ad),
+          );
+          child = SizedBox(
+            height: DSAdsManager.I.isAdAvailable ? nativeAdHeight : 0,
+            child: child,
+          );
+          if (builder != null) {
+            return builder(context, isShowed, child);
+          } else {
+            return child;
+          }
+        }
 
-    Widget child;
-    final ad = _showedAds[this];
-    if (ad == null) {
-      child = const Center(child: CircularProgressIndicator());
-    } else if (ad is DSGoogleNativeAd) {
-      child = DSGoogleAdWidget(key: _adKey, ad: ad);
-    } else if (ad is DSAppLovinNativeAd) {
-      child = DSAppLovinAdWidget(ad: ad);
-    } else {
-      assert(false, 'No implementation for ${ad.runtimeType}');
-      return const SizedBox();
-    }
+        if (!DSAdsManager.I.isAdAvailable) return const SizedBox();
 
-    child = SizedBox(
-      height: nativeAdHeight,
-      child: child,
+        Widget child;
+        final ad = _showedAds[this];
+        if (ad == null) {
+          child = const Center(child: CircularProgressIndicator());
+        } else if (ad is DSGoogleNativeAd) {
+          child = DSGoogleAdWidget(key: _adKey, ad: ad);
+        } else if (ad is DSAppLovinNativeAd) {
+          child = DSAppLovinAdWidget(ad: ad);
+        } else {
+          assert(false, 'No implementation for ${ad.runtimeType}');
+          return const SizedBox();
+        }
+
+        child = SizedBox(
+          height: nativeAdHeight,
+          child: child,
+        );
+        if (builder != null) {
+          return builder(context, isShowed, child);
+        } else {
+          return child;
+        }
+      },
     );
-    if (builder != null) {
-      return builder(context, isShowed, child);
-    } else {
-      return child;
-    }
   }
 }
