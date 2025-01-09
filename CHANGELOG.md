@@ -1,3 +1,6 @@
+## 1.3.2
+- switch to ds_common DSAdLocker
+
 ## 1.3.1
 - fix banner and native state update when isPremium flag changes https://app.asana.com/0/1208203354836323/1208203354836326/f
 
