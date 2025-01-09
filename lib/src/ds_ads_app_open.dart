@@ -15,8 +15,6 @@ part 'ds_ads_app_open_types.dart';
 
 /// Allows to pre fetch and show Google and AppLovin MAX app open ads
 class DSAdsAppOpen {
-  static var _showLockedUntil = DateTime(0);
-  static var _showLockedUntilAppResumed = false;
   static const _tag = 'ads_app_open';
 
   static var _showNum = 0;
@@ -69,9 +67,8 @@ class DSAdsAppOpen {
   @internal
   void appLifecycleChanged(AppLifecycleState? oldState, AppLifecycleState state) {
     if (state == AppLifecycleState.resumed) {
-      if (_showLockedUntilAppResumed) {
-        _showLockedUntilAppResumed = false;
-        lockShowFor(const Duration(seconds: 1));
+      if (DSAdLocker.isAppOpenLocked) {
+        unlockUntilAppResume(andLockFor: const Duration(seconds: 1));
       }
     }
   }
@@ -330,7 +327,7 @@ class DSAdsAppOpen {
 
     final startTime = DateTime.timestamp();
 
-    if (_showLockedUntilAppResumed || DateTime.timestamp().compareTo(_showLockedUntil) < 0) {
+    if (DSAdLocker.isAppOpenLocked) {
       then?.call();
       _report('$_tag: showing locked', location: location, mediation: _mediation, attributes: customAttributes);
       return;
@@ -500,15 +497,14 @@ class DSAdsAppOpen {
   }
 
   static void lockUntilAppResume() {
-    _showLockedUntilAppResumed = true;
+    DSAdLocker.appOpenLockUntilAppResume();
   }
 
   static void unlockUntilAppResume({Duration? andLockFor}) {
-    _showLockedUntilAppResumed = false;
-    andLockFor?.let((it) => lockShowFor(it));
+    DSAdLocker.appOpenUnlockUntilAppResume(andLockFor: andLockFor);
   }
 
   static void lockShowFor(Duration duration) {
-    _showLockedUntil = DateTime.timestamp().add(duration);
+    DSAdLocker.appOpenLockShowFor(duration);
   }
 }
