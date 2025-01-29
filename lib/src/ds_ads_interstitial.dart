@@ -322,7 +322,7 @@ class DSAdsInterstitial {
     BuildContext? context,
     final Duration dismissAdAfter = const Duration(),
     final Duration Function()? dismissAdAfterCallback,
-    @Deprecated('Use counterDelay instead')
+    @Deprecated('Use counterDuration instead')
     final int counterDelaySec = 0,
     final int counterIntervals = 0,
     final Duration counterDuration = const Duration(milliseconds: 670),
