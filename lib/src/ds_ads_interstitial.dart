@@ -553,18 +553,19 @@ class DSAdsInterstitial {
       }
     };
 
+    StreamController? streamController;
     if (counterDelaySec > 0 || counterIntervals > 0) {
-      final streamController = StreamController();
+      streamController = StreamController();
       unawaitedCatch(() async {
         await showDialog(
           context: context!,
           builder: (context) => DSAdsOverlayScreen(
-            counterDoneCallback: () => streamController.add(null),
+            counterDoneCallback: () => streamController!.add(null),
             delayIntervals: counterDelaySec > 0 ? counterDelaySec : counterIntervals,
             intervalDuration: counterDelaySec > 0 ? const Duration(seconds: 1) : counterDuration,
           ),
         );
-        await streamController.close();
+        await streamController!.close();
       });
       await streamController.stream.first;
     }
@@ -592,7 +593,15 @@ class DSAdsInterstitial {
     attrs['interstitial_show_num'] = _showNum;
 
     _report('$_tag: start showing', location: location, mediation: _mediation, attributes: attrs);
-    await ad.show();
+    try {
+      try {
+        await ad.show();
+      } finally {
+        await streamController?.done;
+      }
+    } catch (e, stack) {
+      Fimber.e('$e', stacktrace: stack);
+    }
   }
 
   DateTime getLastShowTime() => _lastShowTime;
