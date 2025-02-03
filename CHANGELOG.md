@@ -1,3 +1,8 @@
+## 1.3.3
+- fix interstitial exception handling for 3-2-1 counter https://app.asana.com/0/1208203354836323/1209262977876096/f
+- try to fix: [E] Null check operator used on a null value
+- try to fix: uncatched interstitial showAd recall https://app.asana.com/0/1207987727410001/1209292264154313/f
+
 ## 1.3.2
 - switch to ds_common DSAdLocker
 
