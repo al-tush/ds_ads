@@ -530,7 +530,7 @@ class DSAdsInterstitial {
         DSAdsAppOpen.lockShowFor(const Duration(seconds: 5));
         _report('$_tag: showing canceled by error',
             location: location, mediation: ad.mediation, adapter: ad.mediationAdapterClassName, attributes: attrs);
-        Fimber.e('$errText ($errCode)', stacktrace: StackTrace.current);
+        Fimber.e('$errText ($errCode, adState: $adState)', stacktrace: StackTrace.current);
         ad.dispose();
         updateLastShowTime();
         _mediation = null;
@@ -581,6 +581,14 @@ class DSAdsInterstitial {
     final res = await beforeAdShow?.call() ?? true;
     if (!res) {
       _report('$_tag: showing canceled by caller', location: location, mediation: _mediation, attributes: attrs);
+      then?.call();
+      return;
+    }
+
+    if ([DSAdState.preShowing, DSAdState.showing].contains(adState)) {
+      Fimber.e('showAd recall (adState: $adState)', stacktrace: StackTrace.current);
+      _report('$_tag: showing canceled by error',
+          location: location, mediation: _mediation, attributes: customAttributes);
       then?.call();
       return;
     }
