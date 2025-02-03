@@ -391,6 +391,7 @@ mixin DSAdsNativeLoaderMixin<T extends StatefulWidget> on State<T> {
     unawaited(() async {
       // to prevent empty transparent rect instead banner
       await Future.delayed(const Duration(milliseconds: 500));
+      if (!mounted) return;
       setState(() {});
     }());
     return true;
