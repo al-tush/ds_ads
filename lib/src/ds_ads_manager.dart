@@ -139,11 +139,8 @@ class DSAdsManager extends ChangeNotifier {
   @internal
   bool get isInForeground => DSAppState.isInForeground;
 
-  /// Must be called before create application
-  @Deprecated('Use DSAppState.preInit();')
-  static void preInit() {
-    DSAppState.preInit();
-  }
+  @Deprecated('Moved to DSMetrica.init(...)')
+  static void preInit() {}
 
   /// Initializes ads in the app
   /// [onPaidEvent] allows you to know/handle the onPaidEvent event in google_mobile_ads
@@ -200,7 +197,7 @@ class DSAdsManager extends ChangeNotifier {
         assert(rewardedShowLockCallback == null || rewardedShowLockedCallback == null,
             'Use rewardedShowLockedCallback only'),
         assert(_instance == null, 'dismiss previous Ads instance before init new'),
-        assert(DSAppState.isInitialized, 'call DSAppState.preInit() before') {
+        assert(DSAppState.isInitialized, 'Initialize ds_metrica before') {
     _instance = this;
     interstitialShowLockedProc = (DSAdLocation location) {
       var res = interstitialShowLockedCallback?.call(location);
