@@ -1,3 +1,6 @@
+## 1.3.5
+- update to ds_common ^2.2.1
+
 ## 1.3.4
 - move DSAdsManager.preInit() call to ds_common
 
