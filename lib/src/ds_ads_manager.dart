@@ -17,7 +17,6 @@ import 'package:google_mobile_ads/google_mobile_ads.dart';
 import 'ds_ads_types.dart';
 
 /// [DSAdsManager} is a root point to control ads
-/// Call [DSAdsManager.preInit] before create application
 /// Call constructor for init ds_ads library
 /// Read README.md file for more information
 class DSAdsManager extends ChangeNotifier {
@@ -138,17 +137,12 @@ class DSAdsManager extends ChangeNotifier {
 
   /// App is in foreground
   @internal
-  bool get isInForeground => _widgetsObserver!.appLifecycleState! == AppLifecycleState.resumed;
-
-  static _WidgetsObserver? _widgetsObserver;
+  bool get isInForeground => DSAppState.isInForeground;
 
   /// Must be called before create application
+  @Deprecated('Use DSAppState.preInit();')
   static void preInit() {
-    if (_widgetsObserver != null) return;
-
-    _widgetsObserver = _WidgetsObserver();
-    WidgetsBinding.instance.addObserver(_widgetsObserver!);
-    _widgetsObserver!.appLifecycleState = WidgetsBinding.instance.lifecycleState;
+    DSAppState.preInit();
   }
 
   /// Initializes ads in the app
@@ -206,7 +200,7 @@ class DSAdsManager extends ChangeNotifier {
         assert(rewardedShowLockCallback == null || rewardedShowLockedCallback == null,
             'Use rewardedShowLockedCallback only'),
         assert(_instance == null, 'dismiss previous Ads instance before init new'),
-        assert(_widgetsObserver != null, 'call DSAdsManager.preInit() before') {
+        assert(DSAppState.isInitialized, 'call DSAppState.preInit() before') {
     _instance = this;
     interstitialShowLockedProc = (DSAdLocation location) {
       var res = interstitialShowLockedCallback?.call(location);
@@ -228,6 +222,15 @@ class DSAdsManager extends ChangeNotifier {
       }
       return isAdAllowedCallback?.call(source, location) ?? true;
     };
+
+    DSAppState.registerStateCallback((old, state) {
+      _adsAppOpen.appLifecycleChanged(old, state);
+      if (state == AppLifecycleState.resumed) {
+        // force notify listeners if isPremium changed
+        isPremium;
+      }
+    });
+
     for (final t in DSAdSource.values) {
       _tryNextMediation(t, true);
     }
@@ -626,21 +629,5 @@ class DSAdsManager extends ChangeNotifier {
       });
     }
     return res;
-  }
-}
-
-class _WidgetsObserver with WidgetsBindingObserver {
-  AppLifecycleState? appLifecycleState;
-
-  @override
-  void didChangeAppLifecycleState(AppLifecycleState state) {
-    if (appLifecycleState == state) return;
-    final old = appLifecycleState;
-    appLifecycleState = state;
-    DSAdsManager._instance?._adsAppOpen.appLifecycleChanged(old, state);
-    if (state == AppLifecycleState.resumed) {
-      // force notify listeners if isPremium changed
-      DSAdsManager.I.isPremium;
-    }
   }
 }
