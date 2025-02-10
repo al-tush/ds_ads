@@ -1,3 +1,6 @@
+## 1.3.4
+- move DSAdsManager.preInit() call to ds_common
+
 ## 1.3.3
 - fix interstitial exception handling for 3-2-1 counter https://app.asana.com/0/1208203354836323/1209262977876096/f
 - try to fix: [E] Null check operator used on a null value

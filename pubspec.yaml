@@ -1,6 +1,6 @@
 name: ds_ads
 description: Ads components for altush Flutter projects. Supports AdMob and AppLovin mediations
-version: 1.3.3
+version: 1.3.4
 repository: https://github.com/al-tush/ds_ads
 
 environment:
