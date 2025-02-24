@@ -364,7 +364,7 @@ class DSAdsManager extends ChangeNotifier {
               });
               completer.complete(true);
             } else {
-              Fimber.e('Consent error: ${error.message} (${error.errorCode})', stacktrace: StackTrace.current);
+              Fimber.e('Consent error: ${error.message} (code=${error.errorCode}, consent_status=$_lastConsentStatus})', stacktrace: StackTrace.current);
               completer.complete(false);
             }
           },
