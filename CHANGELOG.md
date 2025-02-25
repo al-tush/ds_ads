@@ -1,3 +1,6 @@
+## 1.3.6
+- consent error message changed: add consent_status info
+
 ## 1.3.5
 - update to ds_common ^2.2.1
 
