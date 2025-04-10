@@ -1,3 +1,7 @@
+## 1.4.0
+- add custom attributes support to banners and native ads
+- custom attributes allow any names now (previously custom_attr_ prefix was mandatory)
+
 ## 1.3.6
 - consent error message changed: add consent_status info
 
