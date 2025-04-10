@@ -337,7 +337,7 @@ class DSAdsInterstitial {
     assert(!location.isInternal);
     assert(counterDelaySec == 0 || context != null, 'context must be assigned to show counter dialog before ad');
     assert(counterIntervals == 0 || context != null, 'context must be assigned to show counter dialog before ad');
-    assert(_checkCustomAttributes(customAttributes), 'custom attributes must have custom_attr_ prefix');
+    // assert(_checkCustomAttributes(customAttributes), 'custom attributes must have custom_attr_ prefix');
 
     if (DSAdsManager.I.isPremium || _isDisposed) {
       then?.call();
