@@ -25,6 +25,8 @@ mixin DSAdsNativeLoaderMixin<T extends StatefulWidget> on State<T> {
 
   DSAdLocation get nativeAdLocation;
 
+  Map<String, Object>? get customAttributes => null;
+
   static final _loadingAds = <DSNativeStyle, DSNativeAd>{};
   static final _showedAds = <DSAdsNativeLoaderMixin, DSNativeAd>{};
 
@@ -150,6 +152,11 @@ mixin DSAdsNativeLoaderMixin<T extends StatefulWidget> on State<T> {
     return obj?.nativeAdLocation ?? const DSAdLocation('internal_unassigned');
   }
 
+  static Map<String, Object>? _getCustomAttributesByAd(DSNativeAd ad) {
+    final obj = _showedAds.entries.firstWhereOrNull((e) => e.value == ad)?.key;
+    return obj?.customAttributes;
+  }
+
   static DSNativeStyle _getStyleByLocation(DSAdLocation location) {
     String? style;
     if (!location.isInternal) {
@@ -261,7 +268,10 @@ mixin DSAdsNativeLoaderMixin<T extends StatefulWidget> on State<T> {
           location: location,
           mediation: ad.mediation,
           adapter: ad.mediationAdapterClassName,
-          attributes: ad.getReportAttributes(),
+          attributes: {
+            ...?_getCustomAttributesByAd(ad),
+            ...ad.getReportAttributes(),
+          },
         );
         DSAdsManager.I.emitEvent(DSAdsNativeLoadedEvent._(ad: ad));
       } catch (e, stack) {
@@ -281,6 +291,7 @@ mixin DSAdsNativeLoaderMixin<T extends StatefulWidget> on State<T> {
           mediation: ad.mediation,
           adapter: ad.mediationAdapterClassName,
           attributes: {
+            ...?_getCustomAttributesByAd(ad),
             ...ad.getReportAttributes(),
             'error_text': message,
             'error_code': '$code ($mediation)',
@@ -301,7 +312,10 @@ mixin DSAdsNativeLoaderMixin<T extends StatefulWidget> on State<T> {
     Future<void> onPaidEvent(DSNativeAd ad, double valueMicros, DSPrecisionType precision, String currencyCode) async {
       try {
         DSAdsManager.I.onPaidEvent(
-            ad, mediation, _getLocationByAd(ad), valueMicros, precision, currencyCode, DSAdSource.native, null, {});
+            ad, mediation, _getLocationByAd(ad), valueMicros, precision, currencyCode, DSAdSource.native, null, {
+          ...?_getCustomAttributesByAd(ad),
+          ...ad.getReportAttributes(),
+        });
       } catch (e, stack) {
         Fimber.e('$e', stacktrace: stack);
       }
@@ -311,7 +325,12 @@ mixin DSAdsNativeLoaderMixin<T extends StatefulWidget> on State<T> {
       try {
         DSAdsManager.I.emitEvent(const DSAdsNativeOpenedEvent._());
         _report('$_tag: ad opened',
-            location: _getLocationByAd(ad), mediation: ad.mediation, adapter: ad.mediationAdapterClassName);
+            location: _getLocationByAd(ad), mediation: ad.mediation, adapter: ad.mediationAdapterClassName,
+          attributes: {
+            ...?_getCustomAttributesByAd(ad),
+            ...ad.getReportAttributes(),
+          },
+        );
       } catch (e, stack) {
         Fimber.e('$e', stacktrace: stack);
       }
@@ -321,7 +340,12 @@ mixin DSAdsNativeLoaderMixin<T extends StatefulWidget> on State<T> {
       try {
         DSAdsManager.I.emitEvent(const DSAdsNativeClickEvent._());
         _report('$_tag: ad clicked',
-            location: _getLocationByAd(ad), mediation: ad.mediation, adapter: ad.mediationAdapterClassName);
+            location: _getLocationByAd(ad), mediation: ad.mediation, adapter: ad.mediationAdapterClassName,
+          attributes: {
+            ...?_getCustomAttributesByAd(ad),
+            ...ad.getReportAttributes(),
+          },
+        );
       } catch (e, stack) {
         Fimber.e('$e', stacktrace: stack);
       }
@@ -331,7 +355,12 @@ mixin DSAdsNativeLoaderMixin<T extends StatefulWidget> on State<T> {
       try {
         DSAdsManager.I.emitEvent(const DSAdsNativeClosedEvent._());
         _report('$_tag: ad closed',
-            location: _getLocationByAd(ad), mediation: ad.mediation, adapter: ad.mediationAdapterClassName);
+            location: _getLocationByAd(ad), mediation: ad.mediation, adapter: ad.mediationAdapterClassName,
+          attributes: {
+            ...?_getCustomAttributesByAd(ad),
+            ...ad.getReportAttributes(),
+          },
+        );
       } catch (e, stack) {
         Fimber.e('$e', stacktrace: stack);
       }
@@ -340,7 +369,12 @@ mixin DSAdsNativeLoaderMixin<T extends StatefulWidget> on State<T> {
     Future<void> onAdExpired(DSNativeAd ad) async {
       try {
         _report('$_tag: ad expired',
-            location: _getLocationByAd(ad), mediation: ad.mediation, adapter: ad.mediationAdapterClassName);
+            location: _getLocationByAd(ad), mediation: ad.mediation, adapter: ad.mediationAdapterClassName,
+          attributes: {
+            ...?_getCustomAttributesByAd(ad),
+            ...ad.getReportAttributes(),
+          },
+        );
       } catch (e, stack) {
         Fimber.e('$e', stacktrace: stack);
       }
@@ -374,7 +408,14 @@ mixin DSAdsNativeLoaderMixin<T extends StatefulWidget> on State<T> {
         break;
     }
     _loadingAds[style] = nativeAd;
-    _report('$_tag: start loading', location: location, mediation: mediation);
+    _report('$_tag: start loading',
+      location: location,
+      mediation: mediation,
+      attributes: {
+        ...?_getCustomAttributesByAd(nativeAd),
+        ...nativeAd.getReportAttributes(),
+      },
+    );
     await nativeAd.load();
   }
 
@@ -387,7 +428,14 @@ mixin DSAdsNativeLoaderMixin<T extends StatefulWidget> on State<T> {
     _showedAds[this] = readyAd;
     _loadingAds.remove(style);
     final mediation = DSAdsManager.I.currentMediation(DSAdSource.native);
-    _report('$_tag: assigned', location: nativeAdLocation, mediation: mediation);
+    _report('$_tag: assigned',
+      location: nativeAdLocation,
+      mediation: mediation,
+      attributes: {
+        ...?_getCustomAttributesByAd(readyAd),
+        ...readyAd.getReportAttributes(),
+      },
+    );
     unawaited(() async {
       // to prevent empty transparent rect instead banner
       await Future.delayed(const Duration(milliseconds: 500));
@@ -409,7 +457,10 @@ mixin DSAdsNativeLoaderMixin<T extends StatefulWidget> on State<T> {
         '$_tag: reloading',
         location: nativeAdLocation,
         mediation: mediation,
-        attributes: _showedAds[this]?.getReportAttributes(),
+        attributes: {
+          ...?_getCustomAttributesByAd(ad),
+          ...?_showedAds[this]?.getReportAttributes(),
+        },
       );
       ad.viewController.loadAd();
       return;
@@ -422,7 +473,10 @@ mixin DSAdsNativeLoaderMixin<T extends StatefulWidget> on State<T> {
         '$_tag: reloading',
         location: nativeAdLocation,
         mediation: mediation,
-        attributes: _showedAds[this]?.getReportAttributes(),
+        attributes: {
+          ...?customAttributes,
+          ...?_showedAds[this]?.getReportAttributes(),
+        },
       );
       _showedAds[this]?.dispose();
       _showedAds.remove(this);
@@ -456,7 +510,10 @@ mixin DSAdsNativeLoaderMixin<T extends StatefulWidget> on State<T> {
           location: nativeAdLocation,
           mediation: ad.mediation,
           adapter: ad.mediationAdapterClassName,
-          attributes: ad.getReportAttributes(),
+          attributes: {
+            ...?_getCustomAttributesByAd(ad),
+            ...ad.getReportAttributes(),
+          },
         );
         DSAdsManager.I.emitEvent(DSAdsNativeLoadedEvent._(ad: ad));
         setState(() {});
@@ -473,6 +530,7 @@ mixin DSAdsNativeLoaderMixin<T extends StatefulWidget> on State<T> {
           mediation: ad.mediation,
           adapter: ad.mediationAdapterClassName,
           attributes: {
+            ...?_getCustomAttributesByAd(ad),
             ...ad.getReportAttributes(),
             'error_text': message,
             'error_code': '$code ($mediation)',
@@ -489,7 +547,11 @@ mixin DSAdsNativeLoaderMixin<T extends StatefulWidget> on State<T> {
     Future<void> onPaidEvent(DSNativeAd ad, double valueMicros, DSPrecisionType precision, String currencyCode) async {
       try {
         DSAdsManager.I.onPaidEvent(
-            ad, mediation, _getLocationByAd(ad), valueMicros, precision, currencyCode, DSAdSource.native, null, {});
+            ad, mediation, _getLocationByAd(ad), valueMicros, precision, currencyCode, DSAdSource.native, null,
+            {
+              ...?_getCustomAttributesByAd(ad),
+              ...ad.getReportAttributes(),
+            });
       } catch (e, stack) {
         Fimber.e('$e', stacktrace: stack);
       }
@@ -499,7 +561,12 @@ mixin DSAdsNativeLoaderMixin<T extends StatefulWidget> on State<T> {
       try {
         DSAdsManager.I.emitEvent(const DSAdsNativeClickEvent._());
         _report('$_tag: ad clicked',
-            location: _getLocationByAd(ad), mediation: ad.mediation, adapter: ad.mediationAdapterClassName);
+          location: _getLocationByAd(ad), mediation: ad.mediation, adapter: ad.mediationAdapterClassName,
+          attributes: {
+            ...?_getCustomAttributesByAd(ad),
+            ...ad.getReportAttributes(),
+          },
+        );
       } catch (e, stack) {
         Fimber.e('$e', stacktrace: stack);
       }

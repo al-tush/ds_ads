@@ -15,7 +15,7 @@ class DSAdsBanner extends StatefulWidget {
   final DSAdLocation location;
   final String googleUnitId;
   final String appLovinUnitId;
-
+  final Map<String, Object>? customAttributes;
   /// Do not use it
   final bool adaptive;
 
@@ -24,6 +24,7 @@ class DSAdsBanner extends StatefulWidget {
     required this.location,
     this.googleUnitId = '',
     this.appLovinUnitId = '',
+    this.customAttributes,
     @Deprecated('Used by AppLovin. Now is not supported') this.adaptive = false,
     this.builder,
   }) : assert(googleUnitId != '' || appLovinUnitId != '');
@@ -62,6 +63,7 @@ class _DSAdsBannerState extends State<DSAdsBanner> {
       'location': widget.location.val,
       'mediation': '$mediation',
       if (adapter != null) 'adapter': adapter,
+      ...?widget.customAttributes,
       ...?attributes,
     });
   }
@@ -169,7 +171,9 @@ class _DSAdsBannerState extends State<DSAdsBanner> {
         mediation: mediation,
       );
       DSAdsManager.I.onPaidEvent(
-          ad, mediation, widget.location, valueMicros, precision, currencyCode, DSAdSource.banner, appLovinDspName, {});
+          ad, mediation, widget.location, valueMicros, precision, currencyCode, DSAdSource.banner, appLovinDspName, {
+        ...?widget.customAttributes,
+      });
     } catch (e, stack) {
       Fimber.e('$e', stacktrace: stack);
     }
