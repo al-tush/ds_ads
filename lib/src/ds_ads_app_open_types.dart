@@ -2,7 +2,9 @@ part of 'ds_ads_app_open.dart';
 
 /// Root event for all AppOpen ad events. Do not use directly
 abstract class DSAdsAppOpenEvent extends DSAdsEvent {
-  const DSAdsAppOpenEvent();
+  const DSAdsAppOpenEvent({
+    required super.source,
+  });
 }
 
 /// Generated when AppOpen ad successfully loaded
@@ -10,6 +12,7 @@ class DSAdsAppOpenLoadedEvent extends DSAdsAppOpenEvent {
   final DSAppOpenAd ad;
 
   const DSAdsAppOpenLoadedEvent._({
+    required super.source,
     required this.ad,
   });
 }
@@ -19,6 +22,7 @@ class DSAdsAppOpenPreShowingEvent extends DSAdsAppOpenEvent {
   final DSAppOpenAd ad;
 
   const DSAdsAppOpenPreShowingEvent._({
+    required super.source,
     required this.ad,
   });
 }
@@ -28,6 +32,7 @@ class DSAdsAppOpenShowedEvent extends DSAdsAppOpenEvent {
   final DSAppOpenAd ad;
 
   const DSAdsAppOpenShowedEvent._({
+    required super.source,
     required this.ad,
   });
 }
@@ -38,6 +43,7 @@ class DSAdsAppOpenLoadFailedEvent extends DSAdsAppOpenEvent {
   final String errText;
 
   const DSAdsAppOpenLoadFailedEvent._({
+    required super.source,
     required this.errCode,
     required this.errText,
   });
@@ -45,7 +51,9 @@ class DSAdsAppOpenLoadFailedEvent extends DSAdsAppOpenEvent {
 
 /// Error when displaying advertisements
 class DSAdsAppOpenShowErrorEvent extends DSAdsAppOpenEvent {
-  const DSAdsAppOpenShowErrorEvent._();
+  const DSAdsAppOpenShowErrorEvent._({
+    required super.source,
+  });
 }
 
 /// Generated when AppOpen ad was closed
@@ -53,6 +61,7 @@ class DSAdsAppOpenShowDismissedEvent extends DSAdsAppOpenEvent {
   final DSAppOpenAd ad;
 
   const DSAdsAppOpenShowDismissedEvent._({
+    required super.source,
     required this.ad,
   });
 }

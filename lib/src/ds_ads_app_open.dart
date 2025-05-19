@@ -20,6 +20,7 @@ class DSAdsAppOpen {
   static var _showNum = 0;
 
   var _startLoadTime = DateTime(0);
+  var _finishLoadTime = DateTime(0);
   var _totalLoadDuration = Duration.zero;
   final _loadConditions = <DSAdsLoadCondition>{};
 
@@ -195,12 +196,14 @@ class DSAdsAppOpen {
     _report('$_tag: start loading', location: location, mediation: mediation, attributes: customAttributes);
     if (_startLoadTime.year == 0) {
       _startLoadTime = DateTime.timestamp();
+      _finishLoadTime = DateTime(0);
     }
 
     Future<void> onAdLoaded(DSAppOpenAd ad) async {
       try {
         _totalLoadDuration = DateTime.timestamp().difference(_startLoadTime);
         _startLoadTime = DateTime(0);
+        _finishLoadTime = DateTime.timestamp();
         unawaited(DSMetrica.putErrorEnvironmentValue('ads_last_action', 'app_open_loaded'));
         unawaited(DSMetrica.putErrorEnvironmentValue('ads_app_open_adapter', ad.mediationAdapterClassName));
         _report(
@@ -220,7 +223,7 @@ class DSAdsAppOpen {
         _loadRetryCount = 0;
 
         then?.call();
-        DSAdsManager.I.emitEvent(DSAdsAppOpenLoadedEvent._(ad: ad));
+        DSAdsManager.I.emitEvent(DSAdsAppOpenLoadedEvent._(source: source, ad: ad));
       } catch (e, stack) {
         then?.call();
         Fimber.e('$e', stacktrace: stack);
@@ -266,6 +269,7 @@ class DSAdsAppOpen {
           _adState = DSAdState.none;
           then?.call();
           DSAdsManager.I.emitEvent(DSAdsAppOpenLoadFailedEvent._(
+            source: source,
             errCode: errCode,
             errText: errDescription,
           ));
@@ -421,7 +425,7 @@ class DSAdsAppOpen {
         }
         _adState = DSAdState.showing;
         onAdShow?.call();
-        DSAdsManager.I.emitEvent(DSAdsAppOpenShowedEvent._(ad: ad));
+        DSAdsManager.I.emitEvent(DSAdsAppOpenShowedEvent._(source: source, ad: ad));
         then?.call();
       } catch (e, stack) {
         Fimber.e('$e', stacktrace: stack);
@@ -435,8 +439,9 @@ class DSAdsAppOpen {
         _ad = null;
         _mediation = null;
         _adState = DSAdState.none;
+        _finishLoadTime = DateTime(0);
         _lastLoadTime = DateTime(0);
-        DSAdsManager.I.emitEvent(DSAdsAppOpenShowDismissedEvent._(ad: ad));
+        DSAdsManager.I.emitEvent(DSAdsAppOpenShowDismissedEvent._(source: source, ad: ad));
         onAdClosed?.call();
       } catch (e, stack) {
         Fimber.e('$e', stacktrace: stack);
@@ -454,9 +459,10 @@ class DSAdsAppOpen {
         _ad = null;
         _mediation = null;
         _adState = DSAdState.none;
+        _finishLoadTime = DateTime(0);
         onFailedToShow?.call(errCode, errText);
         then?.call();
-        DSAdsManager.I.emitEvent(const DSAdsAppOpenShowErrorEvent._());
+        DSAdsManager.I.emitEvent(DSAdsAppOpenShowErrorEvent._(source: source));
       } catch (e, stack) {
         Fimber.e('$e', stacktrace: stack);
       }
@@ -474,7 +480,7 @@ class DSAdsAppOpen {
       _report('$_tag: showing canceled: manager disposed',
           location: location, mediation: _mediation, attributes: attrs);
       then?.call();
-      DSAdsManager.I.emitEvent(const DSAdsAppOpenShowErrorEvent._());
+      DSAdsManager.I.emitEvent(DSAdsAppOpenShowErrorEvent._(source: source, ));
       return;
     }
 
@@ -482,15 +488,18 @@ class DSAdsAppOpen {
     if (!res) {
       _report('$_tag: showing canceled by caller', location: location, mediation: _mediation, attributes: attrs);
       then?.call();
-      DSAdsManager.I.emitEvent(const DSAdsAppOpenShowErrorEvent._());
+      DSAdsManager.I.emitEvent(DSAdsAppOpenShowErrorEvent._(source: source));
       return;
     }
 
     _adState = DSAdState.preShowing;
-    DSAdsManager.I.emitEvent(DSAdsAppOpenPreShowingEvent._(ad: ad));
+    DSAdsManager.I.emitEvent(DSAdsAppOpenPreShowingEvent._(source: source, ad: ad));
 
     _showNum++;
     attrs['app_open_show_num'] = _showNum;
+    attrs['since_fetched_seconds'] = _finishLoadTime.year == 0
+        ? -1
+        : DateTime.timestamp().difference(_finishLoadTime).inSeconds;
 
     _report('$_tag: start showing', location: location, mediation: _mediation, attributes: attrs);
     await ad.show();

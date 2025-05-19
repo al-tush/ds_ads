@@ -23,6 +23,7 @@ class DSAdsInterstitial {
   static var _showNum = 0;
 
   var _startLoadTime = DateTime(0);
+  var _finishLoadTime = DateTime(0);
   var _totalLoadDuration = Duration.zero;
   final _loadConditions = <DSAdsLoadCondition>{};
 
@@ -110,6 +111,7 @@ class DSAdsInterstitial {
   }) {
     DSAdsManager.I.onReportEvent?.call(eventName, {
       if (mediation != null) 'adUnitId': customAdId ?? _adUnitId(mediation),
+      'location_source': source.name,
       'location': location.val,
       'mediation': '$mediation',
       if (adapter != null) 'adapter': adapter,
@@ -198,12 +200,14 @@ class DSAdsInterstitial {
     _report('$_tag: start loading', location: location, mediation: mediation, attributes: customAttributes);
     if (_startLoadTime.year == 0) {
       _startLoadTime = DateTime.timestamp();
+      _finishLoadTime = DateTime(0);
     }
 
     Future<void> onAdLoaded(DSInterstitialAd ad) async {
       try {
         _totalLoadDuration = DateTime.timestamp().difference(_startLoadTime);
         _startLoadTime = DateTime(0);
+        _finishLoadTime = DateTime.timestamp();
         unawaited(DSMetrica.putErrorEnvironmentValue('ads_last_action', 'inter_loaded'));
         unawaited(DSMetrica.putErrorEnvironmentValue('ads_inter_adapter', ad.mediationAdapterClassName));
         _report(
@@ -222,7 +226,7 @@ class DSAdsInterstitial {
         _ad = ad;
         _loadRetryCount = 0;
         then?.call();
-        DSAdsManager.I.emitEvent(DSAdsInterstitialLoadedEvent._(ad: ad));
+        DSAdsManager.I.emitEvent(DSAdsInterstitialLoadedEvent._(source: source, ad: ad));
       } catch (e, stack) {
         Fimber.e('$e', stacktrace: stack);
       }
@@ -273,6 +277,7 @@ class DSAdsInterstitial {
           _adState = DSAdState.none;
           then?.call();
           DSAdsManager.I.emitEvent(DSAdsInterstitialLoadFailedEvent._(
+            source: source,
             errCode: errCode,
             errText: errDescription,
           ));
@@ -383,7 +388,7 @@ class DSAdsInterstitial {
           attributes: customAttributes,
         );
         then?.call();
-        DSAdsManager.I.emitEvent(const DSAdsInterstitialShowErrorEvent._());
+        DSAdsManager.I.emitEvent(DSAdsInterstitialShowErrorEvent._(source: source));
       } else {
         var processed = false;
         final timeout = calcDismissAdAfter();
@@ -415,13 +420,13 @@ class DSAdsInterstitial {
                 attributes: customAttributes,
               );
               then?.call();
-              DSAdsManager.I.emitEvent(const DSAdsInterstitialShowErrorEvent._());
+              DSAdsManager.I.emitEvent(DSAdsInterstitialShowErrorEvent._(source: source));
               return;
             }
             if (adState == DSAdState.none) {
               // Failed to fetch ad
               then?.call();
-              DSAdsManager.I.emitEvent(const DSAdsInterstitialShowErrorEvent._());
+              DSAdsManager.I.emitEvent(DSAdsInterstitialShowErrorEvent._(source: source));
               return;
             }
             await showAd(
@@ -449,7 +454,7 @@ class DSAdsInterstitial {
       );
       onShowLock?.call();
       then?.call();
-      DSAdsManager.I.emitEvent(const DSAdsInterstitialShowLockEvent._());
+      DSAdsManager.I.emitEvent(DSAdsInterstitialShowLockEvent._(source: source));
       return;
     }
 
@@ -460,7 +465,7 @@ class DSAdsInterstitial {
           location: location, mediation: _mediation, attributes: customAttributes);
       then?.call();
       cancelCurrentAd(location: location);
-      DSAdsManager.I.emitEvent(const DSAdsInterstitialShowErrorEvent._());
+      DSAdsManager.I.emitEvent(DSAdsInterstitialShowErrorEvent._(source: source));
       return;
     }
 
@@ -502,7 +507,7 @@ class DSAdsInterstitial {
         }
         _adState = DSAdState.showing;
         onAdShow?.call();
-        DSAdsManager.I.emitEvent(DSAdsInterstitialShowedEvent._(ad: ad));
+        DSAdsManager.I.emitEvent(DSAdsInterstitialShowedEvent._(source: source, ad: ad));
         then?.call();
       } catch (e, stack) {
         Fimber.e('$e', stacktrace: stack);
@@ -518,8 +523,9 @@ class DSAdsInterstitial {
         _mediation = null;
         _ad = null;
         _adState = DSAdState.none;
+        _finishLoadTime = DateTime(0);
         // если перенести then?.call() сюда, возникает краткий показ предыдущего экрана при закрытии интерстишла
-        DSAdsManager.I.emitEvent(DSAdsInterstitialShowDismissedEvent._(ad: ad));
+        DSAdsManager.I.emitEvent(DSAdsInterstitialShowDismissedEvent._(source: source, ad: ad));
         onAdClosed?.call();
       } catch (e, stack) {
         Fimber.e('$e', stacktrace: stack);
@@ -536,9 +542,10 @@ class DSAdsInterstitial {
         _mediation = null;
         _ad = null;
         _adState = DSAdState.none;
+        _finishLoadTime = DateTime(0);
         onFailedToShow?.call(errCode, errText);
         then?.call();
-        DSAdsManager.I.emitEvent(const DSAdsInterstitialShowErrorEvent._());
+        DSAdsManager.I.emitEvent(DSAdsInterstitialShowErrorEvent._(source: source));
       } catch (e, stack) {
         Fimber.e('$e', stacktrace: stack);
       }
@@ -574,7 +581,7 @@ class DSAdsInterstitial {
       _report('$_tag: showing canceled: manager disposed',
           location: location, mediation: _mediation, attributes: attrs);
       then?.call();
-      DSAdsManager.I.emitEvent(const DSAdsInterstitialShowErrorEvent._());
+      DSAdsManager.I.emitEvent(DSAdsInterstitialShowErrorEvent._(source: source));
       return;
     }
 
@@ -595,10 +602,13 @@ class DSAdsInterstitial {
 
     updateLastShowTime();
     _adState = DSAdState.preShowing;
-    DSAdsManager.I.emitEvent(DSAdsInterstitialPreShowingEvent._(ad: ad));
+    DSAdsManager.I.emitEvent(DSAdsInterstitialPreShowingEvent._(source: source, ad: ad));
 
     _showNum++;
     attrs['interstitial_show_num'] = _showNum;
+    attrs['since_fetched_seconds'] = _finishLoadTime.year == 0
+        ? -1
+        : DateTime.timestamp().difference(_finishLoadTime).inSeconds;
 
     _report('$_tag: start showing', location: location, mediation: _mediation, attributes: attrs);
     try {

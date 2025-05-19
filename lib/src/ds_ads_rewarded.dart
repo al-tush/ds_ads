@@ -21,6 +21,7 @@ class DSAdsRewarded {
   static var _showNum = 0;
 
   var _startLoadTime = DateTime(0);
+  var _finishLoadTime = DateTime(0);
   var _totalLoadDuration = Duration.zero;
   final _loadConditions = <DSAdsLoadCondition>{};
 
@@ -151,6 +152,7 @@ class DSAdsRewarded {
     _report('$_tag: start loading', location: location, mediation: mediation, attributes: customAttributes);
     if (_startLoadTime.year == 0) {
       _startLoadTime = DateTime.timestamp();
+      _finishLoadTime = DateTime(0);
     }
 
     Future<void> onAdLoaded(DSRewardedAd ad) async {
@@ -159,6 +161,7 @@ class DSAdsRewarded {
         unawaited(DSMetrica.putErrorEnvironmentValue('ads_rewarded_adapter', ad.mediationAdapterClassName));
         _totalLoadDuration = DateTime.timestamp().difference(_startLoadTime);
         _startLoadTime = DateTime(0);
+        _finishLoadTime = DateTime.timestamp();
         _report(
           '$_tag: loaded',
           location: location,
@@ -175,7 +178,7 @@ class DSAdsRewarded {
         _adState = DSAdState.loaded;
         _loadRetryCount = 0;
         then?.call();
-        DSAdsManager.I.emitEvent(DSAdsRewardedLoadedEvent._(ad: ad));
+        DSAdsManager.I.emitEvent(DSAdsRewardedLoadedEvent._(source: DSAdSource.rewarded, ad: ad));
       } catch (e, stack) {
         Fimber.e('$e', stacktrace: stack);
       }
@@ -217,6 +220,7 @@ class DSAdsRewarded {
           _adState = DSAdState.none;
           then?.call();
           DSAdsManager.I.emitEvent(DSAdsRewardedLoadFailedEvent._(
+            source: DSAdSource.rewarded,
             errCode: errCode,
             errText: errDescription,
           ));
@@ -325,7 +329,7 @@ class DSAdsRewarded {
           attributes: customAttributes,
         );
         then?.call();
-        DSAdsManager.I.emitEvent(const DSAdsRewardedShowErrorEvent._());
+        DSAdsManager.I.emitEvent(DSAdsRewardedShowErrorEvent._(source: DSAdSource.rewarded));
       } else {
         var processed = false;
         Timer(calcDismissAdAfter(), () {
@@ -356,13 +360,13 @@ class DSAdsRewarded {
                 attributes: customAttributes,
               );
               then?.call();
-              DSAdsManager.I.emitEvent(const DSAdsRewardedShowErrorEvent._());
+              DSAdsManager.I.emitEvent(DSAdsRewardedShowErrorEvent._(source: DSAdSource.rewarded));
               return;
             }
             if (adState == DSAdState.none) {
               // Failed to fetch ad
               then?.call();
-              DSAdsManager.I.emitEvent(const DSAdsRewardedShowErrorEvent._());
+              DSAdsManager.I.emitEvent(DSAdsRewardedShowErrorEvent._(source: DSAdSource.rewarded));
               return;
             }
             await showAd(
@@ -391,7 +395,7 @@ class DSAdsRewarded {
       );
       onShowLock?.call();
       then?.call();
-      DSAdsManager.I.emitEvent(const DSAdsRewardedShowLockEvent._());
+      DSAdsManager.I.emitEvent(DSAdsRewardedShowLockEvent._(source: DSAdSource.rewarded));
       return;
     }
 
@@ -406,7 +410,7 @@ class DSAdsRewarded {
       );
       then?.call();
       cancelCurrentAd(location: location);
-      DSAdsManager.I.emitEvent(const DSAdsRewardedShowErrorEvent._());
+      DSAdsManager.I.emitEvent(DSAdsRewardedShowErrorEvent._(source: DSAdSource.rewarded));
       return;
     }
 
@@ -448,7 +452,7 @@ class DSAdsRewarded {
         }
         _adState = DSAdState.showing;
         onAdShow?.call();
-        DSAdsManager.I.emitEvent(DSAdsRewardedShowedEvent._(ad: ad));
+        DSAdsManager.I.emitEvent(DSAdsRewardedShowedEvent._(source: DSAdSource.rewarded, ad: ad));
         then?.call();
       } catch (e, stack) {
         Fimber.e('$e', stacktrace: stack);
@@ -463,9 +467,10 @@ class DSAdsRewarded {
         _ad = null;
         _adState = DSAdState.none;
         _mediation = null;
+        _finishLoadTime = DateTime(0);
         _lastShowTime = DateTime.timestamp();
         // если перенести then?.call() сюда, возникает краткий показ предыдущего экрана при закрытии интерстишла
-        DSAdsManager.I.emitEvent(DSAdsRewardedShowDismissedEvent._(ad: ad));
+        DSAdsManager.I.emitEvent(DSAdsRewardedShowDismissedEvent._(source: DSAdSource.rewarded, ad: ad));
         onAdClosed?.call();
       } catch (e, stack) {
         Fimber.e('$e', stacktrace: stack);
@@ -481,10 +486,11 @@ class DSAdsRewarded {
         _ad = null;
         _adState = DSAdState.none;
         _mediation = null;
+        _finishLoadTime = DateTime(0);
         _lastShowTime = DateTime.timestamp();
         onFailedToShow?.call(errCode, errText);
         then?.call();
-        DSAdsManager.I.emitEvent(const DSAdsRewardedShowErrorEvent._());
+        DSAdsManager.I.emitEvent(DSAdsRewardedShowErrorEvent._(source: DSAdSource.rewarded));
       } catch (e, stack) {
         Fimber.e('$e', stacktrace: stack);
       }
@@ -510,7 +516,7 @@ class DSAdsRewarded {
       _report('$_tag: showing canceled: manager disposed',
           location: location, mediation: _mediation, attributes: attrs);
       then?.call();
-      DSAdsManager.I.emitEvent(const DSAdsRewardedShowErrorEvent._());
+      DSAdsManager.I.emitEvent(DSAdsRewardedShowErrorEvent._(source: DSAdSource.rewarded));
       return;
     }
 
@@ -523,12 +529,17 @@ class DSAdsRewarded {
 
     _adState = DSAdState.preShowing;
     _lastShowTime = DateTime.timestamp();
-    DSAdsManager.I.emitEvent(DSAdsRewardedPreShowingEvent._(ad: ad));
+    DSAdsManager.I.emitEvent(DSAdsRewardedPreShowingEvent._(source: DSAdSource.rewarded, ad: ad));
 
     _showNum++;
     attrs['rewarded_show_num'] = _showNum;
 
-    _report('$_tag: start showing', location: location, mediation: _mediation, attributes: customAttributes);
+    _report('$_tag: start showing', location: location, mediation: _mediation, attributes: {
+      ...?customAttributes,
+      'since_fetched_seconds': _finishLoadTime.year == 0
+          ? -1
+          : DateTime.timestamp().difference(_finishLoadTime).inSeconds,
+    });
     await ad.show();
   }
 

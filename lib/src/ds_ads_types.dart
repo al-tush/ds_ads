@@ -151,5 +151,9 @@ enum DSAdState {
 
 @immutable
 abstract class DSAdsEvent {
-  const DSAdsEvent();
+  final DSAdSource source;
+
+  const DSAdsEvent({
+    required this.source,
+  });
 }

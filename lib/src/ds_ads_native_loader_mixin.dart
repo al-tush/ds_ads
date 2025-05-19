@@ -273,7 +273,7 @@ mixin DSAdsNativeLoaderMixin<T extends StatefulWidget> on State<T> {
             ...ad.getReportAttributes(),
           },
         );
-        DSAdsManager.I.emitEvent(DSAdsNativeLoadedEvent._(ad: ad));
+        DSAdsManager.I.emitEvent(DSAdsNativeLoadedEvent._(source: DSAdSource.native, ad: ad));
       } catch (e, stack) {
         Fimber.e('$e', stacktrace: stack);
       }
@@ -297,7 +297,7 @@ mixin DSAdsNativeLoaderMixin<T extends StatefulWidget> on State<T> {
             'error_code': '$code ($mediation)',
           },
         );
-        DSAdsManager.I.emitEvent(const DSAdsNativeLoadFailed._());
+        DSAdsManager.I.emitEvent(DSAdsNativeLoadFailed._(source: DSAdSource.native, ));
         await ad.dispose();
         await DSAdsManager.I.onLoadAdError(code, message, mediation, DSAdSource.native);
         final newMediation = DSAdsManager.I.currentMediation(DSAdSource.native);
@@ -323,7 +323,7 @@ mixin DSAdsNativeLoaderMixin<T extends StatefulWidget> on State<T> {
 
     Future<void> onAdOpened(DSNativeAd ad) async {
       try {
-        DSAdsManager.I.emitEvent(const DSAdsNativeOpenedEvent._());
+        DSAdsManager.I.emitEvent(DSAdsNativeOpenedEvent._(source: DSAdSource.native));
         _report('$_tag: ad opened',
             location: _getLocationByAd(ad), mediation: ad.mediation, adapter: ad.mediationAdapterClassName,
           attributes: {
@@ -338,7 +338,7 @@ mixin DSAdsNativeLoaderMixin<T extends StatefulWidget> on State<T> {
 
     Future<void> onAdClicked(DSNativeAd ad) async {
       try {
-        DSAdsManager.I.emitEvent(const DSAdsNativeClickEvent._());
+        DSAdsManager.I.emitEvent(DSAdsNativeClickEvent._(source: DSAdSource.native));
         _report('$_tag: ad clicked',
             location: _getLocationByAd(ad), mediation: ad.mediation, adapter: ad.mediationAdapterClassName,
           attributes: {
@@ -353,7 +353,7 @@ mixin DSAdsNativeLoaderMixin<T extends StatefulWidget> on State<T> {
 
     Future<void> onAdClosed(DSNativeAd ad) async {
       try {
-        DSAdsManager.I.emitEvent(const DSAdsNativeClosedEvent._());
+        DSAdsManager.I.emitEvent(DSAdsNativeClosedEvent._(source: DSAdSource.native));
         _report('$_tag: ad closed',
             location: _getLocationByAd(ad), mediation: ad.mediation, adapter: ad.mediationAdapterClassName,
           attributes: {
@@ -515,7 +515,7 @@ mixin DSAdsNativeLoaderMixin<T extends StatefulWidget> on State<T> {
             ...ad.getReportAttributes(),
           },
         );
-        DSAdsManager.I.emitEvent(DSAdsNativeLoadedEvent._(ad: ad));
+        DSAdsManager.I.emitEvent(DSAdsNativeLoadedEvent._(source: DSAdSource.native, ad: ad));
         setState(() {});
       } catch (e, stack) {
         Fimber.e('$e', stacktrace: stack);
@@ -536,7 +536,7 @@ mixin DSAdsNativeLoaderMixin<T extends StatefulWidget> on State<T> {
             'error_code': '$code ($mediation)',
           },
         );
-        DSAdsManager.I.emitEvent(const DSAdsNativeLoadFailed._());
+        DSAdsManager.I.emitEvent(DSAdsNativeLoadFailed._(source: DSAdSource.native));
         await DSAdsManager.I.onLoadAdError(code, message, mediation, DSAdSource.native);
         setState(() {});
       } catch (e, stack) {
@@ -559,7 +559,7 @@ mixin DSAdsNativeLoaderMixin<T extends StatefulWidget> on State<T> {
 
     Future<void> onAdClicked(DSNativeAd ad) async {
       try {
-        DSAdsManager.I.emitEvent(const DSAdsNativeClickEvent._());
+        DSAdsManager.I.emitEvent(DSAdsNativeClickEvent._(source: DSAdSource.native));
         _report('$_tag: ad clicked',
           location: _getLocationByAd(ad), mediation: ad.mediation, adapter: ad.mediationAdapterClassName,
           attributes: {
