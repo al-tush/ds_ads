@@ -46,7 +46,7 @@ class _DSAdsOverlayScreenState extends State<DSAdsOverlayScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: Colors.black.withOpacity(0.3),
+      backgroundColor: Colors.black.withAlpha(77),
       body: PopScope(
         canPop: false,
         child: BackButtonListener(
