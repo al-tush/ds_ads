@@ -68,6 +68,7 @@ class DSAdsManager extends ChangeNotifier {
   static bool get isAdShowing =>
       isInitialized &&
       ({DSAdState.preShowing, DSAdState.showing}.contains(interstitial.adState) ||
+          {DSAdState.preShowing, DSAdState.showing}.contains(interstitial2.adState) ||
           {DSAdState.preShowing, DSAdState.showing}.contains(I._splashInterstitial?.adState) ||
           {DSAdState.preShowing, DSAdState.showing}.contains(rewarded.adState) ||
           {DSAdState.preShowing, DSAdState.showing}.contains(appOpen.adState) ||
