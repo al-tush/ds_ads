@@ -1,3 +1,7 @@
+## 1.4.1
+- add location_source and since_fetched_seconds statistics attributes
+- fix isAdShowing state for interstitial2 instance
+
 ## 1.4.0
 - add custom attributes support to banners and native ads
 - custom attributes allow any names now (previously custom_attr_ prefix was mandatory)
