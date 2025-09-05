@@ -21,6 +21,7 @@ class DSAdsInterstitial {
   static const _tag = 'ads_interstitial';
 
   static var _showNum = 0;
+  static int get showCount => _showNum;
 
   var _startLoadTime = DateTime(0);
   var _finishLoadTime = DateTime(0);
