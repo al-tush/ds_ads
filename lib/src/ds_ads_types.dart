@@ -32,6 +32,7 @@ enum DSAdSource {
   interstitial,
   interstitial2,
   interstitialSplash,
+  interstitialPremium,
   banner,
   native,
   rewarded,

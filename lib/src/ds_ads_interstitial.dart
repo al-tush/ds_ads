@@ -42,6 +42,14 @@ class DSAdsInterstitial {
     return m;
   }
 
+  bool _lockedByPremium() {
+    if (source == DSAdSource.interstitialPremium) {
+      return false;
+    } else {
+      return DSAdsManager.I.isPremium;
+    }
+  }
+
   String _adUnitIdGoogle() {
     switch (source) {
       case DSAdSource.interstitial:
@@ -50,6 +58,8 @@ class DSAdsInterstitial {
         return DSAdsManager.I.interstitialSplashGoogleUnitId;
       case DSAdSource.interstitial2:
         return DSAdsManager.I.interstitial2GoogleUnitId;
+      case DSAdSource.interstitialPremium:
+        return DSAdsManager.I.interstitialPremiumGoogleUnitId;
       default:
         throw Exception('Unsupported source $source');
     }
@@ -62,6 +72,8 @@ class DSAdsInterstitial {
       case DSAdSource.interstitialSplash:
         return DSAdsManager.I.interstitialSplashAppLovinUnitId;
       case DSAdSource.interstitial2:
+        return DSAdsManager.I.interstitial2AppLovinUnitId;
+      case DSAdSource.interstitialPremium:
         return DSAdsManager.I.interstitial2AppLovinUnitId;
       default:
         throw Exception('Unsupported source $source');
@@ -94,7 +106,12 @@ class DSAdsInterstitial {
   DSAdsInterstitial({
     required this.source,
     this.loadRetryDelay = const Duration(seconds: 1),
-  }) : assert({DSAdSource.interstitial, DSAdSource.interstitial2, DSAdSource.interstitialSplash}.contains(source));
+  }) : assert({
+    DSAdSource.interstitial,
+    DSAdSource.interstitial2,
+    DSAdSource.interstitialSplash,
+    DSAdSource.interstitialPremium,
+  }.contains(source));
 
   @internal
   void dispose() {
@@ -155,7 +172,7 @@ class DSAdsInterstitial {
   }) {
     assert(_checkCustomAttributes(customAttributes), 'custom attributes must have custom_attr_ prefix');
 
-    if (DSAdsManager.I.isPremium || _isDisposed) {
+    if (_lockedByPremium() || _isDisposed) {
       then?.call();
       return;
     }
@@ -345,7 +362,7 @@ class DSAdsInterstitial {
     assert(counterIntervals == 0 || context != null, 'context must be assigned to show counter dialog before ad');
     // assert(_checkCustomAttributes(customAttributes), 'custom attributes must have custom_attr_ prefix');
 
-    if (DSAdsManager.I.isPremium || _isDisposed) {
+    if (_lockedByPremium() || _isDisposed) {
       then?.call();
       return;
     }

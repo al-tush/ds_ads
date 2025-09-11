@@ -37,6 +37,7 @@ class DSAdsManager extends ChangeNotifier {
   final _adsRewarded = DSAdsRewarded();
   final _adsAppOpen = DSAdsAppOpen(source: DSAdSource.appOpen);
   DSAdsInterstitial? _splashInterstitial;
+  DSAdsInterstitial? _premiumInterstitial;
   DSAdsAppOpen? _splashAppOpen;
 
   static bool get isInitialized => _instance != null;
@@ -50,6 +51,14 @@ class DSAdsManager extends ChangeNotifier {
       I._splashInterstitial = DSAdsInterstitial(source: DSAdSource.interstitialSplash);
     }
     return I._splashInterstitial!;
+  }
+
+  static DSAdsInterstitial get premiumInterstitial {
+    if (I._premiumInterstitial == null) {
+      Fimber.i('premium interstitial created');
+      I._premiumInterstitial = DSAdsInterstitial(source: DSAdSource.interstitialPremium);
+    }
+    return I._premiumInterstitial!;
   }
 
   static DSAdsRewarded get rewarded => I._adsRewarded;
@@ -114,6 +123,7 @@ class DSAdsManager extends ChangeNotifier {
   final String interstitialGoogleUnitId;
   final String interstitialSplashGoogleUnitId;
   final String interstitial2GoogleUnitId;
+  final String interstitialPremiumGoogleUnitId;
   final String nativeGoogleUnitId;
   final String appOpenGoogleUnitId;
   final String appOpenSplashGoogleUnitId;
@@ -122,6 +132,7 @@ class DSAdsManager extends ChangeNotifier {
   final String interstitialAppLovinUnitId;
   final String interstitialSplashAppLovinUnitId;
   final String interstitial2AppLovinUnitId;
+  final String interstitialPremiumAppLovinUnitId;
   final String nativeAppLovinUnitId;
   final String appOpenAppLovinUnitId;
   final String appOpenSplashAppLovinUnitId;
@@ -169,6 +180,7 @@ class DSAdsManager extends ChangeNotifier {
     this.interstitialGoogleUnitId = '',
     this.interstitialSplashGoogleUnitId = '',
     this.interstitial2GoogleUnitId = '',
+    this.interstitialPremiumGoogleUnitId = '',
     this.rewardedGoogleUnitId = '',
     this.nativeGoogleUnitId = '',
     this.appOpenGoogleUnitId = '',
@@ -177,6 +189,7 @@ class DSAdsManager extends ChangeNotifier {
     this.interstitialAppLovinUnitId = '',
     this.interstitialSplashAppLovinUnitId = '',
     this.interstitial2AppLovinUnitId = '',
+    this.interstitialPremiumAppLovinUnitId = '',
     this.nativeAppLovinUnitId = '',
     this.appOpenAppLovinUnitId = '',
     this.appOpenSplashAppLovinUnitId = '',
@@ -415,6 +428,10 @@ class DSAdsManager extends ChangeNotifier {
       case DSAdSource.interstitialSplash:
         googleId = interstitialSplashGoogleUnitId;
         appLovinId = interstitialSplashAppLovinUnitId;
+        break;
+      case DSAdSource.interstitialPremium:
+        googleId = interstitialPremiumGoogleUnitId;
+        appLovinId = interstitialPremiumAppLovinUnitId;
         break;
       case DSAdSource.banner:
         // ToDo: need implement mediations check for banner different approach

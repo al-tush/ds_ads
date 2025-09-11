@@ -13,10 +13,10 @@ packages:
     dependency: transitive
     description:
       name: adjust_sdk
-      sha256: "1f6ecfbc1cddd5ad41199c466c61db6bbaad250fbfe6ebdecb06a24a1cce1e15"
+      sha256: e1f1f9ee8d3370b7ba55bccd1b65053ba1bcea53de378eb510c8c808ffaefa34
       url: "https://pub.dev"
     source: hosted
-    version: "5.1.1"
+    version: "5.4.2"
   amplitude_flutter:
     dependency: transitive
     description:
@@ -151,14 +151,15 @@ packages:
       path: ".."
       relative: true
     source: path
-    version: "1.4.0"
+    version: "1.4.1"
   ds_common:
     dependency: transitive
     description:
-      path: "/Users/altush/Projects/ds_common"
-      relative: false
-    source: path
-    version: "2.5.0"
+      name: ds_common
+      sha256: "23e42fa948283d9170d73254a40906c8aeab8469e5b1001c21fd30bb9c9fd496"
+      url: "https://pub.dev"
+    source: hosted
+    version: "2.7.1"
   fake_async:
     dependency: transitive
     description:
@@ -317,10 +318,10 @@ packages:
     dependency: transitive
     description:
       name: flutter_uxcam
-      sha256: dba3ee6fbc242e77fc1e49f04c998859f26994e1a3b97f4034edde5f7cfac0ec
+      sha256: d7ae70fce91eea4dc608f8d859a87c03073312bf034559325b1f5c1ef65d8e07
       url: "https://pub.dev"
     source: hosted
-    version: "2.6.0"
+    version: "2.7.0"
   flutter_web_plugins:
     dependency: transitive
     description: flutter
