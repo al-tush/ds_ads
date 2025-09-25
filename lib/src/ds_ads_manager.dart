@@ -11,7 +11,6 @@ import 'package:ds_common/core/ds_adjust.dart';
 import 'package:ds_common/ds_common.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/widgets.dart';
-import 'package:freezed_annotation/freezed_annotation.dart';
 import 'package:google_mobile_ads/google_mobile_ads.dart';
 
 import 'ds_ads_types.dart';
