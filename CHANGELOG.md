@@ -1,3 +1,8 @@
+## 1.5.0
+- update to Flutter 3.35 and rollup deps
+- add premiumInterstitial to allow show interstitial ads for Premium users
+- add DSAdsInterstitial.showCount total interstitial ads counter
+
 ## 1.4.1
 - add location_source and since_fetched_seconds statistics attributes
 - fix isAdShowing state for interstitial2 instance
