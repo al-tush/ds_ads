@@ -584,6 +584,7 @@ class DSAdsInterstitial {
       unawaitedCatch(() async {
         await showDialog(
           context: context!,
+          barrierDismissible: false,
           builder: (context) => DSAdsOverlayScreen(
             counterDoneCallback: () => streamController!.add(null),
             delayIntervals: counterDelaySec > 0 ? counterDelaySec : counterIntervals,
