@@ -102,6 +102,7 @@ class DSAdsManager extends ChangeNotifier {
 
   ConsentForm? _consentForm;
   DSConsentStatus _lastConsentStatus = DSConsentStatus.unknown;
+  bool _canRequestAds = false;
 
   /// Was the ad successfully loaded at least once in this session
   bool get isAdAvailable => _isAdAvailable;
@@ -119,6 +120,7 @@ class DSAdsManager extends ChangeNotifier {
   final DSAppAdsState appState;
   final OnReportEvent? onReportEvent;
   final Set<DSAdLocation>? locations;
+  final bool needConsent;
   final String interstitialGoogleUnitId;
   final String interstitialSplashGoogleUnitId;
   final String interstitial2GoogleUnitId;
@@ -157,6 +159,7 @@ class DSAdsManager extends ChangeNotifier {
   /// [onPaidEvent] allows you to know/handle the onPaidEvent event in google_mobile_ads
   /// In [appState] you should pass the [DSAppAdsState] interface implementation, so the ad manager can know the current
   /// state of the app (whether the subscription is paid, whether the app is in the foreground, etc.).
+  /// [needConsent] load ads only after consent allows it (read README before set true)
   /// [nativeAdBannerStyle] defines the appearance of the native ad unit.
   /// If this [locations] set is defined, the nativeAdLocation method and the location parameter can return only one
   /// of the values listed in [locations].
@@ -173,6 +176,7 @@ class DSAdsManager extends ChangeNotifier {
     required this.mediationPrioritiesCallback,
     required this.onPaidEvent,
     required this.appState,
+    required this.needConsent,
     this.nativeAdBannerDefStyle = DSNativeAdBannerStyle.notDefined,
     this.locations,
     this.onReportEvent,
@@ -205,12 +209,16 @@ class DSAdsManager extends ChangeNotifier {
     final DSLocatedDurationCallback? rewardedShowLockedCallback,
     this.retryCountCallback,
     this.consentDebugSettings,
-  })  : assert(interstitialShowLockCallback == null || interstitialShowLockedCallback == null,
-            'Use interstitialShowLockedCallback only'),
-        assert(rewardedShowLockCallback == null || rewardedShowLockedCallback == null,
-            'Use rewardedShowLockedCallback only'),
-        assert(_instance == null, 'dismiss previous Ads instance before init new'),
-        assert(DSAppState.isInitialized, 'Initialize ds_metrica before') {
+  }) : assert(
+         interstitialShowLockCallback == null || interstitialShowLockedCallback == null,
+         'Use interstitialShowLockedCallback only',
+       ),
+       assert(
+         rewardedShowLockCallback == null || rewardedShowLockedCallback == null,
+         'Use rewardedShowLockedCallback only',
+       ),
+       assert(_instance == null, 'dismiss previous Ads instance before init new'),
+       assert(DSAppState.isInitialized, 'Initialize ds_metrica before') {
     _instance = this;
     interstitialShowLockedProc = (DSAdLocation location) {
       var res = interstitialShowLockedCallback?.call(location);
@@ -261,23 +269,19 @@ class DSAdsManager extends ChangeNotifier {
       if (Platform.isAndroid) {
         ConsentDebugSettings? settings;
         if (DSConstants.I.isInternalVersion) {
-          settings = consentDebugSettings ??
-              ConsentDebugSettings(
-                debugGeography: DebugGeography.debugGeographyEea,
-              );
+          settings = consentDebugSettings ?? ConsentDebugSettings(debugGeography: DebugGeography.debugGeographyEea);
         }
-        final params = ConsentRequestParameters(
-          consentDebugSettings: settings,
-        );
+        final params = ConsentRequestParameters(consentDebugSettings: settings);
         ConsentInformation.instance.requestConsentInfoUpdate(
           params,
           () async {
             _lastConsentStatus = await ConsentInformation.instance.getConsentStatus();
+            await _updateCanRequestAds();
             AppLovinMAX.setHasUserConsent(_lastConsentStatus == DSConsentStatus.obtained);
-            DSMetrica.reportEvent('consent status', attributes: {
-              'consent_status': '$_lastConsentStatus',
-              'position': 'init',
-            });
+            DSMetrica.reportEvent(
+              'consent status',
+              attributes: {'consent_status': '$_lastConsentStatus', 'position': 'init'},
+            );
             if ([DSConsentStatus.notRequired, DSConsentStatus.obtained].contains(_lastConsentStatus)) return;
             if (await ConsentInformation.instance.isConsentFormAvailable()) {
               ConsentForm.loadConsentForm(
@@ -288,10 +292,10 @@ class DSAdsManager extends ChangeNotifier {
                     Fimber.e('Consent error: ${error.message} (${error.errorCode})', stacktrace: StackTrace.current),
               );
             } else {
-              DSMetrica.reportEvent('consent status', attributes: {
-                'consent_status': 'formUnavailable',
-                'position': 'init',
-              });
+              DSMetrica.reportEvent(
+                'consent status',
+                attributes: {'consent_status': 'formUnavailable', 'position': 'init'},
+              );
             }
           },
           (FormError error) =>
@@ -302,12 +306,12 @@ class DSAdsManager extends ChangeNotifier {
       if (Platform.isIOS) {
         final status = await DSAdjust.getATTStatus();
         _lastConsentStatus = _convertATTStatus(status);
+        await _updateCanRequestAds();
         AppLovinMAX.setHasUserConsent(_lastConsentStatus == DSConsentStatus.obtained);
-        DSMetrica.reportEvent('consent status', attributes: {
-          'consent_status': '$_lastConsentStatus',
-          'att_status': status,
-          'position': 'init',
-        });
+        DSMetrica.reportEvent(
+          'consent status',
+          attributes: {'consent_status': '$_lastConsentStatus', 'att_status': status, 'position': 'init'},
+        );
       }
     }());
   }
@@ -335,6 +339,26 @@ class DSAdsManager extends ChangeNotifier {
   /// return true if consent available (for Android only)
   bool get isConsentAvailable => (consentStatus != DSConsentStatus.notRequired);
 
+  /// Can request ads based on consent status
+  /// For Android: uses ConsentInformation.instance.canRequestAds()
+  /// For iOS: checks if ATT consent is obtained
+  bool get canRequestAds => _canRequestAds;
+
+  Future<void> _updateCanRequestAds() async {
+    final oldValue = _canRequestAds;
+
+    if (Platform.isAndroid) {
+      _canRequestAds = await ConsentInformation.instance.canRequestAds();
+    } else if (Platform.isIOS) {
+      _canRequestAds = _lastConsentStatus == DSConsentStatus.obtained;
+    }
+
+    // Emit event when consent status changes
+    if (_canRequestAds != oldValue) {
+      emitEvent(DSAdsConsentReadyEvent(canRequestAds: _canRequestAds, consentStatus: _lastConsentStatus));
+    }
+  }
+
   DSConsentStatus _convertATTStatus(int status) {
     return switch (status) {
       // ToDo: need refactoring
@@ -353,47 +377,52 @@ class DSAdsManager extends ChangeNotifier {
       if (Platform.isAndroid) {
         if (_consentForm == null) {
           final completerForm = Completer<ConsentForm?>();
-          ConsentForm.loadConsentForm((ConsentForm consentForm) async {
-            completerForm.complete(consentForm);
-          }, (FormError error) {
-            Fimber.e('Consent error: ${error.message} (${error.errorCode})', stacktrace: StackTrace.current);
-            completerForm.complete(null);
-          });
+          ConsentForm.loadConsentForm(
+            (ConsentForm consentForm) async {
+              completerForm.complete(consentForm);
+            },
+            (FormError error) {
+              Fimber.e('Consent error: ${error.message} (${error.errorCode})', stacktrace: StackTrace.current);
+              completerForm.complete(null);
+            },
+          );
           _consentForm = await completerForm.future;
           if (_consentForm == null) {
             return false;
           }
         }
         final completer = Completer<bool>();
-        _consentForm!.show(
-          (FormError? error) async {
-            _consentForm = null;
-            if (error == null) {
-              _lastConsentStatus = await ConsentInformation.instance.getConsentStatus();
-              AppLovinMAX.setHasUserConsent(_lastConsentStatus == DSConsentStatus.obtained);
-              DSMetrica.reportEvent('consent status', attributes: {
-                'consent_status': '$_lastConsentStatus',
-                'position': 'after dialog',
-              });
-              completer.complete(true);
-            } else {
-              Fimber.e('Consent error: ${error.message} (code=${error.errorCode}, consent_status=$_lastConsentStatus})', stacktrace: StackTrace.current);
-              completer.complete(false);
-            }
-          },
-        );
+        _consentForm!.show((FormError? error) async {
+          _consentForm = null;
+          if (error == null) {
+            _lastConsentStatus = await ConsentInformation.instance.getConsentStatus();
+            await _updateCanRequestAds();
+            AppLovinMAX.setHasUserConsent(_lastConsentStatus == DSConsentStatus.obtained);
+            DSMetrica.reportEvent(
+              'consent status',
+              attributes: {'consent_status': '$_lastConsentStatus', 'position': 'after dialog'},
+            );
+            completer.complete(true);
+          } else {
+            Fimber.e(
+              'Consent error: ${error.message} (code=${error.errorCode}, consent_status=$_lastConsentStatus})',
+              stacktrace: StackTrace.current,
+            );
+            completer.complete(false);
+          }
+        });
         return await completer.future;
       }
 
       if (Platform.isIOS) {
         final status = await DSAdjust.requestATT();
         _lastConsentStatus = _convertATTStatus(status.toInt());
+        await _updateCanRequestAds();
         AppLovinMAX.setHasUserConsent(_lastConsentStatus == DSConsentStatus.obtained);
-        DSMetrica.reportEvent('consent status', attributes: {
-          'consent_status': '$_lastConsentStatus',
-          'att_status': status,
-          'position': 'dialog',
-        });
+        DSMetrica.reportEvent(
+          'consent status',
+          attributes: {'consent_status': '$_lastConsentStatus', 'att_status': status, 'position': 'dialog'},
+        );
         return true;
       }
     } finally {
@@ -457,20 +486,26 @@ class DSAdsManager extends ChangeNotifier {
     if (mediationPriorities.contains(DSAdMediation.google)) {
       if (googleId.isEmpty) {
         mediationPriorities.remove(DSAdMediation.google);
-        assert(false,
-            '$source error: setup ...GoogleUnitId field or remove DSAdMediation.google from mediationPrioritiesCallback ($source)');
+        assert(
+          false,
+          '$source error: setup ...GoogleUnitId field or remove DSAdMediation.google from mediationPrioritiesCallback ($source)',
+        );
       }
     }
     if (mediationPriorities.contains(DSAdMediation.appLovin)) {
       if (appLovinSDKKey.isEmpty) {
         mediationPriorities.remove(DSAdMediation.appLovin);
         assert(
-            false, 'setup appLovinSDKKey or remove DSAdMediation.appLovin from mediationPrioritiesCallack ($source)');
+          false,
+          'setup appLovinSDKKey or remove DSAdMediation.appLovin from mediationPrioritiesCallack ($source)',
+        );
       }
       if (appLovinId.isEmpty) {
         mediationPriorities.remove(DSAdMediation.appLovin);
-        assert(false,
-            '$source error: setup ...AppLovinUnitId or remove DSAdMediation.appLovin from mediationPrioritiesCallack ($source)');
+        assert(
+          false,
+          '$source error: setup ...AppLovinUnitId or remove DSAdMediation.appLovin from mediationPrioritiesCallack ($source)',
+        );
       }
     }
     if (mediationPriorities.isEmpty) {
@@ -507,10 +542,7 @@ class DSAdsManager extends ChangeNotifier {
       next = mediationPriorities[curr + 1];
     }
 
-    onReportEvent?.call('ads_manager: select mediation', {
-      'mediation': '$next',
-      'mediation_type': '$source',
-    });
+    onReportEvent?.call('ads_manager: select mediation', {'mediation': '$next', 'mediation_type': '$source'});
     _currentMediation[source] = next;
     if (!_mediationInitialized.contains(next)) {
       unawaited(() async {

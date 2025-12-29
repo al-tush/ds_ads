@@ -103,15 +103,15 @@ class DSAdsInterstitial {
 
   late final state = DSStateStub(owner: this);
 
-  DSAdsInterstitial({
-    required this.source,
-    this.loadRetryDelay = const Duration(seconds: 1),
-  }) : assert({
-    DSAdSource.interstitial,
-    DSAdSource.interstitial2,
-    DSAdSource.interstitialSplash,
-    DSAdSource.interstitialPremium,
-  }.contains(source));
+  DSAdsInterstitial({required this.source, this.loadRetryDelay = const Duration(seconds: 1)})
+    : assert(
+        {
+          DSAdSource.interstitial,
+          DSAdSource.interstitial2,
+          DSAdSource.interstitialSplash,
+          DSAdSource.interstitialPremium,
+        }.contains(source),
+      );
 
   @internal
   void dispose() {
@@ -171,6 +171,12 @@ class DSAdsInterstitial {
     @internal final Function()? then,
   }) {
     assert(_checkCustomAttributes(customAttributes), 'custom attributes must have custom_attr_ prefix');
+
+    if (!DSAdsManager.I.canRequestAds && DSAdsManager.I.needConsent) {
+      _report('$_tag: cannot request ads (consent not granted)', location: location, mediation: null);
+      then?.call();
+      return;
+    }
 
     if (_lockedByPremium() || _isDisposed) {
       then?.call();
@@ -234,10 +240,7 @@ class DSAdsInterstitial {
           mediation: mediation,
           customAdId: ad.adUnitId,
           adapter: ad.mediationAdapterClassName,
-          attributes: {
-            ...ad.getReportAttributes(),
-            ...?customAttributes,
-          },
+          attributes: {...ad.getReportAttributes(), ...?customAttributes},
         );
         await _ad?.dispose();
         _adState = DSAdState.loaded;
@@ -294,11 +297,9 @@ class DSAdsInterstitial {
           Fimber.w('$errDescription ($errCode)', stacktrace: StackTrace.current);
           _adState = DSAdState.none;
           then?.call();
-          DSAdsManager.I.emitEvent(DSAdsInterstitialLoadFailedEvent._(
-            source: source,
-            errCode: errCode,
-            errText: errDescription,
-          ));
+          DSAdsManager.I.emitEvent(
+            DSAdsInterstitialLoadFailedEvent._(source: source, errCode: errCode, errText: errDescription),
+          );
           _startLoadTime = DateTime(0);
         }
       } catch (e, stack) {
@@ -308,25 +309,21 @@ class DSAdsInterstitial {
 
     switch (mediation) {
       case DSAdMediation.google:
-        DSGoogleInterstitialAd(adUnitId: _adUnitId(mediation)).load(
-          onAdLoaded: onAdLoaded,
-          onAdFailedToLoad: onAdFailedToLoad,
-        );
+        DSGoogleInterstitialAd(
+          adUnitId: _adUnitId(mediation),
+        ).load(onAdLoaded: onAdLoaded, onAdFailedToLoad: onAdFailedToLoad);
         break;
       case DSAdMediation.appLovin:
-        DSAppLovinInterstitialAd(adUnitId: _adUnitId(mediation)).load(
-          onAdLoaded: onAdLoaded,
-          onAdFailedToLoad: onAdFailedToLoad,
-        );
+        DSAppLovinInterstitialAd(
+          adUnitId: _adUnitId(mediation),
+        ).load(onAdLoaded: onAdLoaded, onAdFailedToLoad: onAdFailedToLoad);
         break;
     }
 
     _adState = DSAdState.loading;
   }
 
-  void cancelCurrentAd({
-    required final DSAdLocation location,
-  }) {
+  void cancelCurrentAd({required final DSAdLocation location}) {
     _report('$_tag: cancel current ad (adState: $adState)', location: location, mediation: _mediation);
     if (adState == DSAdState.showing) return;
     _ad?.dispose();
@@ -345,8 +342,7 @@ class DSAdsInterstitial {
     BuildContext? context,
     final Duration dismissAdAfter = const Duration(),
     final Duration Function()? dismissAdAfterCallback,
-    @Deprecated('Use counterDuration instead')
-    final int counterDelaySec = 0,
+    @Deprecated('Use counterDuration instead') final int counterDelaySec = 0,
     final int counterIntervals = 0,
     final Duration counterDuration = const Duration(milliseconds: 670),
     final Future<bool> Function()? beforeAdShow,
@@ -384,8 +380,12 @@ class DSAdsInterstitial {
 
     if ([DSAdState.preShowing, DSAdState.showing].contains(adState)) {
       Fimber.e('showAd recall (adState: $adState)', stacktrace: StackTrace.current);
-      _report('$_tag: showing canceled by error',
-          location: location, mediation: _mediation, attributes: customAttributes);
+      _report(
+        '$_tag: showing canceled by error',
+        location: location,
+        mediation: _mediation,
+        attributes: customAttributes,
+      );
       then?.call();
       return;
     }
@@ -479,8 +479,12 @@ class DSAdsInterstitial {
     final ad = _ad;
     if (ad == null) {
       Fimber.e('ad is null but state: $adState', stacktrace: StackTrace.current);
-      _report('$_tag: showing canceled by error',
-          location: location, mediation: _mediation, attributes: customAttributes);
+      _report(
+        '$_tag: showing canceled by error',
+        location: location,
+        mediation: _mediation,
+        attributes: customAttributes,
+      );
       then?.call();
       cancelCurrentAd(location: location);
       DSAdsManager.I.emitEvent(DSAdsInterstitialShowErrorEvent._(source: source));
@@ -493,8 +497,13 @@ class DSAdsInterstitial {
       try {
         unawaited(DSMetrica.putErrorEnvironmentValue('ads_last_action', 'inter_impression'));
         unawaited(DSMetrica.putErrorEnvironmentValue('ads_inter_adapter', ad.mediationAdapterClassName));
-        _report('$_tag: impression',
-            location: location, mediation: ad.mediation, adapter: ad.mediationAdapterClassName, attributes: attrs);
+        _report(
+          '$_tag: impression',
+          location: location,
+          mediation: ad.mediation,
+          adapter: ad.mediationAdapterClassName,
+          attributes: attrs,
+        );
       } catch (e, stack) {
         Fimber.e('$e', stacktrace: stack);
       }
@@ -502,7 +511,16 @@ class DSAdsInterstitial {
     ad.onPaidEvent = (ad, valueMicros, precision, currencyCode, appLovinDspName) {
       try {
         DSAdsManager.I.onPaidEvent(
-            ad, ad.mediation, location, valueMicros, precision, currencyCode, source, appLovinDspName, attrs);
+          ad,
+          ad.mediation,
+          location,
+          valueMicros,
+          precision,
+          currencyCode,
+          source,
+          appLovinDspName,
+          attrs,
+        );
       } catch (e, stack) {
         Fimber.e('$e', stacktrace: stack);
       }
@@ -518,8 +536,13 @@ class DSAdsInterstitial {
         );
         _totalLoadDuration = Duration.zero;
 
-        _report('$_tag: showed full screen content',
-            location: location, mediation: ad.mediation, adapter: ad.mediationAdapterClassName, attributes: eventAttrs);
+        _report(
+          '$_tag: showed full screen content',
+          location: location,
+          mediation: ad.mediation,
+          adapter: ad.mediationAdapterClassName,
+          attributes: eventAttrs,
+        );
         if (_isDisposed) {
           Fimber.e('$_tag: showing disposed ad', stacktrace: StackTrace.current);
         }
@@ -534,8 +557,13 @@ class DSAdsInterstitial {
     ad.onAdDismissed = (ad) {
       try {
         DSAdsAppOpen.lockShowFor(const Duration(seconds: 5));
-        _report('$_tag: full screen content dismissed',
-            location: location, mediation: ad.mediation, adapter: ad.mediationAdapterClassName, attributes: attrs);
+        _report(
+          '$_tag: full screen content dismissed',
+          location: location,
+          mediation: ad.mediation,
+          adapter: ad.mediationAdapterClassName,
+          attributes: attrs,
+        );
         ad.dispose();
         updateLastShowTime();
         _mediation = null;
@@ -552,8 +580,13 @@ class DSAdsInterstitial {
     ad.onAdFailedToShow = (ad, int errCode, String errText) {
       try {
         DSAdsAppOpen.lockShowFor(const Duration(seconds: 5));
-        _report('$_tag: showing canceled by error',
-            location: location, mediation: ad.mediation, adapter: ad.mediationAdapterClassName, attributes: attrs);
+        _report(
+          '$_tag: showing canceled by error',
+          location: location,
+          mediation: ad.mediation,
+          adapter: ad.mediationAdapterClassName,
+          attributes: attrs,
+        );
         Fimber.e('$errText ($errCode, adState: $adState)', stacktrace: StackTrace.current);
         ad.dispose();
         updateLastShowTime();
@@ -571,8 +604,13 @@ class DSAdsInterstitial {
     ad.onAdClicked = (ad) {
       try {
         DSAdsAppOpen.lockShowFor(const Duration(hours: 1));
-        _report('$_tag: ad clicked',
-            location: location, mediation: ad.mediation, adapter: ad.mediationAdapterClassName, attributes: attrs);
+        _report(
+          '$_tag: ad clicked',
+          location: location,
+          mediation: ad.mediation,
+          adapter: ad.mediationAdapterClassName,
+          attributes: attrs,
+        );
       } catch (e, stack) {
         Fimber.e('$e', stacktrace: stack);
       }
@@ -597,8 +635,12 @@ class DSAdsInterstitial {
     }
 
     if (_isDisposed) {
-      _report('$_tag: showing canceled: manager disposed',
-          location: location, mediation: _mediation, attributes: attrs);
+      _report(
+        '$_tag: showing canceled: manager disposed',
+        location: location,
+        mediation: _mediation,
+        attributes: attrs,
+      );
       then?.call();
       DSAdsManager.I.emitEvent(DSAdsInterstitialShowErrorEvent._(source: source));
       return;
@@ -613,8 +655,12 @@ class DSAdsInterstitial {
 
     if ([DSAdState.preShowing, DSAdState.showing].contains(adState)) {
       Fimber.e('showAd recall (adState: $adState)', stacktrace: StackTrace.current);
-      _report('$_tag: showing canceled by error',
-          location: location, mediation: _mediation, attributes: customAttributes);
+      _report(
+        '$_tag: showing canceled by error',
+        location: location,
+        mediation: _mediation,
+        attributes: customAttributes,
+      );
       then?.call();
       return;
     }
@@ -650,9 +696,7 @@ class DSAdsInterstitial {
 
 class DSStateStub {
   DSAdsInterstitial owner;
-  DSStateStub({
-    required this.owner,
-  });
+  DSStateStub({required this.owner});
 
   @Deprecated('Use adState instead of state.adState')
   DSAdState get adState => owner.adState;

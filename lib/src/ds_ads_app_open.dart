@@ -43,10 +43,8 @@ class DSAdsAppOpen {
 
   DSAdState get adState => _adState;
 
-  DSAdsAppOpen({
-    required this.source,
-    this.loadRetryDelay = const Duration(seconds: 1),
-  }) : assert({DSAdSource.appOpen, DSAdSource.appOpenSplash}.contains(source));
+  DSAdsAppOpen({required this.source, this.loadRetryDelay = const Duration(seconds: 1)})
+    : assert({DSAdSource.appOpen, DSAdSource.appOpenSplash}.contains(source));
 
   @internal
   void dispose() {
@@ -54,9 +52,7 @@ class DSAdsAppOpen {
     cancelCurrentAd(location: const DSAdLocation('internal_dispose'));
   }
 
-  void cancelCurrentAd({
-    required final DSAdLocation location,
-  }) {
+  void cancelCurrentAd({required final DSAdLocation location}) {
     _report('$_tag: cancel current ad (adState: $adState)', location: location, mediation: _mediation);
     if (adState == DSAdState.showing) return;
     _ad?.dispose();
@@ -155,6 +151,12 @@ class DSAdsAppOpen {
   }) {
     assert(_checkCustomAttributes(customAttributes), 'custom attributes must have custom_attr_ prefix');
 
+    if (!DSAdsManager.I.canRequestAds && DSAdsManager.I.needConsent) {
+      _report('$_tag: cannot request ads (consent not granted)', location: location, mediation: null);
+      then?.call();
+      return;
+    }
+
     if (DSAdsManager.I.isPremium || _isDisposed) {
       then?.call();
       return;
@@ -211,10 +213,7 @@ class DSAdsAppOpen {
           location: location,
           mediation: mediation,
           adapter: ad.mediationAdapterClassName,
-          attributes: {
-            ...ad.getReportAttributes(),
-            ...?customAttributes,
-          },
+          attributes: {...ad.getReportAttributes(), ...?customAttributes},
         );
         await _ad?.dispose();
         _ad = ad;
@@ -240,12 +239,17 @@ class DSAdsAppOpen {
         _loadRetryCount++;
         unawaited(DSMetrica.putErrorEnvironmentValue('ads_last_action', 'app_open_loading_failed'));
         unawaited(DSMetrica.putErrorEnvironmentValue('ads_app_open_adapter', ad.mediationAdapterClassName));
-        _report('$_tag: failed to load', location: location, mediation: mediation, attributes: {
-          'error_text': errDescription,
-          'error_code': '$errCode ($mediation)',
-          ...attrs,
-          ...?customAttributes,
-        });
+        _report(
+          '$_tag: failed to load',
+          location: location,
+          mediation: mediation,
+          attributes: {
+            'error_text': errDescription,
+            'error_code': '$errCode ($mediation)',
+            ...attrs,
+            ...?customAttributes,
+          },
+        );
         final oldMediation = DSAdsManager.I.currentMediation(source);
         await DSAdsManager.I.onLoadAdError(errCode, errDescription, mediation, source);
         _loadConditions.add(DSAdsLoadCondition.error);
@@ -268,11 +272,9 @@ class DSAdsAppOpen {
           Fimber.w('$errDescription ($errCode)', stacktrace: StackTrace.current);
           _adState = DSAdState.none;
           then?.call();
-          DSAdsManager.I.emitEvent(DSAdsAppOpenLoadFailedEvent._(
-            source: source,
-            errCode: errCode,
-            errText: errDescription,
-          ));
+          DSAdsManager.I.emitEvent(
+            DSAdsAppOpenLoadFailedEvent._(source: source, errCode: errCode, errText: errDescription),
+          );
           _startLoadTime = DateTime(0);
         }
       } catch (e, stack) {
@@ -284,16 +286,14 @@ class DSAdsAppOpen {
     try {
       switch (mediation) {
         case DSAdMediation.google:
-          DSGoogleAppOpenAd(adUnitId: _adUnitId(mediation)).load(
-            onAdLoaded: onAdLoaded,
-            onAdFailedToLoad: onAdFailedToLoad,
-          );
+          DSGoogleAppOpenAd(
+            adUnitId: _adUnitId(mediation),
+          ).load(onAdLoaded: onAdLoaded, onAdFailedToLoad: onAdFailedToLoad);
           break;
         case DSAdMediation.appLovin:
-          DSAppLovinAppOpenAd(adUnitId: _adUnitId(mediation)).load(
-            onAdLoaded: onAdLoaded,
-            onAdFailedToLoad: onAdFailedToLoad,
-          );
+          DSAppLovinAppOpenAd(
+            adUnitId: _adUnitId(mediation),
+          ).load(onAdLoaded: onAdLoaded, onAdFailedToLoad: onAdFailedToLoad);
           break;
       }
     } catch (e, stack) {
@@ -346,19 +346,18 @@ class DSAdsAppOpen {
 
     if ([DSAdState.preShowing, DSAdState.showing].contains(adState)) {
       Fimber.e('showAd recall (adState: $adState)', stacktrace: StackTrace.current);
-      _report('$_tag: showing canceled by error',
-          location: location, mediation: _mediation, attributes: customAttributes);
+      _report(
+        '$_tag: showing canceled by error',
+        location: location,
+        mediation: _mediation,
+        attributes: customAttributes,
+      );
       then?.call();
       return;
     }
 
     if ([DSAdState.none, DSAdState.loading, DSAdState.error].contains(adState)) {
-      _report(
-        '$_tag: ad was not ready',
-        location: location,
-        mediation: _mediation,
-        attributes: customAttributes,
-      );
+      _report('$_tag: ad was not ready', location: location, mediation: _mediation, attributes: customAttributes);
       then?.call();
       return;
     }
@@ -382,8 +381,12 @@ class DSAdsAppOpen {
     final ad = _ad;
     if (ad == null) {
       Fimber.e('app open ad is null but state: $_adState', stacktrace: StackTrace.current);
-      _report('$_tag: showing canceled by error',
-          location: location, mediation: _mediation, attributes: customAttributes);
+      _report(
+        '$_tag: showing canceled by error',
+        location: location,
+        mediation: _mediation,
+        attributes: customAttributes,
+      );
       then?.call();
       cancelCurrentAd(location: location);
       return;
@@ -395,8 +398,13 @@ class DSAdsAppOpen {
       try {
         unawaited(DSMetrica.putErrorEnvironmentValue('ads_last_action', 'app_open_impression'));
         unawaited(DSMetrica.putErrorEnvironmentValue('ads_app_open_adapter', ad.mediationAdapterClassName));
-        _report('$_tag: impression',
-            location: location, mediation: ad.mediation, adapter: ad.mediationAdapterClassName, attributes: attrs);
+        _report(
+          '$_tag: impression',
+          location: location,
+          mediation: ad.mediation,
+          adapter: ad.mediationAdapterClassName,
+          attributes: attrs,
+        );
       } catch (e, stack) {
         Fimber.e('$e', stacktrace: stack);
       }
@@ -404,7 +412,16 @@ class DSAdsAppOpen {
     ad.onPaidEvent = (ad, valueMicros, precision, currencyCode, appLovinDspName) {
       try {
         DSAdsManager.I.onPaidEvent(
-            ad, ad.mediation, location, valueMicros, precision, currencyCode, source, appLovinDspName, attrs);
+          ad,
+          ad.mediation,
+          location,
+          valueMicros,
+          precision,
+          currencyCode,
+          source,
+          appLovinDspName,
+          attrs,
+        );
       } catch (e, stack) {
         Fimber.e('$e', stacktrace: stack);
       }
@@ -418,8 +435,13 @@ class DSAdsAppOpen {
         );
         _totalLoadDuration = Duration.zero;
 
-        _report('$_tag: showed full screen content',
-            location: location, mediation: ad.mediation, adapter: ad.mediationAdapterClassName, attributes: eventAttrs);
+        _report(
+          '$_tag: showed full screen content',
+          location: location,
+          mediation: ad.mediation,
+          adapter: ad.mediationAdapterClassName,
+          attributes: eventAttrs,
+        );
         if (_isDisposed) {
           Fimber.e('showing disposed ad', stacktrace: StackTrace.current);
         }
@@ -433,8 +455,13 @@ class DSAdsAppOpen {
     };
     ad.onAdDismissed = (ad) {
       try {
-        _report('$_tag: full screen content dismissed',
-            location: location, mediation: ad.mediation, adapter: ad.mediationAdapterClassName, attributes: attrs);
+        _report(
+          '$_tag: full screen content dismissed',
+          location: location,
+          mediation: ad.mediation,
+          adapter: ad.mediationAdapterClassName,
+          attributes: attrs,
+        );
         ad.dispose();
         _ad = null;
         _mediation = null;
@@ -449,11 +476,13 @@ class DSAdsAppOpen {
     };
     ad.onAdFailedToShow = (ad, int errCode, String errText) {
       try {
-        _report('$_tag: showing canceled by error',
-            location: location,
-            mediation: _mediation,
-            adapter: ad.mediationAdapterClassName,
-            attributes: {'app_open_error_code': errCode, 'app_open_error_text': errText, ...attrs});
+        _report(
+          '$_tag: showing canceled by error',
+          location: location,
+          mediation: _mediation,
+          adapter: ad.mediationAdapterClassName,
+          attributes: {'app_open_error_code': errCode, 'app_open_error_text': errText, ...attrs},
+        );
         Fimber.e('$errText ($errCode)', stacktrace: StackTrace.current);
         ad.dispose();
         _ad = null;
@@ -469,18 +498,27 @@ class DSAdsAppOpen {
     };
     ad.onAdClicked = (ad) {
       try {
-        _report('$_tag: ad clicked',
-            location: location, mediation: ad.mediation, adapter: ad.mediationAdapterClassName, attributes: attrs);
+        _report(
+          '$_tag: ad clicked',
+          location: location,
+          mediation: ad.mediation,
+          adapter: ad.mediationAdapterClassName,
+          attributes: attrs,
+        );
       } catch (e, stack) {
         Fimber.e('$e', stacktrace: stack);
       }
     };
 
     if (_isDisposed) {
-      _report('$_tag: showing canceled: manager disposed',
-          location: location, mediation: _mediation, attributes: attrs);
+      _report(
+        '$_tag: showing canceled: manager disposed',
+        location: location,
+        mediation: _mediation,
+        attributes: attrs,
+      );
       then?.call();
-      DSAdsManager.I.emitEvent(DSAdsAppOpenShowErrorEvent._(source: source, ));
+      DSAdsManager.I.emitEvent(DSAdsAppOpenShowErrorEvent._(source: source));
       return;
     }
 
