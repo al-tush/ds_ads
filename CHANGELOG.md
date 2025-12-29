@@ -1,3 +1,7 @@
+## 1.6.0
+- add option to wait consent before start to load ads
+- fix back action for 3-2-1 screen
+
 ## 1.5.0
 - update to Flutter 3.35 and rollup deps
 - add premiumInterstitial to allow show interstitial ads for Premium users
