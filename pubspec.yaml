@@ -18,7 +18,7 @@ dependencies:
 
   google_mobile_ads: ^6.0.0
 
-  applovin_max: ^4.5.2
+  applovin_max: ^4.6.1
 
 dev_dependencies:
   flutter_test:
