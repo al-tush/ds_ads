@@ -53,7 +53,7 @@ if (DSAdsManager.I.canRequestAds) {
 // Option 2: Subscribe to consent ready event (recommended)
 unawaited(() async {
   await for (final event in DSAdsManager.instance.eventStream) {
-    if (event is DSAdsConsentReadyEvent && event.canRequestAds) {
+    if (event is DSAdsConsentReadyEvent) {
       // Consent granted, start loading ads
       DSAdsManager.interstitial.fetchAd(location: const DSAdLocation('internal_after_consent'));
       DSAdsManager.rewarded.fetchAd(location: const DSAdLocation('internal_after_consent'));

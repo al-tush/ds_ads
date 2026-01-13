@@ -165,14 +165,14 @@ class DSAdsInterstitial {
   }
 
   /// Fetch interstitial ad
-  void fetchAd({
+  Future<void> fetchAd({
     required final DSAdLocation location,
     Map<String, Object>? customAttributes,
     @internal final Function()? then,
-  }) {
+  }) async {
     assert(_checkCustomAttributes(customAttributes), 'custom attributes must have custom_attr_ prefix');
 
-    if (!DSAdsManager.I.canRequestAds && DSAdsManager.I.needConsent) {
+    if (!await DSAdsManager.I.checkAndUpdateCanRequestAds()) {
       _report('$_tag: cannot request ads (consent not granted)', location: location, mediation: null);
       then?.call();
       return;
@@ -190,6 +190,10 @@ class DSAdsInterstitial {
       return;
     }
 
+    while (!DSAdsManager.I.isMediationInitialized(DSAdsManager.I.currentMediation(source)!)) {
+      await Future.delayed(Duration(milliseconds: 10));
+    }
+    
     if ([DSAdState.loading, DSAdState.loaded].contains(adState)) {
       then?.call();
       return;
@@ -210,7 +214,7 @@ class DSAdsInterstitial {
         final spent = DateTime.timestamp().difference(_lastShowTime);
         final delay = interstitialFetchDelay - spent;
         await Future.delayed(delay);
-        fetchAd(location: const DSAdLocation('internal_fetch_delayed'), customAttributes: customAttributes);
+        await fetchAd(location: const DSAdLocation('internal_fetch_delayed'), customAttributes: customAttributes);
       }());
       return;
     }
@@ -291,7 +295,7 @@ class DSAdsInterstitial {
           await Future.delayed(loadRetryDelay);
           if ({DSAdState.none, DSAdState.error}.contains(adState) && !_isDisposed) {
             _report('$_tag: retry loading', location: location, mediation: _mediation, attributes: customAttributes);
-            fetchAd(location: location, then: then, customAttributes: customAttributes);
+            await fetchAd(location: location, then: then, customAttributes: customAttributes);
           }
         } else {
           Fimber.w('$errDescription ($errCode)', stacktrace: StackTrace.current);
@@ -309,12 +313,12 @@ class DSAdsInterstitial {
 
     switch (mediation) {
       case DSAdMediation.google:
-        DSGoogleInterstitialAd(
+        await DSGoogleInterstitialAd(
           adUnitId: _adUnitId(mediation),
         ).load(onAdLoaded: onAdLoaded, onAdFailedToLoad: onAdFailedToLoad);
         break;
       case DSAdMediation.appLovin:
-        DSAppLovinInterstitialAd(
+        await DSAppLovinInterstitialAd(
           adUnitId: _adUnitId(mediation),
         ).load(onAdLoaded: onAdLoaded, onAdFailedToLoad: onAdFailedToLoad);
         break;
@@ -373,7 +377,7 @@ class DSAdsInterstitial {
     if (!DSAdsManager.I.isInForeground) {
       _report('$_tag: app in background', location: location, mediation: _mediation, attributes: customAttributes);
       then?.call();
-      fetchAd(location: location, customAttributes: customAttributes);
+      await fetchAd(location: location, customAttributes: customAttributes);
       // https://support.google.com/admob/answer/6201362#zippy=%2Cdisallowed-example-user-launches-app
       return;
     }
@@ -421,7 +425,7 @@ class DSAdsInterstitial {
           );
           then?.call();
         });
-        fetchAd(
+        await fetchAd(
           location: location,
           customAttributes: customAttributes,
           then: () async {

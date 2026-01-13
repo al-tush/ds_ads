@@ -144,14 +144,14 @@ class DSAdsAppOpen {
   }
 
   /// Fetch app open ad
-  void fetchAd({
+  Future<void> fetchAd({
     required final DSAdLocation location,
     Map<String, Object>? customAttributes,
     @internal final Function()? then,
-  }) {
+  }) async {
     assert(_checkCustomAttributes(customAttributes), 'custom attributes must have custom_attr_ prefix');
 
-    if (!DSAdsManager.I.canRequestAds && DSAdsManager.I.needConsent) {
+    if (!await DSAdsManager.I.checkAndUpdateCanRequestAds()) {
       _report('$_tag: cannot request ads (consent not granted)', location: location, mediation: null);
       then?.call();
       return;
@@ -266,7 +266,7 @@ class DSAdsAppOpen {
           await Future.delayed(loadRetryDelay);
           if ({DSAdState.none, DSAdState.error}.contains(adState) && !_isDisposed) {
             _report('$_tag: retry loading', location: location, mediation: mediation, attributes: customAttributes);
-            fetchAd(location: location, then: then, customAttributes: customAttributes);
+            await fetchAd(location: location, then: then, customAttributes: customAttributes);
           }
         } else {
           Fimber.w('$errDescription ($errCode)', stacktrace: StackTrace.current);
@@ -286,12 +286,12 @@ class DSAdsAppOpen {
     try {
       switch (mediation) {
         case DSAdMediation.google:
-          DSGoogleAppOpenAd(
+          await DSGoogleAppOpenAd(
             adUnitId: _adUnitId(mediation),
           ).load(onAdLoaded: onAdLoaded, onAdFailedToLoad: onAdFailedToLoad);
           break;
         case DSAdMediation.appLovin:
-          DSAppLovinAppOpenAd(
+          await DSAppLovinAppOpenAd(
             adUnitId: _adUnitId(mediation),
           ).load(onAdLoaded: onAdLoaded, onAdFailedToLoad: onAdFailedToLoad);
           break;

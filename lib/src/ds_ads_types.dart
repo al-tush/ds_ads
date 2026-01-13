@@ -160,9 +160,8 @@ abstract class DSAdsEvent {
 
 /// Generated when consent status changes and ads can be requested
 class DSAdsConsentReadyEvent extends DSAdsEvent {
-  final bool canRequestAds;
   final DSConsentStatus consentStatus;
 
-  const DSAdsConsentReadyEvent({required this.canRequestAds, required this.consentStatus})
+  const DSAdsConsentReadyEvent({required this.consentStatus})
       : super(source: DSAdSource.native);
 }

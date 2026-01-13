@@ -207,7 +207,7 @@ mixin DSAdsNativeLoaderMixin<T extends StatefulWidget> on State<T> {
   /// Fetch native ad for [location]
   /// This call is not support [NativeAdBannerFlutter] natives (preload is not implemented by AppLovin)
   static Future<void> fetchAd({required final DSAdLocation location}) async {
-    if (!DSAdsManager.I.canRequestAds && DSAdsManager.I.needConsent) {
+    if (!await DSAdsManager.I.checkAndUpdateCanRequestAds()) {
       _report('$_tag: cannot request ads (consent not granted)', location: location, mediation: null);
       return;
     }

@@ -103,6 +103,7 @@ class DSAdsManager extends ChangeNotifier {
   ConsentForm? _consentForm;
   DSConsentStatus _lastConsentStatus = DSConsentStatus.unknown;
   bool _canRequestAds = false;
+  bool _isConsentInitialized = false;
 
   /// Was the ad successfully loaded at least once in this session
   bool get isAdAvailable => _isAdAvailable;
@@ -297,9 +298,12 @@ class DSAdsManager extends ChangeNotifier {
                 attributes: {'consent_status': 'formUnavailable', 'position': 'init'},
               );
             }
+            _isConsentInitialized = true;
           },
-          (FormError error) =>
-              Fimber.e('Consent error: ${error.message} (${error.errorCode})', stacktrace: StackTrace.current),
+          (FormError error) {
+            Fimber.e('Consent error: ${error.message} (${error.errorCode})', stacktrace: StackTrace.current);
+            _isConsentInitialized = true;
+          },
         );
       }
       // IOS CONSENT
@@ -312,6 +316,7 @@ class DSAdsManager extends ChangeNotifier {
           'consent status',
           attributes: {'consent_status': '$_lastConsentStatus', 'att_status': status, 'position': 'init'},
         );
+        _isConsentInitialized = true;
       }
     }());
   }
@@ -344,6 +349,18 @@ class DSAdsManager extends ChangeNotifier {
   /// For iOS: checks if ATT consent is obtained
   bool get canRequestAds => _canRequestAds;
 
+  /// Check if ads can be requested, with automatic consent status refresh
+  /// Returns true if ads can be requested, false otherwise
+  Future<bool> checkAndUpdateCanRequestAds() async {
+    if (!canRequestAds && needConsent) {
+      // Перезапрашиваем статус на случай если он изменился после показа ConsentForm
+      await _updateCanRequestAds();
+      // Проверяем еще раз после обновления
+      return canRequestAds || !needConsent;
+    }
+    return true;
+  }
+
   Future<void> _updateCanRequestAds() async {
     final oldValue = _canRequestAds;
 
@@ -353,9 +370,9 @@ class DSAdsManager extends ChangeNotifier {
       _canRequestAds = _lastConsentStatus == DSConsentStatus.obtained;
     }
 
-    // Emit event when consent status changes
-    if (_canRequestAds != oldValue) {
-      emitEvent(DSAdsConsentReadyEvent(canRequestAds: _canRequestAds, consentStatus: _lastConsentStatus));
+    // Emit event when consent status allow ads
+    if (_canRequestAds != oldValue && _canRequestAds) {
+      emitEvent(DSAdsConsentReadyEvent(consentStatus: _lastConsentStatus));
     }
   }
 
@@ -372,6 +389,11 @@ class DSAdsManager extends ChangeNotifier {
 
   /// Show consent window if consent available
   Future<bool> tryShowConsent() async {
+    // Wait for consent initialization to complete
+    while (!_isConsentInitialized) {
+      await Future.delayed(const Duration(milliseconds: 50));
+    }
+
     DSAdsAppOpen.lockUntilAppResume();
     try {
       if (Platform.isAndroid) {
@@ -522,7 +544,7 @@ class DSAdsManager extends ChangeNotifier {
       return;
     }
 
-    final DSAdMediation next;
+      final DSAdMediation next;
     if (_currentMediation[source] == null) {
       if (_lockMediationTill.isAfter(DateTime.timestamp())) return;
       next = mediationPriorities.first;
@@ -530,7 +552,9 @@ class DSAdsManager extends ChangeNotifier {
       if (_currentMediation[source] == mediationPriorities.last) {
         _lockMediationTill = DateTime.timestamp().add(_nextMediationWait);
         _currentMediation[source] = null;
-        onReportEvent?.call('ads_manager: no next mediation, waiting ${_nextMediationWait.inSeconds}s', {});
+        onReportEvent?.call(
+            'ads_manager: no next mediation, waiting ${_nextMediationWait
+                .inSeconds}s', {});
         Timer(_nextMediationWait, () async {
           if (currentMediation(source) == null) {
             _tryNextMediation(source, false);
@@ -551,12 +575,12 @@ class DSAdsManager extends ChangeNotifier {
             case DSAdMediation.google:
               // It seems that init just creates competition for other mediations
               //await MobileAds.I.initialize();
+              _mediationInitialized.add(DSAdMediation.google);
               break;
             case DSAdMediation.appLovin:
-              await initAppLovin();
+              initAppLovin();
               break;
           }
-          _mediationInitialized.add(next);
         } catch (e, stack) {
           Fimber.e('$e', stacktrace: stack);
         }
@@ -627,11 +651,8 @@ class DSAdsManager extends ChangeNotifier {
 
   Future<void>? _appLovinInit;
 
-  @Deprecated('Use initAppLovin() instead')
-  Future<void> initAppLovine() => initAppLovin();
-
   /// Force init AppLovin dependency
-  Future<void> initAppLovin() async {
+  void initAppLovin() {
     if (isMediationInitialized(DSAdMediation.appLovin)) return;
 
     _appLovinInit ??= () async {
@@ -640,6 +661,10 @@ class DSAdsManager extends ChangeNotifier {
       if (appLovinSDKKey.isEmpty) {
         Fimber.e('AppLovin not initialized. SDKKey is empty', stacktrace: StackTrace.current);
         return;
+      }
+      // https://support.axon.ai/en/max/flutter/overview/terms-and-privacy-policy-flow/
+      while (!canRequestAds) {
+        await Future.delayed(const Duration(milliseconds: 50));
       }
       await AppLovinMAX.initialize(appLovinSDKKey);
       _mediationInitialized.add(DSAdMediation.appLovin);
@@ -650,7 +675,8 @@ class DSAdsManager extends ChangeNotifier {
       });
     }();
 
-    await _appLovinInit;
+    // do not wait because of consent deadlock
+    unawaited(_appLovinInit);
   }
 
   /// Show AppLovin debug interface. Do not use this method in production
